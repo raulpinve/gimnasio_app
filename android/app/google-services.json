@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "739771923607",
+    "project_id": "gimnasio-b9a96",
+    "storage_bucket": "gimnasio-b9a96.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739771923607:android:3a24f94495e3ed182ebdd2",
+        "android_client_info": {
+          "package_name": "com.example.gym_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlFmVScOxe1AtvzbXIPsLNc28nm9Ygpt8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
