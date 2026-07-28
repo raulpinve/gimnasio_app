@@ -16,57 +16,68 @@ class MyDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return DropdownButtonFormField<T>(
       value: value,
       items: items,
       onChanged: onChanged,
 
-      // Mantiene el color del texto seleccionado igual al hint o al tema
       style: TextStyle(
-        color: Theme.of(context).colorScheme.inversePrimary,
+        color: colorScheme.inversePrimary,
         fontSize: 16,
       ),
 
-      // Color del menú flotante al desplegarse
-      dropdownColor: Theme.of(context).colorScheme.secondary,
+      dropdownColor: colorScheme.secondary,
 
-      // Icono personalizado y estilizado
       icon: Icon(
         Icons.arrow_drop_down_rounded,
-        color: Theme.of(context).colorScheme.primary,
+        color: colorScheme.primary,
         size: 28,
       ),
 
-      // Configuración obligatoria para que no altere la altura interna
       isDense: true,
 
       decoration: InputDecoration(
-        // Relleno interno idéntico al TextField por defecto
         contentPadding: const EdgeInsets.symmetric(
           vertical: 16.0,
           horizontal: 12.0,
         ),
 
-        // border when unselected (Copia exacta)
+        // Borde normal
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary),
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.primary.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
         ),
 
-        // border when selected (Copia exacta)
+        // Borde cuando está seleccionado
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 2,
+          ),
         ),
 
-        // Evita deformaciones visuales en estados intermedios
+        // Borde por defecto
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: colorScheme.primary.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
         ),
 
         hintText: hintText,
-        hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
-        fillColor: Theme.of(context).colorScheme.secondary,
+
+        hintStyle: TextStyle(
+          color: colorScheme.primary,
+        ),
+
+        fillColor: colorScheme.secondary,
         filled: true,
       ),
     );

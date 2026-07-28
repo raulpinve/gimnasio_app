@@ -9,13 +9,13 @@ import 'package:gym_app/features/auth/presentation/pages/auth_page.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercise_detail_page.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_page.dart';
 import 'package:gym_app/features/main/presentation/pages/main_page.dart';
+import 'package:gym_app/features/routines/presentation/pages/routine_create_page.dart';
 
 GoRouter getAppRouter(BuildContext context) {
   final authCubit = context.read<AuthCubit>();
 
   return GoRouter(
-    // initialLocation: '/loading',
-    initialLocation: '/exercises/acc250c4-e338-4207-9d17-31fae69fcd96',
+    initialLocation: '/loading',
     refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = authCubit.state;
@@ -63,6 +63,13 @@ GoRouter getAppRouter(BuildContext context) {
           final exerciseId = state.pathParameters["exerciseId"];
           return ExerciseDetailPage(exerciseId: exerciseId!);
         },
+      ),
+
+      /** Routines */
+      // Crear una nueva rutina
+      GoRoute(
+        path: '/routines/create',
+        builder: (_, _) => const RoutineCreatePage(),
       ),
     ],
   );

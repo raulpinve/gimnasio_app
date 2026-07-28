@@ -1,27 +1,86 @@
 import 'package:flutter/material.dart';
 
+enum MyButtonType {
+  primary,
+  warning,
+  danger,
+}
+
 class MyButton extends StatelessWidget {
   final void Function()? onTap;
   final String text;
-  const MyButton({super.key, required this.onTap, required this.text});
+  final MyButtonType type;
+  final bool isLoading;
+
+  const MyButton({
+    super.key,
+    required this.onTap,
+    required this.text,
+    this.type = MyButtonType.primary,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(25),
-        decoration: BoxDecoration(
-          // color of the button
-          color: Theme.of(context).colorScheme.tertiary,
+    final colorScheme = Theme.of(context).colorScheme;
 
-          // Curve corners
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    Color buttonColor;
+    Color borderColor;
+    Color textColor;
+
+    switch (type) {
+      case MyButtonType.primary:
+        buttonColor = colorScheme.primary;
+        borderColor = colorScheme.primary.withValues(alpha: 0.4);
+        textColor = Colors.white;
+        break;
+
+      case MyButtonType.warning:
+        buttonColor = Colors.orange;
+        borderColor = Colors.orange;
+        textColor = Colors.white;
+        break;
+
+      case MyButtonType.danger:
+        buttonColor = colorScheme.error;
+        borderColor = colorScheme.error;
+        textColor = Colors.white;
+        break;
+    }
+
+    return SizedBox(
+      height: 56,
+      child: GestureDetector(
+        onTap: isLoading ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+          ),
+          decoration: BoxDecoration(
+            color: buttonColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: borderColor,
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: textColor,
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                    ),
+                  ),
           ),
         ),
       ),

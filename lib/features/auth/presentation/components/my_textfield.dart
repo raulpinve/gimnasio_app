@@ -5,6 +5,7 @@ class MyTextfield extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final ValueChanged<String>? onChanged;
+  final String? errorText;
 
   const MyTextfield({
     super.key,
@@ -12,30 +13,85 @@ class MyTextfield extends StatelessWidget {
     required this.hintText,
     required this.obscureText,
     this.onChanged,
+    this.errorText,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        // border when unselected
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary),
-          borderRadius: BorderRadius.circular(12),
-        ),
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasError = errorText != null && errorText!.isNotEmpty;
 
-        // border when selected
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-          borderRadius: BorderRadius.circular(12),
+    return SizedBox(
+      height: 56,
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hintText,
+
+          hintStyle: TextStyle(
+            color: hasError ? colorScheme.error : colorScheme.primary,
+          ),
+
+          errorText: errorText,
+
+          filled: true,
+
+          // Fondo rojo suave cuando hay error
+          fillColor: hasError
+              ? colorScheme.error.withValues(alpha: 0.08)
+              : colorScheme.secondary,
+
+          // Borde normal
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: hasError
+                  ? colorScheme.error
+                  : colorScheme.primary.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+          ),
+
+          // Borde seleccionado
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: colorScheme.primary,
+              width: 2,
+            ),
+          ),
+
+          // Borde cuando hay error
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: colorScheme.error,
+              width: 1.5,
+            ),
+          ),
+
+          // Borde cuando hay error y está seleccionado
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: colorScheme.error,
+              width: 2,
+            ),
+          ),
+
+          errorStyle: TextStyle(
+            color: colorScheme.error,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
-        hintText: hintText,
-        hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
-        fillColor: Theme.of(context).colorScheme.secondary,
-        filled: true,
       ),
     );
   }

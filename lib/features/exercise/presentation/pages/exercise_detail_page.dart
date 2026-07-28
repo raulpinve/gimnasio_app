@@ -48,117 +48,124 @@ class _ExerciseDetailView extends StatelessWidget {
           },
         ),
       ),
-      body: BlocBuilder<ExerciseDetailCubit, ExerciseDetailState>(
-        builder: (context, state) {
-          if (state is ExerciseDetailLoading ||
-              state is ExerciseDetailInitial) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+      body: SafeArea(
+        child: BlocBuilder<ExerciseDetailCubit, ExerciseDetailState>(
+          builder: (context, state) {
+            if (state is ExerciseDetailLoading ||
+                state is ExerciseDetailInitial) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          if (state is ExerciseDetailError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: TextStyle(
-                  color: Colors.red,
+            if (state is ExerciseDetailError) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          if (state is ExerciseDetailLoaded) {
-            final exercise = state.exercise;
+            if (state is ExerciseDetailLoaded) {
+              final exercise = state.exercise;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      22,
-                    ),
-                    child: SizedBox(
-                      width: anchoPantalla,
-                      height: 300,
-                      child:
-                          (exercise.avatar != null &&
-                              exercise.avatar!.isNotEmpty)
-                          ? Image.network(
-                              exercise.avatar!,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (
-                                    BuildContext context,
-                                    Object error,
-                                    StackTrace? stackTrace,
-                                  ) {
-                                    debugPrint(
-                                      'Error cargando la imagen: $error',
-                                    );
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        22,
+                      ),
+                      child: SizedBox(
+                        width: anchoPantalla,
+                        height: 300,
+                        child:
+                            (exercise.avatar != null &&
+                                exercise.avatar!.isNotEmpty)
+                            ? Image.network(
+                                exercise.avatar!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (
+                                      BuildContext context,
+                                      Object error,
+                                      StackTrace? stackTrace,
+                                    ) {
+                                      debugPrint(
+                                        'Error cargando la imagen: $error',
+                                      );
 
-                                    if (stackTrace != null) {
-                                      debugPrint(stackTrace.toString());
-                                    }
+                                      if (stackTrace != null) {
+                                        debugPrint(stackTrace.toString());
+                                      }
 
-                                    return const Icon(
-                                      Icons.image_not_supported,
-                                      size: 50,
-                                    );
-                                  },
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
+                                      return const Icon(
+                                        Icons.image_not_supported,
+                                        size: 50,
+                                      );
+                                    },
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.light
+                                      ? Colors.white
+                                      : const Color.fromARGB(255, 35, 35, 35),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                                alignment: Alignment.center,
+                                child: exercise.type == "cardio"
+                                    ? const Icon(
+                                        Icons.directions_run,
+                                        size: 70,
+                                      )
+                                    : const Icon(
+                                        Icons.fitness_center,
+                                        size: 70,
+                                      ),
                               ),
-                              width: double.infinity,
-                              height: double.infinity,
-                              alignment: Alignment.center,
-                              child: exercise.type == "cardio"
-                                  ? const Icon(
-                                      Icons.directions_run,
-                                      size: 70,
-                                    )
-                                  : const Icon(
-                                      Icons.fitness_center,
-                                      size: 70,
-                                    ),
-                            ),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    exercise.name,
-                    style: TextTheme.of(context).headlineSmall!.copyWith(
-                      fontWeight: FontWeight.bold,
+                    SizedBox(
+                      height: 20,
                     ),
-                    textAlign: TextAlign.start,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  especificaciones(context, exercise),
-                  SizedBox(
-                    height: 20,
-                  ),
+                    Text(
+                      exercise.name,
+                      style: TextTheme.of(context).headlineSmall!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    especificaciones(context, exercise),
+                    SizedBox(
+                      height: 20,
+                    ),
 
-                  grafica(
-                    progress: state.progress,
-                    unit: state.unit,
-                  ),
-                  indicaciones(context, exercise),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                    grafica(
+                      progress: state.progress,
+                      unit: state.unit,
+                    ),
+
+                    indicaciones(context, exercise),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -343,14 +350,12 @@ class _ExerciseDetailView extends StatelessWidget {
 
   // Especificaciones
   Widget especificaciones(BuildContext context, Exercise exercise) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1.0,
-        ),
-        color: Colors.white,
+        color: isDark ? const Color(0xFF252525) : Colors.white,
+
         borderRadius: BorderRadius.all(Radius.circular(22)),
         boxShadow: [
           BoxShadow(
@@ -391,9 +396,9 @@ class _ExerciseDetailView extends StatelessWidget {
                 // --- TARJETA 1: TIPO ---
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50.withValues(
-                      alpha: 0.4,
-                    ), // Bloque de color pastel muy limpio y plano
+                    color: isDark
+                        ? const Color(0xFF2B2B2B)
+                        : Colors.grey.shade100,
                     borderRadius: const BorderRadius.all(
                       Radius.circular(16),
                     ), // Esquinas redondeadas modernas
@@ -409,8 +414,7 @@ class _ExerciseDetailView extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
-                            color: Colors
-                                .white, // El icono resalta sobre un círculo blanco limpio
+                            color: Colors.white,
                             shape: BoxShape.circle,
                           ),
                           child: exercise.type == "strength"
@@ -434,9 +438,6 @@ class _ExerciseDetailView extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.1,
-                                color: Colors
-                                    .blue
-                                    .shade700, // Texto a juego con el bloque
                                 fontSize: 10,
                               ),
                             ),
@@ -446,7 +447,6 @@ class _ExerciseDetailView extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: Colors.black87,
                               ),
                             ),
                           ],
@@ -460,9 +460,11 @@ class _ExerciseDetailView extends StatelessWidget {
                 // --- TARJETA 2: EQUIPO ---
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors
-                        .grey
-                        .shade100, // Bloque gris neutro y plano para contrastar
+                    color: isDark
+                        ? const Color(0xFF2B2B2B)
+                        : Colors
+                              .grey
+                              .shade100, // Bloque gris neutro y plano para contrastar
                     borderRadius: const BorderRadius.all(Radius.circular(16)),
                   ),
                   child: Padding(
@@ -493,7 +495,6 @@ class _ExerciseDetailView extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.1,
-                                color: Colors.grey.shade600,
                                 fontSize: 10,
                               ),
                             ),
@@ -505,7 +506,6 @@ class _ExerciseDetailView extends StatelessWidget {
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: Colors.black87,
                               ),
                             ),
                           ],
@@ -523,70 +523,57 @@ class _ExerciseDetailView extends StatelessWidget {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey.shade100,
-                  width: 1.0,
-                ),
-                color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(22)),
+                color: isDark ? const Color(0xFF2B2B2B) : Colors.grey.shade100,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.shade50,
-                  ),
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(22),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "GRUPOS MUSCULARES",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade700,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.left,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "GRUPOS MUSCULARES",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey.shade700,
+                        fontSize: 12,
                       ),
-                      SizedBox(
-                        height: 12,
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8.0,
-                        children: (exercise.muscleGroups ?? []).map((muscle) {
-                          final nombreMusculo =
-                              ExerciseConstants
-                                  .opcionesGruposMusculares[muscle] ??
-                              muscle;
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8.0,
+                      children: (exercise.muscleGroups ?? []).map((muscle) {
+                        final nombreMusculo =
+                            ExerciseConstants
+                                .opcionesGruposMusculares[muscle] ??
+                            muscle;
 
-                          return Chip(
-                            label: Text(
-                              nombreMusculo,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                        return Chip(
+                          label: Text(
+                            nombreMusculo,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
                             ),
-                            backgroundColor: Colors.blue.shade50,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              side: const BorderSide(
-                                color: Colors.transparent,
-                              ),
+                          ),
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E3A5F)
+                              : Colors.blue.shade50,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            side: const BorderSide(
+                              color: Colors.transparent,
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -598,22 +585,22 @@ class _ExerciseDetailView extends StatelessWidget {
 
   Widget indicaciones(BuildContext context, Exercise exercise) {
     final description = exercise.description;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (description == null ||
-        (description.positionInicial.isEmpty &&
-            description.ejecucion.isEmpty &&
-            description.tipsExtra.isEmpty)) {
+    if (description == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (description.positionInicial.trim().isEmpty &&
+        description.ejecucion.trim().isEmpty &&
+        description.tipsExtra.trim().isEmpty) {
       return const SizedBox.shrink();
     }
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1.0,
-        ),
-        color: Colors.white,
+        color: isDark ? const Color(0xFF252525) : Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(22)),
         boxShadow: [
           BoxShadow(

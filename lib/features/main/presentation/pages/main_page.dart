@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_page.dart';
+import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -13,9 +14,7 @@ class _MainPageState extends State<MainPage> {
 
   final pages = [
     ExercisesPage(),
-    Center(
-      child: Text("Rutinas"),
-    ),
+    RoutinesPage(),
     Center(
       child: Text("Workouts"),
     ),
@@ -28,7 +27,8 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: currentIndex,
+        // index: currentIndex,
+        index: 1,
         children: pages,
       ),
       bottomNavigationBar: SafeArea(

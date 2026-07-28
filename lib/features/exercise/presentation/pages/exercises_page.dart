@@ -105,6 +105,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           itemCount:
                               state.exercises.length + (state.hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
+                            
                             // Botón "Cargar más"
                             if (index == state.exercises.length) {
                               return Padding(
