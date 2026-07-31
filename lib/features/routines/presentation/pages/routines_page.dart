@@ -5,8 +5,10 @@ import 'package:gym_app/features/auth/presentation/components/my_appbar_button.d
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_cubit.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
+import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
 
 class RoutinesPage extends StatefulWidget {
   const RoutinesPage({super.key});
@@ -42,9 +44,6 @@ class _RoutinesPageState extends State<RoutinesPage> {
                       context.read<RoutineCubit>().loadRoutines();
                     }
                   },
-                ),
-                SizedBox(
-                  width: 12,
                 ),
               ],
             ),
@@ -87,10 +86,6 @@ class _RoutinesPageState extends State<RoutinesPage> {
                         }
 
                         if (state is RoutinesLoaded) {
-                          print(
-                            'BUILDER → isLoadingMore: ${state.isLoadingMore}',
-                          );
-
                           if (state.routines.isEmpty) {
                             return RefreshIndicator(
                               onRefresh: () async {
@@ -111,7 +106,9 @@ class _RoutinesPageState extends State<RoutinesPage> {
                           }
 
                           return RefreshIndicator(
-                            onRefresh: () async {},
+                            onRefresh: () async {
+                              await context.read<RoutineCubit>().loadRoutines();
+                            },
                             child: ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               itemCount:
@@ -156,142 +153,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
 
                                 final routine = state.routines[index];
 
-                                return GestureDetector(
-                                  onTap: () async {
-                                    // final result = await context.push<bool>(
-                                    //   '/routines/${_routines[index].id}',
-                                    // );
-                                    // if (result == true) {
-                                    //   _cargarRutinas();
-                                    // }
-                                  },
-                                  child: Container(
-                                    margin: EdgeInsets.only(bottom: 12),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Theme.of(context).brightness ==
-                                              Brightness.light
-                                          ? Colors.white
-                                          : const Color.fromARGB(
-                                              255,
-                                              35,
-                                              35,
-                                              35,
-                                            ), // Fondo del listTile
-                                      borderRadius: BorderRadius.circular(
-                                        12,
-                                      ), // Esquinas redondeadas
-
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.05,
-                                          ), // Color de la sombra
-                                          offset: const Offset(
-                                            0,
-                                            4,
-                                          ), // Dirección de la sombra (X, Y)
-                                        ),
-                                      ],
-                                    ),
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            14.0, // Reduce el espacio a los lados
-                                        vertical:
-                                            5.0, // Reduce el espacio arriba y abajo
-                                      ),
-
-                                      title: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            routine.name,
-                                            maxLines: 3,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge!
-                                                .copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          Wrap(
-                                            spacing:
-                                                6.0, // Espacio horizontal entre cada pill
-                                            runSpacing:
-                                                4.0, // Espacio vertical si los pills cambian de línea
-                                            children: [
-                                              if (routine.exercises == null ||
-                                                  routine.exercises!.isEmpty)
-                                                _crearPill(
-                                                  "Sin ejercicios",
-                                                  Colors.grey.shade100,
-                                                  Colors.grey.shade800,
-                                                )
-                                              else ...[
-                                                ...routine.exercises!
-                                                    .take(1)
-                                                    .map((
-                                                      exercise,
-                                                    ) {
-                                                      return _crearPill(
-                                                        exercise.name,
-                                                        Colors.blue.shade100,
-                                                        Colors.blue.shade800,
-                                                      );
-                                                    }),
-
-                                                if (routine.exercises!.length >
-                                                    1)
-                                                  _crearPill(
-                                                    "+${routine.exercises!.length - 1}",
-                                                    Colors.grey.shade100,
-                                                    Colors.grey.shade800,
-                                                  ),
-                                              ],
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: Container(
-                                              width: 30,
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                color: Colors.red.shade100,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      12,
-                                                    ),
-                                              ),
-                                              child: Icon(
-                                                Icons.delete_outline,
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.error,
-                                                size: 18,
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              final routineCubit = context
-                                                  .read<RoutineCubit>();
-
-                                              _deleteRoutineBottomSheet(
-                                                context,
-                                                routine.id,
-                                                routineCubit,
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
+                                return tarjetaRutina(context, routine);
                               },
                             ),
                           );
@@ -305,6 +167,136 @@ class _RoutinesPageState extends State<RoutinesPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  GestureDetector tarjetaRutina(BuildContext context, Routine routine) {
+    return GestureDetector(
+      onTap: () async {
+        final response = await context.push<bool>(
+          '/routine-exercises',
+          extra: routine,
+        );
+        // Stop execution is the user navigated away while the page was open
+        if (!context.mounted) return;
+
+        if (response == true) {
+          context.read<RoutineExercisesCubit>().loadRoutineExercises(
+            routineId: routine.id,
+          );
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : const Color.fromARGB(
+                  255,
+                  35,
+                  35,
+                  35,
+                ), // Fondo del listTile
+          borderRadius: BorderRadius.circular(
+            12,
+          ), // Esquinas redondeadas
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: 0.05,
+              ), // Color de la sombra
+              offset: const Offset(
+                0,
+                4,
+              ), // Dirección de la sombra (X, Y)
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14.0, // Reduce el espacio a los lados
+            vertical: 5.0, // Reduce el espacio arriba y abajo
+          ),
+
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                routine.name,
+                maxLines: 3,
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Wrap(
+                spacing: 6.0, // Espacio horizontal entre cada pill
+                runSpacing:
+                    4.0, // Espacio vertical si los pills cambian de línea
+                children: [
+                  if (routine.exercises == null || routine.exercises!.isEmpty)
+                    _crearPill(
+                      "Sin ejercicios",
+                      Colors.grey.shade100,
+                      Colors.grey.shade800,
+                    )
+                  else ...[
+                    ...routine.exercises!.take(1).map((
+                      exercise,
+                    ) {
+                      return _crearPill(
+                        exercise.name,
+                        Colors.blue.shade100,
+                        Colors.blue.shade800,
+                      );
+                    }),
+
+                    if (routine.exercises!.length > 1)
+                      _crearPill(
+                        "+${routine.exercises!.length - 1}",
+                        Colors.grey.shade100,
+                        Colors.grey.shade800,
+                      ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(
+                      12,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error,
+                    size: 18,
+                  ),
+                ),
+                onPressed: () {
+                  final routineCubit = context.read<RoutineCubit>();
+
+                  _deleteRoutineBottomSheet(
+                    context,
+                    routine.id,
+                    routineCubit,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

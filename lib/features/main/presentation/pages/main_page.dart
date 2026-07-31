@@ -27,8 +27,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        // index: currentIndex,
-        index: 1,
+        index: currentIndex,
         children: pages,
       ),
       bottomNavigationBar: SafeArea(

@@ -87,18 +87,11 @@ class RoutineCubit extends Cubit<RoutineState> {
     if (!currentState.hasMore) {
       return;
     }
-
-    // 🔵 Mostramos loading
-    print('ANTES DEL EMIT: ${currentState.isLoadingMore}');
-
     emit(
       currentState.copyWith(
         isLoadingMore: true,
       ),
     );
-
-    print('DESPUÉS DEL EMIT: ${state}');
-
     try {
       final nextPage = currentState.currentPage + 1;
 

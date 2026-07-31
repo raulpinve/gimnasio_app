@@ -11,10 +11,10 @@ class RoutineCreating extends RoutineState {}
 // Estado de exito para crear rutina
 class RoutineCreated extends RoutineState {}
 
-// Estado para eliminar rutin
+// Estado para eliminar rutina
 class RoutineDeleting extends RoutineState {}
 
-// Estado para eliminar rutina
+// Estado para indicar que la rutina fue eliminada
 class RoutineDeleted extends RoutineState {}
 
 // Estado para cargar la lista inicialmente

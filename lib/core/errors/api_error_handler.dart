@@ -37,12 +37,17 @@ ApiError handleDioError(DioException e) {
       data = rawData as Map<String, dynamic>;
     }
 
+    print(rawData);
+
     // Ahora extraemos el mensaje de forma segura usando el mapa ya normalizado
     final String generalMessage = (data != null)
-        ? (data['message']?.toString() ?? "Error desconocido del servidor")
+        ? (data['message']?.toString() ?? "Error desconocido del servidor ")
         : "Error desconocido del servidor";
 
     if (status == 401) {
+      return ApiError(message: generalMessage);
+    }
+    if (status == 404) {
       return ApiError(message: generalMessage);
     }
     if (status == 500) {
@@ -75,7 +80,6 @@ ApiError handleDioError(DioException e) {
         fieldErrors: errorsMap.isNotEmpty ? errorsMap : null,
       );
     }
-
     // Para cualquier otro código (como el 404), usa el mensaje extraído del mapa
     return ApiError(message: generalMessage);
   }

@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               theme: lightMode,
               darkTheme: darkMode,
-              routerConfig: getAppRouter(context), // <-- Modificado
+              routerConfig: getAppRouter(context),
             );
           },
         ),

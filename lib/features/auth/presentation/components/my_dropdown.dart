@@ -24,11 +24,11 @@ class MyDropdown<T> extends StatelessWidget {
       onChanged: onChanged,
 
       style: TextStyle(
-        color: colorScheme.inversePrimary,
+        color: colorScheme.onSurface,
         fontSize: 16,
       ),
 
-      dropdownColor: colorScheme.secondary,
+      dropdownColor: colorScheme.surface,
 
       icon: Icon(
         Icons.arrow_drop_down_rounded,
@@ -40,11 +40,10 @@ class MyDropdown<T> extends StatelessWidget {
 
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 16.0,
-          horizontal: 12.0,
+          vertical: 16,
+          horizontal: 12,
         ),
 
-        // Borde normal
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -53,7 +52,6 @@ class MyDropdown<T> extends StatelessWidget {
           ),
         ),
 
-        // Borde cuando está seleccionado
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -62,7 +60,6 @@ class MyDropdown<T> extends StatelessWidget {
           ),
         ),
 
-        // Borde por defecto
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
