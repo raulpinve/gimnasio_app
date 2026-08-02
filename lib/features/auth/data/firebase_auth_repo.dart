@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_app/features/auth/domain/entities/app_user.dart';
 import 'package:gym_app/features/auth/domain/repos/auth_repo.dart';
-import 'dart:developer' as developer;
 
 class FirebaseAuthRepo implements AuthRepo {
   // Access to firebase
@@ -49,8 +48,9 @@ class FirebaseAuthRepo implements AuthRepo {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final firebaseUser = userCredential.user;
-      if (firebaseUser == null)
+      if (firebaseUser == null) {
         throw Exception("Error al crear el usuario en Firebase");
+      }
 
       // 2. Obtenemos el token
       String? token = await firebaseUser.getIdToken();

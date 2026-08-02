@@ -1,5 +1,4 @@
 import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise.dart';
-import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise_pagination.dart';
 
 abstract class RoutineExerciseRepo {
   Future<List<RoutineExercise>> getAllRoutinesExercises({
@@ -8,9 +7,9 @@ abstract class RoutineExerciseRepo {
 
   Future<RoutineExercise> getRoutineExercise(String routineExerciseId);
 
-  Future<RoutineExercise> createRoutineExercise({
-    required String name,
-  });
+  Future<RoutineExercise> createRoutineExercise(
+    Map<String, dynamic> routineExerciseBody,
+  );
 
   Future<RoutineExercise> updateRoutineExercise({
     required String name,

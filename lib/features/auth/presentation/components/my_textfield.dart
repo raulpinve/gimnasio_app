@@ -6,6 +6,9 @@ class MyTextfield extends StatelessWidget {
   final bool obscureText;
   final ValueChanged<String>? onChanged;
   final String? errorText;
+  final TextInputType? keyboardType;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
 
   const MyTextfield({
     super.key,
@@ -14,6 +17,9 @@ class MyTextfield extends StatelessWidget {
     required this.obscureText,
     this.onChanged,
     this.errorText,
+    this.keyboardType,
+    this.prefixIcon,
+    this.suffixIcon,
   });
 
   @override
@@ -27,23 +33,37 @@ class MyTextfield extends StatelessWidget {
         controller: controller,
         obscureText: obscureText,
         onChanged: onChanged,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hintText,
-
           hintStyle: TextStyle(
             color: hasError ? colorScheme.error : colorScheme.primary,
           ),
 
+          prefixIcon: prefixIcon != null
+              ? IconTheme(
+                  data: IconThemeData(
+                    color: hasError ? colorScheme.error : colorScheme.primary,
+                  ),
+                  child: prefixIcon!,
+                )
+              : null,
+
+          suffixIcon: suffixIcon != null
+              ? IconTheme(
+                  data: IconThemeData(
+                    color: hasError ? colorScheme.error : colorScheme.primary,
+                  ),
+                  child: suffixIcon!,
+                )
+              : null,
+
           errorText: errorText,
-
           filled: true,
-
-          // Fondo rojo suave cuando hay error
           fillColor: hasError
               ? colorScheme.error.withValues(alpha: 0.08)
               : colorScheme.secondary,
 
-          // Borde normal
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
@@ -54,7 +74,6 @@ class MyTextfield extends StatelessWidget {
             ),
           ),
 
-          // Borde seleccionado
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
@@ -63,7 +82,6 @@ class MyTextfield extends StatelessWidget {
             ),
           ),
 
-          // Borde cuando hay error
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
@@ -72,7 +90,6 @@ class MyTextfield extends StatelessWidget {
             ),
           ),
 
-          // Borde cuando hay error y está seleccionado
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(

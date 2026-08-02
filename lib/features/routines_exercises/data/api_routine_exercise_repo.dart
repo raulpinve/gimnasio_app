@@ -10,13 +10,13 @@ class ApiRoutineExerciseRepo implements RoutineExerciseRepo {
   ApiRoutineExerciseRepo();
 
   @override
-  Future<RoutineExercise> createRoutineExercise({required String name}) async {
+  Future<RoutineExercise> createRoutineExercise(
+    Map<String, dynamic> routineExerciseBody,
+  ) async {
     try {
       final response = await apiClient.dio.post(
         '/routine-exercises',
-        data: {
-          'name': name,
-        },
+        data: routineExerciseBody,
       );
       return RoutineExercise.fromJSON(response.data['data']);
     } on DioException catch (e) {
@@ -48,7 +48,6 @@ class ApiRoutineExerciseRepo implements RoutineExerciseRepo {
 
       return routinesExercises;
     } on DioException catch (e) {
-      print("Error: $e");
       throw handleDioError(e);
     } catch (e, stackTrace) {
       debugPrint("Error al obtener los ejercicios de la rutina: $e");

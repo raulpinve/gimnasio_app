@@ -181,4 +181,21 @@ class RoutineCubit extends Cubit<RoutineState> {
       emit(RoutineError(e.toString()));
     }
   }
+
+  // Obtener una rutina específica por su ID usando el método exacto del repositorio
+  Future<void> loadRoutineById(String routineId) async {
+    try {
+      if (isClosed) return;
+      emit(SingleRoutineLoading());
+
+      // Llama a getRoutine tal como está en tu RoutineRepo
+      final routine = await routineRepo.getRoutine(routineId);
+
+      if (isClosed) return;
+      emit(SingleRoutineLoaded(routine: routine));
+    } catch (e) {
+      if (isClosed) return;
+      emit(RoutineError("No se pudo cargar la información de la rutina."));
+    }
+  }
 }

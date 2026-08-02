@@ -40,6 +40,7 @@ class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
                   onPressed: () async {
                     final response = await context.push<bool>(
                       "/routine-exercises/${widget.routine.id}/create",
+                      extra: widget.routine,
                     );
 
                     // Stop execution is the user navigated away while the page was open
@@ -388,7 +389,7 @@ void _mostrarBottomSheetEliminar(BuildContext context, String id) {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '¿Confirmas que deseas eliminar este recurso?',
+                  '¿Confirmas que deseas eliminar este ejercicio?',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),

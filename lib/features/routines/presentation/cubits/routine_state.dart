@@ -20,6 +20,14 @@ class RoutineDeleted extends RoutineState {}
 // Estado para cargar la lista inicialmente
 class RoutineLoading extends RoutineState {}
 
+class SingleRoutineLoading extends RoutineState {}
+
+class SingleRoutineLoaded extends RoutineState {
+  final Routine routine; // Asegúrate de importar tu modelo Routine aquí
+
+  SingleRoutineLoaded({required this.routine});
+}
+
 // Ejercicios cargados
 class RoutinesLoaded extends RoutineState {
   final List<Routine> routines;
