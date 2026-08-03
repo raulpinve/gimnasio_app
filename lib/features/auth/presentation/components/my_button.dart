@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 enum MyButtonType {
   primary,
+  secondary,
   warning,
   danger,
 }
@@ -16,7 +17,7 @@ class MyButton extends StatelessWidget {
     super.key,
     required this.onTap,
     required this.text,
-    this.type = MyButtonType.primary,
+    this.type = MyButtonType.secondary,
     this.isLoading = false,
   });
 
@@ -33,6 +34,12 @@ class MyButton extends StatelessWidget {
         buttonColor = colorScheme.primary;
         borderColor = colorScheme.primary.withValues(alpha: 0.4);
         textColor = Colors.white;
+        break;
+
+      case MyButtonType.secondary:
+        buttonColor = Colors.white;
+        borderColor = colorScheme.onSurface.withValues(alpha: 0.2);
+        textColor = colorScheme.onSurface;
         break;
 
       case MyButtonType.warning:

@@ -19,6 +19,7 @@ import 'package:gym_app/features/routines/presentation/pages/routine_create_page
 import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_create_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
 
@@ -99,13 +100,22 @@ GoRouter getAppRouter(BuildContext context) {
       ),
 
       // Abrir información de rutina
+      // Abrir información de rutina
       GoRoute(
         path: '/routine-exercises',
         builder: (context, state) {
           final routine = state.extra as Routine;
 
-          return RoutineExercisesPage(
-            routine: routine,
+          return BlocProvider(
+            create: (_) =>
+                RoutineExercisesCubit(
+                  routineExerciseRepo: ApiRoutineExerciseRepo(),
+                )..loadRoutineExercises(
+                  routineId: routine.id,
+                ),
+            child: RoutineExercisesPage(
+              routine: routine,
+            ),
           );
         },
       ),

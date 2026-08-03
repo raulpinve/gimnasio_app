@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
+import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise.dart';
@@ -25,137 +26,122 @@ class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          RoutineExercisesCubit(routineExerciseRepo: apiRoutineExerciseRepo)
-            ..loadRoutineExercises(routineId: widget.routine.id),
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(widget.routine.name),
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              actions: [
-                MyAppbarButton(
-                  onPressed: () async {
-                    final response = await context.push<bool>(
-                      "/routine-exercises/${widget.routine.id}/create",
-                      extra: widget.routine,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.routine.name),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        actions: [
+          MyAppbarButton(
+            onPressed: () async {
+              final response = await context.push<bool>(
+                "/routine-exercises/${widget.routine.id}/create",
+                extra: widget.routine,
+              );
+
+              // Stop execution is the user navigated away while the page was open
+              if (!context.mounted) return;
+
+              if (response == true) {
+                context.read<RoutineExercisesCubit>().loadRoutineExercises(
+                  routineId: widget.routine.id,
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Expanded(
+              child: BlocBuilder<RoutineExercisesCubit, RoutineExercisesState>(
+                builder: (context, state) {
+                  if (state is RoutineExercisesLoading) {
+                    return skeletonLoader(context);
+                  }
+
+                  if (state is RoutineExercisesError) {
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await context
+                            .read<RoutineExercisesCubit>()
+                            .loadRoutineExercises(
+                              routineId: widget.routine.id,
+                            );
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverFillRemaining(
+                            child: Center(
+                              child: Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.inversePrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
+                  }
 
-                    // Stop execution is the user navigated away while the page was open
-                    if (!context.mounted) return;
-
-                    if (response == true) {
-                      context
-                          .read<RoutineExercisesCubit>()
-                          .loadRoutineExercises(routineId: widget.routine.id);
-                    }
-                  },
-                ),
-              ],
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Expanded(
-                    child:
-                        BlocBuilder<
-                          RoutineExercisesCubit,
-                          RoutineExercisesState
-                        >(
-                          builder: (context, state) {
-                            if (state is RoutineExercisesLoading) {
-                              return skeletonLoader(context);
-                            }
-
-                            if (state is RoutineExercisesError) {
-                              return RefreshIndicator(
-                                onRefresh: () async {
-                                  await context
-                                      .read<RoutineExercisesCubit>()
-                                      .loadRoutineExercises(
-                                        routineId: widget.routine.id,
-                                      );
-                                },
-                                child: CustomScrollView(
-                                  slivers: [
-                                    SliverFillRemaining(
-                                      child: Center(
-                                        child: Text(
-                                          state.message,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.inversePrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                  if (state is RoutineExercisesLoaded) {
+                    if (state.routineExercises.isEmpty) {
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          await context
+                              .read<RoutineExercisesCubit>()
+                              .loadRoutineExercises(
+                                routineId: widget.routine.id,
                               );
-                            }
-
-                            if (state is RoutineExercisesLoaded) {
-                              if (state.routineExercises.isEmpty) {
-                                return RefreshIndicator(
-                                  onRefresh: () async {
-                                    await context
-                                        .read<RoutineExercisesCubit>()
-                                        .loadRoutineExercises(
-                                          routineId: widget.routine.id,
-                                        );
-                                  },
-                                  child: CustomScrollView(
-                                    slivers: [
-                                      SliverFillRemaining(
-                                        child: Center(
-                                          child: Text(
-                                            "No hay ejercicios para esta rutina",
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-
-                              return RefreshIndicator(
-                                onRefresh: () async {
-                                  await context
-                                      .read<RoutineExercisesCubit>()
-                                      .loadRoutineExercises(
-                                        routineId: widget.routine.id,
-                                      );
-                                },
-                                child: ListView.separated(
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
-                                  itemCount: state.routineExercises.length,
-                                  itemBuilder: (context, index) {
-                                    final exercise =
-                                        state.routineExercises[index];
-
-                                    return tarjetasExercises(exercise, context);
-                                  },
+                        },
+                        child: CustomScrollView(
+                          slivers: [
+                            SliverFillRemaining(
+                              child: Center(
+                                child: Text(
+                                  "No hay ejercicios para esta rutina",
                                 ),
-                              );
-                            }
-
-                            return skeletonLoader(context);
-                          },
+                              ),
+                            ),
+                          ],
                         ),
-                  ),
-                ],
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await context
+                            .read<RoutineExercisesCubit>()
+                            .loadRoutineExercises(
+                              routineId: widget.routine.id,
+                            );
+                      },
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemCount: state.routineExercises.length,
+                        itemBuilder: (context, index) {
+                          final exercise = state.routineExercises[index];
+
+                          return tarjetasExercises(exercise, context);
+                        },
+                      ),
+                    );
+                  }
+
+                  return skeletonLoader(context);
+                },
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -372,79 +358,94 @@ void _redirigirAEditar(BuildContext context, String exerciseId) async {
 }
 
 // 2. Despliegue del Bottom Sheet para eliminar
-void _mostrarBottomSheetEliminar(BuildContext context, String id) {
+void _mostrarBottomSheetEliminar(
+  BuildContext context,
+  String routineExerciseId,
+) {
+  final cubit = context.read<RoutineExercisesCubit>();
+
   showModalBottomSheet(
     context: context,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(20),
+      ),
     ),
-    builder: (bc) {
-      bool isLoading = false;
+    builder: (_) {
+      return BlocProvider.value(
+        value: cubit,
+        child: BlocConsumer<RoutineExercisesCubit, RoutineExercisesState>(
+          listener: (context, state) {
+            if (state is RoutineExercisesDeleted) {
+              context.pop();
+            }
 
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '¿Confirmas que deseas eliminar este ejercicio?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+            if (state is RoutineExercisesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
                 ),
-                SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          foregroundColor: Colors.grey.shade700,
-                          side: const BorderSide(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancelar"),
-                      ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is RoutineExercisesDeleting;
+
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "¿Confirmas que deseas eliminar este ejercicio?",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 12),
-                    // Expanded(
-                    //   child: ElevatedButton(
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: Colors.red.shade400,
-                    //       foregroundColor: Colors.white,
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(12),
-                    //       ),
-                    //     ),
-                    //     onPressed: () {
-                    //       // setModalState(() {
-                    //       //   isLoading = true;
-                    //       // });
-                    //       // _deleteExercise(context, id);
-                    //     },
-                    //     child: isLoading
-                    //         ? const SizedBox(
-                    //             width: 20,
-                    //             height: 20,
-                    //             child: CircularProgressIndicator(
-                    //               strokeWidth: 2,
-                    //               color: Colors.white,
-                    //             ),
-                    //           )
-                    //         : Text("Eliminar"),
-                    //   ),
-                    // ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: MyButton(
+                          onTap: isLoading
+                              ? null
+                              : () {
+                                  context.pop();
+                                },
+                          text: 'Cancelar',
+                          type: MyButtonType.secondary,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: MyButton(
+                          onTap: isLoading
+                              ? null
+                              : () {
+                                  context
+                                      .read<RoutineExercisesCubit>()
+                                      .deleteRoutineExercise(
+                                        routineExerciseId,
+                                      );
+                                },
+                          text: 'Eliminar',
+                          type: MyButtonType.danger,
+                          isLoading: isLoading,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       );
     },
   );

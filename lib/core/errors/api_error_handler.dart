@@ -37,8 +37,6 @@ ApiError handleDioError(DioException e) {
       data = rawData as Map<String, dynamic>;
     }
 
-    print(rawData);
-
     // Ahora extraemos el mensaje de forma segura usando el mapa ya normalizado
     final String generalMessage = (data != null)
         ? (data['message']?.toString() ?? "Error desconocido del servidor ")
