@@ -130,7 +130,11 @@ class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
                         itemBuilder: (context, index) {
                           final exercise = state.routineExercises[index];
 
-                          return tarjetasExercises(exercise, context);
+                          return tarjetasExercises(
+                            exercise,
+                            context,
+                            widget.routine.id,
+                          );
                         },
                       ),
                     );
@@ -156,6 +160,7 @@ class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
 Widget tarjetasExercises(
   RoutineExercise routineExercise,
   BuildContext context,
+  String routineId,
 ) {
   final details = <String>[
     if (routineExercise.targetSets != null)
@@ -308,7 +313,8 @@ Widget tarjetasExercises(
             if (opcion == 'editar') {
               _redirigirAEditar(
                 context,
-                routineExercise.id,
+                routineExercise,
+                routineId,
               );
             } else if (opcion == 'eliminar') {
               _mostrarBottomSheetEliminar(
@@ -348,13 +354,22 @@ Widget tarjetasExercises(
 }
 
 // 1. Redirección a la pantalla de edición
-void _redirigirAEditar(BuildContext context, String exerciseId) async {
-  // final resultado = await context.push(
-  //   '/routine-exercises/$exerciseId/update',
-  // );
-  // if (resultado == true) {
-  //   _cargarEjercicios();
-  // }
+Future<void> _redirigirAEditar(
+  BuildContext context,
+  RoutineExercise routineExercise,
+  String routineId,
+) async {
+  final resultado = await context.push<bool>(
+    '/routine-exercises/${routineExercise.id}/update',
+  );
+
+  if (!context.mounted) return;
+
+  if (resultado == true) {
+    await context.read<RoutineExercisesCubit>().loadRoutineExercises(
+      routineId: routineId,
+    );
+  }
 }
 
 // 2. Despliegue del Bottom Sheet para eliminar

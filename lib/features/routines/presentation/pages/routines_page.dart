@@ -9,6 +9,7 @@ import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
+import 'package:shimmer/shimmer.dart';
 
 class RoutinesPage extends StatefulWidget {
   const RoutinesPage({super.key});
@@ -302,8 +303,84 @@ class _RoutinesPageState extends State<RoutinesPage> {
   }
 
   Widget skeletonLoader(BuildContext context) {
-    return Center(
-      child: CircularProgressIndicator(),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 12),
+      itemCount: 6,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: isDark ? const Color(0xFF232323) : Colors.grey.shade200,
+          highlightColor: isDark
+              ? const Color(0xFF353535)
+              : Colors.grey.shade100,
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF232323) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nombre de la rutina
+                  Container(
+                    width: double.infinity,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Pills
+                  Row(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      Container(
+                        width: 45,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Botón de eliminar
+              trailing: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -356,7 +433,6 @@ Future<dynamic> _deleteRoutineBottomSheet(
                           onTap: isLoading
                               ? null
                               : () => Navigator.pop(context),
-                          type: MyButtonType.primary,
                           text: "Cancelar",
                         ),
                       ),

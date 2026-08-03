@@ -11,10 +11,13 @@ abstract class RoutineExerciseRepo {
     Map<String, dynamic> routineExerciseBody,
   );
 
-  Future<RoutineExercise> updateRoutineExercise({
-    required String name,
-    required String routineExerciseId,
-  });
+  Future<RoutineExercise> getRoutineExerciseById(
+    String routineExerciseId,
+  );
 
+  Future<void> updateRoutineExercise(
+    String routineExerciseId,
+    Map<String, dynamic> routineExerciseBody,
+  );
   Future<void> deleteRoutineExercise(String routineId);
 }

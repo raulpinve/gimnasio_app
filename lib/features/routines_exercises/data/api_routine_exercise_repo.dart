@@ -74,16 +74,14 @@ class ApiRoutineExerciseRepo implements RoutineExerciseRepo {
   }
 
   @override
-  Future<RoutineExercise> updateRoutineExercise({
-    required String name,
-    required String routineExerciseId,
-  }) async {
+  Future<RoutineExercise> updateRoutineExercise(
+    String routineExerciseId,
+    Map<String, dynamic> routineExerciseBody,
+  ) async {
     try {
       final response = await apiClient.dio.patch(
         "/routine-exercises/$routineExerciseId",
-        data: {
-          'name': name,
-        },
+        data: routineExerciseBody,
       );
       final Map<String, dynamic> data = response.data['data'];
       return RoutineExercise.fromJSON(data);
@@ -109,6 +107,31 @@ class ApiRoutineExerciseRepo implements RoutineExerciseRepo {
       debugPrint("Error al eliminar los ejercicios de la rutina: $e");
       debugPrintStack(stackTrace: stackTrace);
       throw Exception("Ocurrio un error inesperado.");
+    }
+  }
+
+  @override
+  Future<RoutineExercise> getRoutineExerciseById(
+    String routineExerciseId,
+  ) async {
+    try {
+      final response = await apiClient.dio.get(
+        "/routine-exercises/$routineExerciseId",
+      );
+
+      return RoutineExercise.fromJSON(response.data['data']);
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    } catch (e, stackTrace) {
+      debugPrint(
+        "Error al obtener el ejercicio de la rutina: $e",
+      );
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+      throw Exception(
+        "Ocurrió un error inesperado.",
+      );
     }
   }
 }

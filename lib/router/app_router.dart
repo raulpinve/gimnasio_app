@@ -20,8 +20,10 @@ import 'package:gym_app/features/routines/presentation/pages/routines_page.dart'
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_create_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
+import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
 
 GoRouter getAppRouter(BuildContext context) {
   final authCubit = context.read<AuthCubit>();
@@ -100,7 +102,6 @@ GoRouter getAppRouter(BuildContext context) {
       ),
 
       // Abrir información de rutina
-      // Abrir información de rutina
       GoRoute(
         path: '/routine-exercises',
         builder: (context, state) {
@@ -142,6 +143,26 @@ GoRouter getAppRouter(BuildContext context) {
             ],
             child: RoutineExercisesCreatePage(
               routineId: routineId,
+            ),
+          );
+        },
+      ),
+
+      // Editar ejercicio en la rutina
+      GoRoute(
+        path: '/routine-exercises/:routineExerciseId/update',
+        builder: (context, state) {
+          final routineExerciseId =
+              state.pathParameters['routineExerciseId'] ?? '';
+
+          return BlocProvider(
+            create: (_) => RoutineExercisesUpdateCubit(
+              routineExerciseRepo: ApiRoutineExerciseRepo(),
+              exerciseRepo: ApiExerciseRepo(),
+              routineExerciseId: routineExerciseId,
+            )..getRoutineExerciseById(),
+            child: RoutineExercisesUpdatePage(
+              routineExerciseId: routineExerciseId,
             ),
           );
         },

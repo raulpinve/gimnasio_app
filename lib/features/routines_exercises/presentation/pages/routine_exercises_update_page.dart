@@ -4,21 +4,23 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_cubit.dart';
 
-class RoutineExercisesCreatePage extends StatefulWidget {
-  final String routineId;
-  const RoutineExercisesCreatePage({super.key, required this.routineId});
+class RoutineExercisesUpdatePage extends StatefulWidget {
+  final String routineExerciseId;
+  const RoutineExercisesUpdatePage({
+    super.key,
+    required this.routineExerciseId,
+  });
 
   @override
-  State<RoutineExercisesCreatePage> createState() =>
-      _RoutineExercisesCreatePageState();
+  State<RoutineExercisesUpdatePage> createState() =>
+      _RoutineExercisesUpdatePageState();
 }
 
-class _RoutineExercisesCreatePageState
-    extends State<RoutineExercisesCreatePage> {
-      
+class _RoutineExercisesUpdatePageState
+    extends State<RoutineExercisesUpdatePage> {
   // 1. Controladores
   final TextEditingController _targetSetsController = TextEditingController();
   final TextEditingController _targetRepsController = TextEditingController();
@@ -42,15 +44,41 @@ class _RoutineExercisesCreatePageState
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<
-      RoutineExercisesCreateCubit,
-      RoutineExercisesCreateState
+      RoutineExercisesUpdateCubit,
+      RoutineExercisesUpdateState
     >(
       listener: (context, state) {
-        if (state.isCreated) {
+        if (state.routineExercise != null &&
+            state.selectedExercise != null &&
+            _targetSetsController.text.isEmpty &&
+            _targetRepsController.text.isEmpty &&
+            _targetDurationSecondsController.text.isEmpty &&
+            _targetDistanceKmController.text.isEmpty) {
+          final routineExercise = state.routineExercise!;
+
+          _targetSetsController.text =
+              routineExercise.targetSets?.toString() ?? '';
+
+          _targetRepsController.text =
+              routineExercise.targetReps?.toString() ?? '';
+
+          _targetDurationSecondsController.text =
+              routineExercise.targetDurationSeconds?.toString() ?? '';
+
+          _targetDistanceKmController.text =
+              routineExercise.targetDistanceKm?.toString() ?? '';
+
+          setState(() {
+            _selectedExercise = state.selectedExercise;
+          });
+        }
+
+        if (state.isUpdated) {
           if (context.canPop()) {
             context.pop(true);
           }
         }
+
         if (state.errorMessage != null) {
           if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -61,8 +89,22 @@ class _RoutineExercisesCreatePageState
           }
         }
       },
+
       builder: (context, state) {
-        final isCreating = state.isCreating;
+        final isLoading = state.isLoading;
+        final isUpdating = state.isUpdating;
+
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              title: const Text("Editar ejercicio"),
+            ),
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
         String? targetSetError;
         String? targetRepsError;
@@ -82,70 +124,18 @@ class _RoutineExercisesCreatePageState
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            // 2. Quitamos las comillas estáticas y metemos el BlocBuilder para escuchar el RoutineCubit
-            /*title: BlocBuilder<RoutineCubit, RoutineState>(
-              builder: (context, routineState) {
-                if (routineState is SingleRoutineLoading) {
-                  return Text("Cargando...");
-                }
-                if (routineState is SingleRoutineLoaded) {
-                  routineId = routineState.routine.id;
-                  return Text(
-                    routineState.routine.name,
-                  );
-                }
-                if (routineState is RoutineError) {
-                  return const Text("Error al cargar");
-                }
-                return const Text("Cargando...");
-              },
-            ),*/
-            title: Text("Agregar ejercicio"),
-            leading: IconButton(
-              onPressed: () async {
+            title: Text("Editar ejercicio"),
+            leading: BackButton(
+              onPressed: () {
                 context.pop();
               },
-              icon: const Icon(Icons.arrow_back),
             ),
           ),
-
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (_selectedExercise == null) ...[
-                  Card(
-                    elevation: 0,
-                    color: Colors.white,
-                    margin: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: Colors.grey.shade200,
-                        width: 1,
-                      ),
-                    ),
-                    child: ListTile(
-                      title: const Text('Seleccionar ejercicio'),
-                      trailing: const Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                      ),
-                      onTap: () async {
-                        final exercise = await context.push<Exercise>(
-                          '/exercises/selector',
-                        );
-                        if (exercise != null) {
-                          setState(() {
-                            _selectedExercise = exercise;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ],
-
                 if (_selectedExercise != null) ...[
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,14 +186,6 @@ class _RoutineExercisesCreatePageState
                               ),
                             ),
                           ],
-                        ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedExercise = null;
-                            });
-                          },
-                          icon: Icon(Icons.cancel),
                         ),
                       ),
                     ],
@@ -259,22 +241,45 @@ class _RoutineExercisesCreatePageState
                     MyButton(
                       onTap: () {
                         context
-                            .read<RoutineExercisesCreateCubit>()
-                            .createRoutineExercise({
-                              "targetSets": _targetSetsController.text.trim(),
-                              "targetReps": _targetRepsController.text.trim(),
+                            .read<RoutineExercisesUpdateCubit>()
+                            .updateRoutineExercise({
+                              "targetSets":
+                                  _targetSetsController.text.trim().isEmpty
+                                  ? null
+                                  : int.parse(
+                                      _targetSetsController.text.trim(),
+                                    ),
+
+                              "targetReps":
+                                  _targetRepsController.text.trim().isEmpty
+                                  ? null
+                                  : int.parse(
+                                      _targetRepsController.text.trim(),
+                                    ),
+
                               "targetDurationSeconds":
-                                  _targetDurationSecondsController.text.trim(),
-                              "targetDistanceKm": _targetDistanceKmController
-                                  .text
-                                  .trim(),
-                              "routineId": widget.routineId,
-                              "exerciseId": _selectedExercise?.id,
+                                  _targetDurationSecondsController.text
+                                      .trim()
+                                      .isEmpty
+                                  ? null
+                                  : int.parse(
+                                      _targetDurationSecondsController.text
+                                          .trim(),
+                                    ),
+
+                              "targetDistanceKm":
+                                  _targetDistanceKmController.text
+                                      .trim()
+                                      .isEmpty
+                                  ? null
+                                  : double.parse(
+                                      _targetDistanceKmController.text.trim(),
+                                    ),
                             });
                       },
                       type: MyButtonType.primary,
-                      text: "Agregar ejercicio",
-                      isLoading: isCreating,
+                      text: "Actualizar ejercicio",
+                      isLoading: isUpdating,
                     ),
                   ],
                 ),
