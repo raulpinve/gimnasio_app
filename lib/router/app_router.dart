@@ -24,6 +24,9 @@ import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_create_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
+import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 
 GoRouter getAppRouter(BuildContext context) {
   final authCubit = context.read<AuthCubit>();
@@ -172,6 +175,19 @@ GoRouter getAppRouter(BuildContext context) {
       GoRoute(
         path: '/routines/create',
         builder: (_, _) => const RoutineCreatePage(),
+      ),
+
+      /** Workouts */
+      GoRoute(
+        path: '/workouts',
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => WorkoutCubit(
+              workoutRepo: ApiWorkoutRepo(),
+            )..loadWorkouts(),
+            child: WorkoutsPage(),
+          );
+        },
       ),
     ],
   );
