@@ -8,6 +8,12 @@ class WorkoutInitial extends WorkoutState {}
 // Estado para cargar la lista inicialmente
 class WorkoutLoading extends WorkoutState {}
 
+// Estado para crear rutina
+class WorkoutCreating extends WorkoutState {}
+
+// Estado de exito para crear rutina
+class WorkoutCreated extends WorkoutState {}
+
 // Estado para indicar que se elimina un workout
 class WorkoutDeleting extends WorkoutState {}
 

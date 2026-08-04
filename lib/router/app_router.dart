@@ -25,7 +25,9 @@ import 'package:gym_app/features/routines_exercises/presentation/pages/routine_e
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/pages/workouts_create_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 
 GoRouter getAppRouter(BuildContext context) {
@@ -109,7 +111,6 @@ GoRouter getAppRouter(BuildContext context) {
         path: '/routine-exercises',
         builder: (context, state) {
           final routine = state.extra as Routine;
-
           return BlocProvider(
             create: (_) =>
                 RoutineExercisesCubit(
@@ -178,6 +179,40 @@ GoRouter getAppRouter(BuildContext context) {
       ),
 
       /** Workouts */
+      GoRoute(
+        path: '/workouts/create',
+        builder: (context, state) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => WorkoutCreateCubit(
+                  workoutRepo: ApiWorkoutRepo(),
+                ),
+              ),
+              BlocProvider(
+                create: (_) => RoutineCubit(
+                  routineRepo: ApiRoutineRepo(),
+                )..loadRoutines(),
+              ),
+            ],
+            child: WorkoutsCreatePage(),
+          );
+        },
+      ),
+
+      // Crear workout
+      GoRoute(
+        path: '/workouts/:workoutId',
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => WorkoutCubit(
+              workoutRepo: ApiWorkoutRepo(),
+            )..loadWorkouts(),
+            child: Placeholder(),
+          );
+        },
+      ),
+
       GoRoute(
         path: '/workouts',
         builder: (context, state) {

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
-import 'package:gym_app/features/exercise/presentation/cubits/exercise_cubit.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
@@ -62,9 +61,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
                         if (state is RoutineError) {
                           return RefreshIndicator(
                             onRefresh: () async {
-                              await context
-                                  .read<ExerciseCubit>()
-                                  .loadExercises();
+                              await context.read<RoutineCubit>().loadRoutines();
                             },
                             child: CustomScrollView(
                               slivers: [

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_page.dart';
+import 'package:gym_app/features/routines/data/api_routine_repo.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
+import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -15,9 +21,7 @@ class _MainPageState extends State<MainPage> {
   final pages = [
     ExercisesPage(),
     RoutinesPage(),
-    Center(
-      child: Text("Workouts"),
-    ),
+    WorkoutsPage(),
     Center(
       child: Text("Perfil"),
     ),
@@ -25,79 +29,95 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: currentIndex,
-        children: pages,
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            bottom: 12,
-            top: 10,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30.0),
-            child: MediaQuery.removePadding(
-              context: context,
-              removeBottom: true,
-              child: SizedBox(
-                height: 75,
-                child: BottomNavigationBar(
-                  elevation: 0,
-                  currentIndex: currentIndex,
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: Colors.grey.shade400,
-                  backgroundColor: Colors.transparent,
-                  type: BottomNavigationBarType.shifting,
-                  selectedFontSize: 11,
-                  unselectedFontSize: 11,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    // letterSpacing: 0.2,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => WorkoutCubit(
+            workoutRepo: ApiWorkoutRepo(),
+          )..loadWorkouts(),
+        ),
+        BlocProvider(
+          create: (_) => RoutineCubit(
+            routineRepo: ApiRoutineRepo(),
+          )..loadRoutines(),
+        ),
+      ],
+      child: Scaffold(
+        body: IndexedStack(
+          index: currentIndex,
+          children: pages,
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: 12,
+              top: 10,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30.0),
+              child: MediaQuery.removePadding(
+                context: context,
+                removeBottom: true,
+                child: SizedBox(
+                  height: 75,
+                  child: BottomNavigationBar(
+                    elevation: 0,
+                    currentIndex: currentIndex,
+                    selectedItemColor: Theme.of(context).colorScheme.primary,
+                    unselectedItemColor: Colors.grey.shade400,
+                    backgroundColor: Colors.transparent,
+                    type: BottomNavigationBarType.shifting,
+                    selectedFontSize: 11,
+                    unselectedFontSize: 11,
+                    selectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      // letterSpacing: 0.2,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    onTap: (index) {
+                      setState(() {
+                        currentIndex = index;
+                      });
+                    },
+                    items: [
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          currentIndex == 0
+                              ? Icons.fitness_center
+                              : Icons.fitness_center_outlined,
+                        ),
+                        label: 'Ejercicios',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          currentIndex == 1
+                              ? Icons.checklist_rounded
+                              : Icons.checklist_rtl_rounded,
+                        ),
+                        label: 'Rutinas',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          currentIndex == 2
+                              ? Icons.local_fire_department
+                              : Icons.local_fire_department_outlined,
+                        ),
+                        label: 'Workouts',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          currentIndex == 3
+                              ? Icons.person
+                              : Icons.person_outline,
+                        ),
+                        label: 'Perfil',
+                      ),
+                    ],
                   ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  onTap: (index) {
-                    setState(() {
-                      currentIndex = index;
-                    });
-                  },
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        currentIndex == 0
-                            ? Icons.fitness_center
-                            : Icons.fitness_center_outlined,
-                      ),
-                      label: 'Ejercicios',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        currentIndex == 1
-                            ? Icons.checklist_rounded
-                            : Icons.checklist_rtl_rounded,
-                      ),
-                      label: 'Rutinas',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        currentIndex == 2
-                            ? Icons.local_fire_department
-                            : Icons.local_fire_department_outlined,
-                      ),
-                      label: 'Workouts',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        currentIndex == 3 ? Icons.person : Icons.person_outline,
-                      ),
-                      label: 'Perfil',
-                    ),
-                  ],
                 ),
               ),
             ),
