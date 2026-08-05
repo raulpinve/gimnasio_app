@@ -135,21 +135,5 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     }
   }
 
-  // Delete routine
-  Future<void> deleteWorkout(String workoutId) async {
-    try {
-      emit(WorkoutDeleting());
-
-      await workoutRepo.deleteWorkout(workoutId);
-
-      emit(WorkoutDeleted());
-      await loadWorkouts();
-    } catch (e) {
-      emit(
-        WorkoutError(
-          e.toString(),
-        ),
-      );
-    }
-  }
+ 
 }

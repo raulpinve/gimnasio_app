@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
@@ -97,7 +96,10 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                       onRefresh: () async {
                         await context.read<WorkoutCubit>().loadWorkouts();
                       },
-                      child: ListView.builder(
+                      child: ListView.separated(
+                        separatorBuilder: (BuildContext context, int index) {
+                          return const SizedBox(height: 16);
+                        },
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount:
                             state.workouts.length + (state.hasMore ? 1 : 0),
@@ -159,7 +161,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         final response = await context.push<bool>(
           '/workouts/${workout.id}',
         );
-        // Stop execution is the user navigated away while the page was open
         if (!context.mounted) return;
 
         if (response == true) {
@@ -167,8 +168,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         }
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
           color: Theme.of(context).brightness == Brightness.light
               ? Colors.white
               : const Color.fromARGB(
@@ -176,71 +177,125 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   35,
                   35,
                   35,
-                ), // Fondo del listTile
-          borderRadius: BorderRadius.circular(
-            12,
-          ), // Esquinas redondeadas
-
+                ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
                 alpha: 0.05,
-              ), // Color de la sombra
+              ),
               offset: const Offset(
                 0,
                 4,
-              ), // Dirección de la sombra (X, Y)
+              ),
             ),
           ],
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14.0, // Reduce el espacio a los lados
-            vertical: 5.0, // Reduce el espacio arriba y abajo
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 20,
           ),
-
-          title: Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                workout.name,
-                maxLines: 3,
-                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(
-                      12,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      workout.name,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.error,
-                    size: 18,
+                  SizedBox(
+                    width: 8,
                   ),
-                ),
-                onPressed: () {
-                  final workoutCubit = context.read<WorkoutCubit>();
-
-                  _deleteWorkoutBottomSheet(
-                    context,
-                    workout.id,
-                    workoutCubit,
-                  );
-                },
+                  Container(
+                    decoration: BoxDecoration(
+                      color: workout.estado == "abierto"
+                          ? Colors.blue.shade100
+                          : Colors.grey.shade100, // Tu color de fondo
+                      borderRadius: BorderRadius.circular(
+                        12.0,
+                      ), // El redondeado de las esquinas
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        workout.estado == "abierto"
+                            ? "En progreso"
+                            : "Finalizado",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: workout.estado == "abierto"
+                              ? Colors.blue.shade800
+                              : Colors.grey.shade800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 8,
+              ),
+              Row(
+                children: [
+                  if (workout.duracion != "") ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100, // Tu color de fondo
+                        borderRadius: BorderRadius.circular(
+                          12.0,
+                        ), // El redondeado de las esquinas
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          workout.duracion ?? "",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: Colors.blue.shade800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "•",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    workout.fecha ?? "",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -331,7 +386,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     );
   }
 }
-
+/*
 Future<dynamic> _deleteWorkoutBottomSheet(
   BuildContext context,
   String id,
@@ -407,3 +462,4 @@ Future<dynamic> _deleteWorkoutBottomSheet(
     },
   );
 }
+*/

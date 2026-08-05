@@ -18,4 +18,5 @@ abstract class WorkoutRepo {
   );
 
   Future<void> deleteWorkout(String workoutId);
+  Future<void> finishWorkout(String workoutId);
 }

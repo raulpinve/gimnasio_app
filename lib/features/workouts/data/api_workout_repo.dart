@@ -102,4 +102,17 @@ class ApiWorkoutRepo implements WorkoutRepo {
       throw Exception("Ocurrió un error inesperado.");
     }
   }
+
+  @override
+  Future<void> finishWorkout(String workoutId) async {
+    try {
+      await apiClient.dio.patch("/workouts/$workoutId/finish");
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    } catch (e, stackTrace) {
+      debugPrint("Error al finalizar el entreamiento: e");
+      debugPrintStack(stackTrace: stackTrace);
+      throw Exception("Ocurrió un error inesperado.");
+    }
+  }
 }
