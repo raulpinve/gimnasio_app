@@ -183,11 +183,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                color:
-                                    Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? Colors.white
-                                    : const Color.fromARGB(255, 35, 35, 35),
+                                color: Theme.of(context).colorScheme.tertiary,
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(

@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_state.dart';
 import 'package:shimmer/shimmer.dart';
 
 class WorkoutsPage extends StatefulWidget {
@@ -35,6 +35,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                 context.read<WorkoutCubit>().loadWorkouts();
               }
             },
+            icon: Icon(Icons.add),
           ),
         ],
       ),
@@ -170,14 +171,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : const Color.fromARGB(
-                  255,
-                  35,
-                  35,
-                  35,
-                ),
+          color: Theme.of(context).colorScheme.tertiary,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(

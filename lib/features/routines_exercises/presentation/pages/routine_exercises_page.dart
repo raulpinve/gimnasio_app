@@ -47,6 +47,7 @@ class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
                 );
               }
             },
+            icon: Icon(Icons.add),
           ),
         ],
       ),
@@ -210,14 +211,7 @@ Widget tarjetasExercises(
     },
     child: Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.light
-            ? Colors.white
-            : const Color.fromARGB(
-                255,
-                35,
-                35,
-                35,
-              ), // Fondo del listTile
+        color: Theme.of(context).colorScheme.tertiary, // Fondo del listTile
         borderRadius: BorderRadius.circular(
           12,
         ), // Esquinas redondeadas

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/features/workouts/domain/repos/workout_repo.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_create_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 
 class WorkoutCreateCubit extends Cubit<WorkoutCreateState> {
   final WorkoutRepo workoutRepo;

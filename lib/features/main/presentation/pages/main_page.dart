@@ -5,7 +5,7 @@ import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 
 class MainPage extends StatefulWidget {

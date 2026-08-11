@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class MyAppbarButton extends StatelessWidget {
   final Function()? onPressed;
+  final Widget icon;
 
   const MyAppbarButton({
     super.key,
     required this.onPressed,
+    required this.icon,
   });
 
   @override
@@ -20,9 +22,9 @@ class MyAppbarButton extends StatelessWidget {
             elevation: 0,
             shadowColor: Colors.transparent,
           ),
-          child: const Text("+"),
+          child: icon,
         ),
-        SizedBox(
+        const SizedBox(
           width: 12,
         ),
       ],

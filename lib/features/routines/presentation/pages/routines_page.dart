@@ -44,6 +44,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
                       context.read<RoutineCubit>().loadRoutines();
                     }
                   },
+                  icon: Icon(Icons.add),
                 ),
               ],
             ),
@@ -188,14 +189,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
       child: Container(
         margin: EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.light
-              ? Colors.white
-              : const Color.fromARGB(
-                  255,
-                  35,
-                  35,
-                  35,
-                ), // Fondo del listTile
+          color: Theme.of(context).colorScheme.tertiary, // Fondo del listTile
           borderRadius: BorderRadius.circular(
             12,
           ), // Esquinas redondeadas

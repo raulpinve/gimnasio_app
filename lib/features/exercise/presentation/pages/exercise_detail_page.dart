@@ -114,11 +114,7 @@ class _ExerciseDetailView extends StatelessWidget {
                               )
                             : Container(
                                 decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? Colors.white
-                                      : const Color.fromARGB(255, 35, 35, 35),
+                                  color: Theme.of(context).colorScheme.tertiary,
                                 ),
                                 width: double.infinity,
                                 height: double.infinity,

@@ -4,9 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_create_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_create_state.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 
 class WorkoutsCreatePage extends StatefulWidget {
   const WorkoutsCreatePage({super.key});

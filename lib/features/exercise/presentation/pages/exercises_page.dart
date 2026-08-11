@@ -105,7 +105,6 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           itemCount:
                               state.exercises.length + (state.hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
-                            
                             // Botón "Cargar más"
                             if (index == state.exercises.length) {
                               return Padding(
@@ -149,11 +148,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? Colors.white
-                                      : const Color.fromARGB(255, 35, 35, 35),
+                                  color: Theme.of(context).colorScheme.tertiary,
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(

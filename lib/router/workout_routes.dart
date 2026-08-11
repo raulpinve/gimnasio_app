@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
@@ -11,6 +12,7 @@ import 'package:gym_app/features/workouts/presentation/cubits/workout_list/worko
 import 'package:gym_app/features/workouts/presentation/pages/workout_detail_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_create_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/pages/workout_exercise_detail_page.dart';
 
 final workoutRoutes = <GoRoute>[
   // Abrir página de workout
@@ -68,6 +70,19 @@ final workoutRoutes = <GoRoute>[
           workoutRepo: ApiWorkoutRepo(),
         )..loadWorkouts(),
         child: WorkoutsPage(),
+      );
+    },
+  ),
+
+  // Administradar workout-exercises
+  GoRoute(
+    path: '/workout-exercises/:workoutExerciseId',
+    builder: (context, state) {
+      return BlocProvider(
+        create: (_) => WorkoutExerciseCubit(
+          workoutExerciseRepo: ApiWorkoutExerciseRepo(),
+        ),
+        child: WorkoutExerciseDetailPage(),
       );
     },
   ),
