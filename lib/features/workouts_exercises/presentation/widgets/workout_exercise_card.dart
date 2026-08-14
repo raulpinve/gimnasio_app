@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
-import 'package:gym_app/features/workouts/presentation/widgets/set_card.dart';
+import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/widgets/set_card.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
 
 class WorkoutExerciseCard extends StatelessWidget {

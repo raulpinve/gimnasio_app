@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
-import 'package:gym_app/features/workouts/domain/repos/workout_exercise_repo.dart';
+import 'package:gym_app/features/workouts_exercises/domain/repos/workout_exercise_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_state.dart';
 
 class WorkoutExerciseCubit extends Cubit<WorkoutExerciseState> {

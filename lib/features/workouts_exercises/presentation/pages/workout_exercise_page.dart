@@ -3,26 +3,26 @@ import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/wor
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_state.dart';
-import 'package:gym_app/features/workouts/presentation/widgets/workout_exercise_card.dart';
-import 'package:gym_app/features/workouts/presentation/widgets/custom_app_bar.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/widgets/workout_exercise_card.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/widgets/custom_app_bar.dart';
+import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-class WorkoutDetailPage extends StatefulWidget {
+class WorkoutExercisePage extends StatefulWidget {
   final String workoutId;
-  const WorkoutDetailPage({
+  const WorkoutExercisePage({
     super.key,
     required this.workoutId,
   });
 
   @override
-  State<WorkoutDetailPage> createState() => _WorkoutDetailPageState();
+  State<WorkoutExercisePage> createState() => _WorkoutExercisePageState();
 }
 
-class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
+class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
   Future<void> redirectAddBottomSheet(
     BuildContext context,
     WorkoutExercise workoutExercise,

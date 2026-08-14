@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/core/network/api_client.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
 import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
-import 'package:gym_app/features/workouts/domain/repos/workout_exercise_repo.dart';
+import 'package:gym_app/features/workouts_exercises/domain/repos/workout_exercise_repo.dart';
 
 class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
   final ApiClient apiClient = ApiClient.instance;

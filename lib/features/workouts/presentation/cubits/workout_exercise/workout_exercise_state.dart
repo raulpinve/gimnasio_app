@@ -1,4 +1,4 @@
-import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
 
 abstract class WorkoutExerciseState {}
 
