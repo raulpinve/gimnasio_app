@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:gym_app/core/enums/workout_type.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/core/network/api_client.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
@@ -135,25 +134,95 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
   }
 
   @override
-  Future<WorkoutRecord> createWorkoutRecord(
-    WorkoutType workoutType,
-    Map<String, dynamic> workoutRecordBody,
+  Future<WorkoutExercise> getWorkoutExerciseById(
+    String workoutExerciseId,
   ) async {
     try {
-      bool isCardio = workoutType == WorkoutType.cardio;
-      String url = isCardio ? "/cardio-logs" : "workout-sets";
-
-      final response = await apiClient.dio.post(
-        url,
-        data: workoutRecordBody,
+      final response = await apiClient.dio.get(
+        "/workouts-exercises/$workoutExerciseId",
       );
-      return WorkoutRecord.fromJSON(response.data['data']);
+
+      final exercise = WorkoutExercise.fromJSON(
+        response.data['data'],
+      );
+
+      try {
+        List<WorkoutRecord> records = [];
+
+        if (exercise.exerciseType == "cardio") {
+          final recordsResponse = await apiClient.dio.get(
+            '/cardio-logs',
+            queryParameters: {
+              'workoutExerciseId': workoutExerciseId,
+            },
+          );
+
+          final List logs = recordsResponse.data["data"];
+
+          records = logs.map(
+            (log) {
+              return WorkoutRecord(
+                id: log["id"].toString(),
+                isCardio: true,
+                durationSeconds: log["durationSeconds"],
+                distanceKm: log["distanceKm"] != null
+                    ? double.tryParse(
+                        log["distanceKm"].toString(),
+                      )
+                    : null,
+              );
+            },
+          ).toList();
+        } else {
+          final recordsResponse = await apiClient.dio.get(
+            '/workout-sets',
+            queryParameters: {
+              'workoutExerciseId': workoutExerciseId,
+            },
+          );
+
+          final List sets = recordsResponse.data["data"];
+
+          records = sets.map(
+            (set) {
+              return WorkoutRecord(
+                id: set["id"].toString(),
+                isCardio: false,
+                weight: set["weight"] != null
+                    ? double.tryParse(
+                        set["weight"].toString(),
+                      )
+                    : null,
+                weightUnit: set["weightUnit"],
+                reps: set["reps"],
+              );
+            },
+          ).toList();
+        }
+
+        return exercise.copyWith(
+          records: records,
+        );
+      } catch (e) {
+        debugPrint(
+          "Error cargando records de ${exercise.exerciseName}: $e",
+        );
+        return exercise;
+      }
     } on DioException catch (e) {
       throw handleDioError(e);
     } catch (e, stackTrace) {
-      debugPrint("Error al obtener los workout exercises: $e");
-      debugPrintStack(stackTrace: stackTrace);
-      throw Exception("Ocurrió un error inesperado.");
+      debugPrint(
+        "Error al obtener el workout exercise por Id: $e",
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      throw Exception(
+        "Ocurrió un error inesperado.",
+      );
     }
   }
 }

@@ -26,8 +26,12 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
     WorkoutExercise workoutExercise,
   ) async {
     final result = await context.push(
-      "/workout-exercises/${workoutExercise.exerciseId}",
+      "/workout-exercises/${workoutExercise.workoutExerciseId}",
     );
+
+    // Verificamos si el contexto sigue activo en el árbol de widgets después del await
+    if (!context.mounted) return;
+
     if (result == true) {
       await context.read<WorkoutExerciseCubit>().loadWorkoutExercises(
         widget.workoutId,

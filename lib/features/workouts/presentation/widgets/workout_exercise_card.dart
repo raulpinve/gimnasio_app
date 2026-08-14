@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts/presentation/widgets/set_card.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/widgets/format_number.dart';
 
 class WorkoutExerciseCard extends StatelessWidget {
   const WorkoutExerciseCard({
@@ -38,10 +40,10 @@ class WorkoutExerciseCard extends StatelessWidget {
   }
 
   String get _objective => _isCardio
-      ? "Objetivo: ${workoutExercise.targetDistanceKm ?? '-'} km · "
-            "${workoutExercise.targetDurationSeconds ?? '-'} s"
-      : "Objetivo: ${workoutExercise.targetSets ?? '-'} series × "
-            "${workoutExercise.targetReps ?? '-'} reps";
+      ? "Objetivo: ${workoutExercise.targetDistanceKm ?? 0} km · "
+            "${workoutExercise.targetDurationSeconds ?? 0} s"
+      : "Objetivo: ${workoutExercise.targetSets ?? 0} series × "
+            "${workoutExercise.targetReps ?? 0} reps";
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +71,7 @@ class WorkoutExerciseCard extends StatelessWidget {
           const SizedBox(height: 10),
           _buildRecordsList(),
           const SizedBox(height: 20),
-          _buildRegisterButton(context),
+          _buildRegisterButton(context, workoutExercise.exerciseType),
         ],
       ),
     );
@@ -125,36 +127,42 @@ class WorkoutExerciseCard extends StatelessWidget {
       runSpacing: 10,
       children: workoutExercise.records.map((record) {
         if (_isCardio) {
-          return _setCard(
-            weight: "${record.distanceKm ?? 0} km",
-            reps: "${record.durationSeconds ?? 0}s",
+          return SetCard(
+            primaryText: "${formatNumber(record.distanceKm)} km",
+            secondaryText: "${record.durationSeconds ?? 0}s",
+            color: Colors.grey.shade100,
           );
         }
-        return _setCard(
-          weight: "${record.weight ?? 0} ${record.weightUnit ?? "kg"}",
-          reps: "${record.reps ?? 0} reps",
+
+        return SetCard(
+          primaryText:
+              "${formatNumber(record.weight)} ${record.weightUnit ?? "kg"}",
+          secondaryText: "${record.reps ?? 0} reps",
+          color: Colors.grey.shade100,
         );
       }).toList(),
     );
   }
 
-  Widget _buildRegisterButton(BuildContext context) {
+  Widget _buildRegisterButton(BuildContext context, String? exerciseType) {
     return Material(
       color: Theme.of(context).colorScheme.secondary,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onRegisterSet,
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icon(Icons.add_circle),
-              // SizedBox(width: 10),
               Text(
-                "Registrar serie",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                exerciseType == "cardio"
+                    ? "Registrar sesión"
+                    : exerciseType == "strength"
+                    ? "Registrar serie"
+                    : "Registrar datos",
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
           ),

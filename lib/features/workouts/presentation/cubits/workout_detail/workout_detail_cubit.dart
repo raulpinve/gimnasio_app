@@ -12,8 +12,11 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
   Future<void> loadWorkoutById(String workoutId) async {
     try {
       emit(WorkoutDetailLoading());
+
       final response = await workoutRepo.getWorkout(workoutId);
+
       if (isClosed) return;
+
       emit(WorkoutDetailLoaded(workout: response));
     } catch (e) {
       if (isClosed) return;

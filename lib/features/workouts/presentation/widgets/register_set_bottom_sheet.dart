@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gym_app/core/enums/workout_type.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_record.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_record/workout_record_create_cubit.dart';
 
 class RegisterSetBottomSheet extends StatefulWidget {
   final WorkoutExercise workoutExercise;
@@ -170,13 +166,13 @@ class _RegisterSetBottomSheetState extends State<RegisterSetBottomSheet> {
                 child: FilledButton.icon(
                   onPressed: () {
                     if (!_formKey.currentState!.validate()) return;
-
+                    /*
                     context
                         .read<WorkoutRecordCreateCubit>()
                         .createRecordWorkout(
                           workoutExercise.exerciseType == "cardio"
-                              ? WorkoutType.cardio
-                              : WorkoutType.strength,
+                              ? ExerciseType.cardio
+                              : ExerciseType.strength,
                           {
                             "workoutExerciseId": workoutExercise.exerciseId,
                             "weight":
@@ -186,6 +182,7 @@ class _RegisterSetBottomSheetState extends State<RegisterSetBottomSheet> {
                                 workoutExercise.suggestedWeightUnit ?? "kg",
                           },
                         );
+                        */
                   },
                   icon: const Icon(Icons.check),
                   label: const Text("Guardar serie"),

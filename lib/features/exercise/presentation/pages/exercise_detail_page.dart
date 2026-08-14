@@ -253,8 +253,9 @@ class _ExerciseDetailView extends StatelessWidget {
                             interval: 1,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
-                              if (index < 0 || index >= progress.length)
+                              if (index < 0 || index >= progress.length) {
                                 return SizedBox.shrink();
+                              }
                               if (index > 0 &&
                                   progress[index].date ==
                                       progress[index - 1].date) {

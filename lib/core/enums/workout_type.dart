@@ -1,4 +1,4 @@
-enum WorkoutType {
+enum ExerciseType {
   strength,
   cardio,
 }

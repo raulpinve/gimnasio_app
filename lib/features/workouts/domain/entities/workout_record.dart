@@ -19,10 +19,16 @@ class WorkoutRecord {
     this.distanceKm,
   });
 
-  factory WorkoutRecord.fromJSON(Map<String, dynamic> json) {
+  factory WorkoutRecord.fromJSON(
+    Map<String, dynamic> json, {
+    bool? isCardio,
+  }) {
     return WorkoutRecord(
-      id: json['id'],
-      isCardio: json['isCardio'] ?? false,
+      id: json['id'].toString(),
+
+      // Si se proporciona desde el contexto, usamos ese valor.
+      // Si no, usamos el valor que viene de la API.
+      isCardio: isCardio ?? json['isCardio'] ?? false,
 
       weight: json['weight'] != null
           ? double.tryParse(json['weight'].toString())
@@ -30,9 +36,11 @@ class WorkoutRecord {
 
       weightUnit: json['weightUnit'],
 
-      reps: json['reps'],
+      reps: json['reps'] != null ? int.tryParse(json['reps'].toString()) : null,
 
-      durationSeconds: json['durationSeconds'],
+      durationSeconds: json['durationSeconds'] != null
+          ? int.tryParse(json['durationSeconds'].toString())
+          : null,
 
       distanceKm: json['distanceKm'] != null
           ? double.tryParse(json['distanceKm'].toString())

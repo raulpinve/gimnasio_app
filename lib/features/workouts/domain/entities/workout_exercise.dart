@@ -64,40 +64,25 @@ class WorkoutExercise {
 
   factory WorkoutExercise.fromJSON(Map<String, dynamic> json) {
     final String apiClient = ApiClient.baseUrl;
-
     return WorkoutExercise(
       workoutExerciseId: json['workoutExerciseId']?.toString(),
-
       exerciseId: json['exerciseId']?.toString(),
-
       exerciseName: json['exerciseName'],
-
       exerciseType: json['exerciseType'],
-
       avatar: json['exerciseAvatar'] != null
           ? "$apiClient/uploads/exercises/${json['exerciseId']}/${json['exerciseAvatar']}"
           : null,
-
       avatarThumbnail: json['exerciseAvatarThumbnail'] != null
           ? "$apiClient/uploads/exercises/${json['exerciseId']}/${json['exerciseAvatarThumbnail']}"
           : null,
-
       targetSets: json['targetSets']?.toString(),
-
       targetReps: json['targetReps']?.toString(),
-
       targetWeight: json['targetWeight']?.toString(),
-
       targetDurationSeconds: json['targetDurationSeconds']?.toString(),
-
       targetDistanceKm: json['targetDistanceKm']?.toString(),
-
       personalRecord: json['personalRecord']?.toString(),
-
       suggestedWeight: json['suggestedWeight']?.toString(),
-
       suggestedWeightUnit: json['suggestedWeightUnit']?.toString(),
-
       records: json['records'] != null
           ? (json['records'] as List)
                 .map(

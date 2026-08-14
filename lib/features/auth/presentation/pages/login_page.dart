@@ -72,17 +72,25 @@ class _LoginPageState extends State<LoginPage> {
           // reset button
           TextButton(
             onPressed: () async {
+              // 1. Guardamos la referencia al navigator antes del async request
+              final navigator = Navigator.of(context);
+
               String message = await authCubit.forgotPassword(
                 emailController.text,
               );
+
+              // 2. Verificamos que el widget siga montado antes de usar el contexto
+              if (!mounted) return;
+
               if (message == "Password reset email! Check your inbox.") {
-                Navigator.pop(context);
+                navigator.pop(); // Usamos la referencia guardada
                 emailController.clear();
               }
 
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
+              // El contexto aquí ya está protegido por el chequeo de 'mounted'
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message)),
+              );
             },
             child: const Text("Reset"),
           ),

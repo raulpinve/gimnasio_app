@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
@@ -9,9 +8,12 @@ import 'package:gym_app/features/workouts/presentation/cubits/create_workout/wor
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_record/workout_record_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workout_detail_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_create_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/data/api_workout_record.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/pages/workout_exercise_detail_page.dart';
 
 final workoutRoutes = <GoRoute>[
@@ -78,11 +80,26 @@ final workoutRoutes = <GoRoute>[
   GoRoute(
     path: '/workout-exercises/:workoutExerciseId',
     builder: (context, state) {
-      return BlocProvider(
-        create: (_) => WorkoutExerciseCubit(
-          workoutExerciseRepo: ApiWorkoutExerciseRepo(),
-        ),
-        child: WorkoutExerciseDetailPage(),
+      final workoutExerciseId = state.pathParameters['workoutExerciseId'] ?? '';
+
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => WorkoutExerciseCubit(
+              workoutExerciseRepo: ApiWorkoutExerciseRepo(),
+            ),
+          ),
+          BlocProvider(
+            create: (_) => WorkoutExerciseDetailCubit(
+              workoutExerciseRepo: ApiWorkoutExerciseRepo(),
+            )..loadWorkoutExerciseById(workoutExerciseId),
+          ),
+          BlocProvider(
+            create: (_) =>
+                WorkoutRecordCubit(workoutRecordRepo: ApiWorkoutRecord()),
+          ),
+        ],
+        child: WorkoutExerciseDetailPage(workoutExerciseId: workoutExerciseId),
       );
     },
   ),
