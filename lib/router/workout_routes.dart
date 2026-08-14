@@ -8,13 +8,13 @@ import 'package:gym_app/features/workouts/presentation/cubits/create_workout/wor
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_record/workout_record_cubit.dart';
+import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workout_detail_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_create_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
-import 'package:gym_app/features/workouts_exercises/data/api_workout_record.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/pages/workout_exercise_detail_page.dart';
+import 'package:gym_app/features/workouts_record/data/api_workout_record.dart';
+import 'package:gym_app/features/workouts_record/presentation/pages/workout_record_page.dart';
 
 final workoutRoutes = <GoRoute>[
   // Abrir página de workout
@@ -30,10 +30,17 @@ final workoutRoutes = <GoRoute>[
               workoutRepo: ApiWorkoutRepo(),
             )..loadWorkoutById(workoutId),
           ),
+
           BlocProvider(
             create: (_) => WorkoutExerciseCubit(
               workoutExerciseRepo: ApiWorkoutExerciseRepo(),
             )..loadWorkoutExercises(workoutId),
+          ),
+
+          BlocProvider(
+            create: (_) => WorkoutExerciseDetailCubit(
+              workoutExerciseRepo: ApiWorkoutExerciseRepo(),
+            ),
           ),
         ],
         child: WorkoutDetailPage(
@@ -78,7 +85,7 @@ final workoutRoutes = <GoRoute>[
 
   // Administradar workout-exercises
   GoRoute(
-    path: '/workout-exercises/:workoutExerciseId',
+    path: '/workout-records/:workoutExerciseId',
     builder: (context, state) {
       final workoutExerciseId = state.pathParameters['workoutExerciseId'] ?? '';
 
@@ -99,7 +106,7 @@ final workoutRoutes = <GoRoute>[
                 WorkoutRecordCubit(workoutRecordRepo: ApiWorkoutRecord()),
           ),
         ],
-        child: WorkoutExerciseDetailPage(workoutExerciseId: workoutExerciseId),
+        child: WorkoutRecordPage(workoutExerciseId: workoutExerciseId),
       );
     },
   ),

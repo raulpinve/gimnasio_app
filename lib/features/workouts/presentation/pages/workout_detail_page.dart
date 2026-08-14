@@ -1,12 +1,14 @@
-import 'package:go_router/go_router.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_state.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/workout_exercise_card.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/custom_app_bar.dart';
+import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
+import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 class WorkoutDetailPage extends StatefulWidget {
@@ -26,7 +28,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
     WorkoutExercise workoutExercise,
   ) async {
     final result = await context.push(
-      "/workout-exercises/${workoutExercise.workoutExerciseId}",
+      "/workout-records/${workoutExercise.workoutExerciseId}",
     );
 
     // Verificamos si el contexto sigue activo en el árbol de widgets después del await
@@ -74,48 +76,85 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                         // HEADER
                         Row(
                           children: [
-                            Text(
-                              workout.name,
-                              style:
-                                  Theme.of(
-                                    context,
-                                  ).textTheme.headlineSmall!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            Expanded(
+                              child: Text(
+                                workout.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
                             ),
-                            SizedBox(
-                              width: 12,
-                            ),
+
                             Container(
                               decoration: BoxDecoration(
                                 color: workout.estado == "abierto"
                                     ? Colors.blue.shade100
                                     : Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(
-                                  12.0,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                workout.estado == "abierto"
+                                    ? "En curso"
+                                    : "Completado",
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                  color: workout.estado == "abierto"
+                                      ? Colors.blue.shade800
+                                      : Colors.grey.shade800,
                                 ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                child: Text(
-                                  workout.estado == "abierto"
-                                      ? "En progreso"
-                                      : "Finalizado",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: workout.estado == "abierto"
-                                        ? Colors.blue.shade800
-                                        : Colors.grey.shade800,
-                                  ),
-                                ),
-                              ),
+                            ),
+
+                            const SizedBox(width: 2),
+
+                            IconButton(
+                              onPressed: workout.estado == "abierto"
+                                  ? () async {
+                                      final currentContext = context;
+
+                                      final workoutExerciseCubit =
+                                          currentContext
+                                              .read<
+                                                WorkoutExerciseDetailCubit
+                                              >();
+
+                                      final workoutDetailCubit = currentContext
+                                          .read<WorkoutDetailCubit>();
+
+                                      final exercise = await currentContext
+                                          .push<Exercise>(
+                                            "/exercises/selector",
+                                          );
+
+                                      if (!mounted) return;
+
+                                      if (exercise != null) {
+                                        await workoutExerciseCubit
+                                            .createWorkoutExercise(
+                                              workout.id,
+                                              exercise.id,
+                                            );
+
+                                        if (!mounted) return;
+
+                                        await workoutDetailCubit
+                                            .loadWorkoutById(
+                                              workout.id,
+                                            );
+                                      }
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.add),
+                              tooltip: "Agregar ejercicio",
                             ),
                           ],
                         ),

@@ -1,5 +1,5 @@
 import 'package:gym_app/core/network/api_client.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_record.dart';
+import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
 
 class WorkoutExercise {
   final String? workoutExerciseId;

@@ -3,29 +3,28 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/enums/workout_type.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_record.dart';
+import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/set_card.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_state.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_record/workout_record_cubit.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_record/workout_record_state.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/widgets/format_number.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/widgets/switcher_form.dart';
+import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record_cubit.dart';
+import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record_state.dart';
+import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
+import 'package:gym_app/features/workouts_record/presentation/widgets/switcher_form.dart';
 
-class WorkoutExerciseDetailPage extends StatefulWidget {
+class WorkoutRecordPage extends StatefulWidget {
   final String workoutExerciseId;
 
-  const WorkoutExerciseDetailPage({
+  const WorkoutRecordPage({
     super.key,
     required this.workoutExerciseId,
   });
 
   @override
-  State<WorkoutExerciseDetailPage> createState() =>
-      _WorkoutExerciseDetailPageState();
+  State<WorkoutRecordPage> createState() => _WorkoutRecordPageState();
 }
 
-class _WorkoutExerciseDetailPageState extends State<WorkoutExerciseDetailPage> {
+class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
   WorkoutRecord? editingRecord;
 
   // Controladores de fuerza

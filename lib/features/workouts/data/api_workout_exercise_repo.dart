@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/core/network/api_client.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_record.dart';
+import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
 import 'package:gym_app/features/workouts/domain/repos/workout_exercise_repo.dart';
 
 class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
@@ -214,6 +214,36 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
     } catch (e, stackTrace) {
       debugPrint(
         "Error al obtener el workout exercise por Id: $e",
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      throw Exception(
+        "Ocurrió un error inesperado.",
+      );
+    }
+  }
+
+  @override
+  Future<WorkoutExercise> createWorkoutExercise(
+    String workoutId,
+    String exerciseId,
+  ) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/workouts-exercises',
+        queryParameters: {
+          'workoutId': workoutId,
+        },
+      );
+      return WorkoutExercise.fromJSON(response.data["data"]);
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    } catch (e, stackTrace) {
+      debugPrint(
+        "Error al obtener los workout exercises: $e",
       );
 
       debugPrintStack(

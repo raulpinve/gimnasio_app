@@ -5,8 +5,14 @@ abstract class WorkoutExerciseDetailState {}
 // Estado inicial
 class WorkoutExerciseDetailInitial extends WorkoutExerciseDetailState {}
 
-// Estado para cargar el ejercicio en la rutina
+// Estado para indicar que se está cargando el listado de workout exercise
 class WorkoutExerciseDetailLoading extends WorkoutExerciseDetailState {}
+
+// Estado para indicar que se esta creando un workout exercise
+class WorkoutExerciseDetailCreating extends WorkoutExerciseDetailState {}
+
+// Estado para indicar que se creó un workout exercise
+class WorkoutExerciseDetailCreated extends WorkoutExerciseDetailState {}
 
 // Estado con el ejercicio cargado
 class WorkoutExerciseDetailLoaded extends WorkoutExerciseDetailState {

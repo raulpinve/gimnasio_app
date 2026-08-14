@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/enums/workout_type.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_record/workout_record_state.dart';
-import 'package:gym_app/features/workouts_exercises/domain/repos/workout_record_repo.dart';
+import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record_state.dart';
+import 'package:gym_app/features/workouts_record/domain/repos/workout_record_repo.dart';
 
 class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
   final WorkoutRecordRepo workoutRecordRepo;
