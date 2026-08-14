@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout_exercise.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/set_card.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/widgets/format_number.dart';
@@ -58,7 +59,7 @@ class WorkoutExerciseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
+          _buildHeader(context),
           const SizedBox(height: 8),
           Text(_objective, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 12),
@@ -77,11 +78,16 @@ class WorkoutExerciseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
+        GestureDetector(
+          onTap: () {
+            context.push(
+              "/exercises/${workoutExercise.exerciseId}",
+            );
+          },
           child: Text(
             workoutExercise.exerciseName ?? "Ejercicio",
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -128,8 +134,8 @@ class WorkoutExerciseCard extends StatelessWidget {
       children: workoutExercise.records.map((record) {
         if (_isCardio) {
           return SetCard(
-            primaryText: "${formatNumber(record.distanceKm)} km",
-            secondaryText: "${record.durationSeconds ?? 0}s",
+            primaryText: "${(record.durationSeconds ?? 0) ~/ 60} min",
+            secondaryText: "${formatNumber(record.distanceKm)} km",
             color: Colors.grey.shade100,
           );
         }
@@ -170,42 +176,4 @@ class WorkoutExerciseCard extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _setCard({
-  required String weight,
-  required String reps,
-}) {
-  return Container(
-    width: 80,
-    padding: const EdgeInsets.symmetric(
-      vertical: 12,
-      horizontal: 8,
-    ),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: Colors.grey.shade200,
-      ),
-    ),
-    child: Column(
-      children: [
-        Text(
-          weight,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          reps,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
-  );
 }

@@ -235,267 +235,295 @@ class _WorkoutExerciseDetailPageState extends State<WorkoutExerciseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 80.0,
-        leading: BackButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop(true);
-            }
-          },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && context.canPop()) {
+          context.pop(true);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 80.0,
+          leading: BackButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop(true);
+              }
+            },
+          ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: BlocListener<WorkoutRecordCubit, WorkoutRecordState>(
-          listener: (context, recordState) {
-            final previous = _previousRecordState;
-            _previousRecordState = recordState;
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: BlocListener<WorkoutRecordCubit, WorkoutRecordState>(
+            listener: (context, recordState) {
+              final previous = _previousRecordState;
+              _previousRecordState = recordState;
 
-            if (recordState is WorkoutRecordError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(recordState.message)),
-              );
-              return;
-            }
-
-            if (previous is WorkoutRecordsLoaded &&
-                recordState is WorkoutRecordsLoaded) {
-              final finishedCreating =
-                  previous.isSaving && !recordState.isSaving;
-              final finishedDeleting =
-                  previous.isDeleting && !recordState.isDeleting;
-
-              if (finishedCreating) {
-                setState(() {
-                  showForm = false;
-                });
-
-                _weigthController.clear();
-                _repsController.clear();
-                _minutesController.clear();
-                _distanceController.clear();
-
+              if (recordState is WorkoutRecordError) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Serie registrada correctamente"),
-                  ),
+                  SnackBar(content: Text(recordState.message)),
                 );
+                return;
               }
 
-              if (finishedDeleting) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Serie eliminada correctamente"),
-                  ),
-                );
+              if (previous is WorkoutRecordsLoaded &&
+                  recordState is WorkoutRecordsLoaded) {
+                final finishedCreating =
+                    previous.isSaving && !recordState.isSaving;
+                final finishedDeleting =
+                    previous.isDeleting && !recordState.isDeleting;
+
+                if (finishedCreating) {
+                  setState(() {
+                    showForm = false;
+                  });
+
+                  _weigthController.clear();
+                  _repsController.clear();
+                  _minutesController.clear();
+                  _distanceController.clear();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Serie registrada correctamente"),
+                    ),
+                  );
+                }
+
+                if (finishedDeleting) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Serie eliminada correctamente"),
+                    ),
+                  );
+                }
               }
-            }
-          },
-          child: BlocBuilder<WorkoutExerciseDetailCubit, WorkoutExerciseDetailState>(
-            builder: (context, state) {
-              if (state is WorkoutExerciseDetailLoading) {
+            },
+            child: BlocBuilder<WorkoutExerciseDetailCubit, WorkoutExerciseDetailState>(
+              builder: (context, state) {
+                if (state is WorkoutExerciseDetailLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (state is WorkoutExerciseDetailError) {
+                  return Center(
+                    child: Text(state.message),
+                  );
+                }
+
+                if (state is WorkoutExerciseDetailLoaded) {
+                  final workoutExercise = state.workoutExercise;
+                  final exerciseType = _exerciseTypeFrom(
+                    workoutExercise.exerciseType,
+                  );
+
+                  // Primera vez que tenemos el ejercicio cargado:
+                  // pedimos sus records al nuevo cubit.
+                  if (!_recordsRequested) {
+                    _recordsRequested = true;
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+
+                      context.read<WorkoutRecordCubit>().loadWorkoutRecords(
+                        workoutExercise.workoutExerciseId ??
+                            widget.workoutExerciseId,
+                        exerciseType,
+                      );
+                    });
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      await context
+                          .read<WorkoutExerciseDetailCubit>()
+                          .loadWorkoutExerciseById(
+                            workoutExercise.workoutExerciseId ?? "",
+                          );
+
+                      if (!mounted) return;
+
+                      await context
+                          .read<WorkoutRecordCubit>()
+                          .loadWorkoutRecords(
+                            workoutExercise.workoutExerciseId ??
+                                widget.workoutExerciseId,
+                            exerciseType,
+                          );
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Nombre del ejercicio
+                          GestureDetector(
+                            onTap: () {
+                              context.push(
+                                "/exercises/${workoutExercise.exerciseId}",
+                              );
+                            },
+                            child: Text(
+                              workoutExercise.exerciseName ?? "Ejercicio",
+                              style: Theme.of(context).textTheme.headlineSmall!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Objetivos del ejercicio
+                          exerciseType == ExerciseType.cardio
+                              ? Text(
+                                  "Objetivo: "
+                                  "${workoutExercise.targetDistanceKm ?? 0} km · "
+                                  "${workoutExercise.targetDurationSeconds ?? 0} s",
+                                )
+                              : Text(
+                                  "Objetivo: "
+                                  "${workoutExercise.targetSets ?? 0} series × "
+                                  "${workoutExercise.targetReps ?? 0} reps",
+                                ),
+
+                          const SizedBox(height: 14),
+
+                          Divider(
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+
+                          // Series realizadas: ahora vienen del WorkoutRecordCubit.
+                          BlocBuilder<WorkoutRecordCubit, WorkoutRecordState>(
+                            builder: (context, recordState) {
+                              final isSaving =
+                                  recordState is WorkoutRecordsLoaded
+                                  ? recordState.isSaving
+                                  : false;
+
+                              if (recordState is WorkoutRecordLoading ||
+                                  recordState is WorkoutRecordInitial) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+
+                              final records =
+                                  recordState is WorkoutRecordsLoaded
+                                  ? recordState.workoutRecords
+                                  : <WorkoutRecord>[];
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Solo mostrar los registros si existen
+                                  if (records.isNotEmpty) ...[
+                                    const SizedBox(height: 20),
+
+                                    Text(
+                                      'Series realizadas',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+
+                                    const SizedBox(height: 14),
+
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: records.map((record) {
+                                        return GestureDetector(
+                                          onLongPress: () {
+                                            _showRecordActions(
+                                              context,
+                                              record,
+                                              exerciseType,
+                                            );
+                                          },
+                                          child: SetCard(
+                                            primaryText: record.isCardio
+                                                ? '${(record.durationSeconds ?? 0) ~/ 60} min'
+                                                : '${formatNumber(record.weight)} ${record.weightUnit ?? 'Kg'}',
+                                            secondaryText: record.isCardio
+                                                ? '${formatNumber(record.distanceKm)} Km'
+                                                : '${record.reps ?? 0} reps',
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+
+                                  // El formulario siempre está disponible
+                                  SwitcherForm(
+                                    showForm: showForm,
+                                    isEditing: editingRecord != null,
+                                    formType:
+                                        exerciseType == ExerciseType.cardio
+                                        ? FormType.cardioForm
+                                        : FormType.strengthForm,
+                                    isLoading: isSaving,
+
+                                    weigthController: _weigthController,
+                                    repsController: _repsController,
+                                    minutesController: _minutesController,
+                                    distanceController: _distanceController,
+
+                                    suggestedWeightUnit:
+                                        workoutExercise.suggestedWeightUnit,
+
+                                    onShowForm: () {
+                                      _clearRecordForm();
+
+                                      setState(() {
+                                        editingRecord = null;
+                                        showForm = true;
+                                      });
+                                    },
+
+                                    onCloseForm: () {
+                                      if (isSaving) return;
+
+                                      _clearRecordForm();
+
+                                      setState(() {
+                                        editingRecord = null;
+                                        showForm = false;
+                                      });
+                                    },
+
+                                    onSubmit: () {
+                                      _submitWorkoutRecord(
+                                        exerciseType,
+                                        workoutExercise,
+                                      );
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
-              }
-
-              if (state is WorkoutExerciseDetailError) {
-                return Center(
-                  child: Text(state.message),
-                );
-              }
-
-              if (state is WorkoutExerciseDetailLoaded) {
-                final workoutExercise = state.workoutExercise;
-                final exerciseType = _exerciseTypeFrom(
-                  workoutExercise.exerciseType,
-                );
-
-                // Primera vez que tenemos el ejercicio cargado:
-                // pedimos sus records al nuevo cubit.
-                if (!_recordsRequested) {
-                  _recordsRequested = true;
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
-
-                    context.read<WorkoutRecordCubit>().loadWorkoutRecords(
-                      workoutExercise.workoutExerciseId ??
-                          widget.workoutExerciseId,
-                      exerciseType,
-                    );
-                  });
-                }
-
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    await context
-                        .read<WorkoutExerciseDetailCubit>()
-                        .loadWorkoutExerciseById(
-                          workoutExercise.workoutExerciseId ?? "",
-                        );
-
-                    if (!mounted) return;
-
-                    await context.read<WorkoutRecordCubit>().loadWorkoutRecords(
-                      workoutExercise.workoutExerciseId ??
-                          widget.workoutExerciseId,
-                      exerciseType,
-                    );
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Nombre del ejercicio
-                        Text(
-                          workoutExercise.exerciseName ?? "Ejercicio",
-                          style: Theme.of(context).textTheme.headlineSmall!
-                              .copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // Objetivos del ejercicio
-                        exerciseType == ExerciseType.cardio
-                            ? Text(
-                                "Objetivo: "
-                                "${workoutExercise.targetDistanceKm ?? 0} km · "
-                                "${workoutExercise.targetDurationSeconds ?? 0} s",
-                              )
-                            : Text(
-                                "Objetivo: "
-                                "${workoutExercise.targetSets ?? 0} series × "
-                                "${workoutExercise.targetReps ?? 0} reps",
-                              ),
-
-                        const SizedBox(height: 14),
-
-                        Divider(
-                          color: Theme.of(context).colorScheme.tertiary,
-                        ),
-
-                        // Series realizadas: ahora vienen del WorkoutRecordCubit.
-                        BlocBuilder<WorkoutRecordCubit, WorkoutRecordState>(
-                          builder: (context, recordState) {
-                            final isSaving = recordState is WorkoutRecordsLoaded
-                                ? recordState.isSaving
-                                : false;
-
-                            if (recordState is WorkoutRecordLoading ||
-                                recordState is WorkoutRecordInitial) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 20),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
-
-                            List records = const [];
-                            if (recordState is WorkoutRecordsLoaded) {
-                              records = recordState.workoutRecords;
-                            }
-
-                            if (records.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 20),
-                                Text(
-                                  'Series realizadas',
-                                  style: Theme.of(context).textTheme.bodyLarge!
-                                      .copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                const SizedBox(height: 14),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: records.map((record) {
-                                    return GestureDetector(
-                                      onLongPress: () {
-                                        _showRecordActions(
-                                          context,
-                                          record,
-                                          exerciseType,
-                                        );
-                                      },
-                                      child: SetCard(
-                                        primaryText: record.isCardio
-                                            ? '${(record.durationSeconds ?? 0) ~/ 60} min'
-                                            : '${formatNumber(record.weight)} ${record.weightUnit ?? 'Kg'}',
-
-                                        secondaryText: record.isCardio
-                                            ? '${formatNumber(record.distanceKm)} Km'
-                                            : '${record.reps ?? 0} reps',
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-
-                                SwitcherForm(
-                                  showForm: showForm,
-                                  isEditing: editingRecord != null,
-                                  formType: exerciseType == ExerciseType.cardio
-                                      ? FormType.cardioForm
-                                      : FormType.strengthForm,
-                                  isLoading: isSaving,
-                                  weigthController: _weigthController,
-                                  repsController: _repsController,
-                                  minutesController: _minutesController,
-                                  distanceController: _distanceController,
-
-                                  suggestedWeightUnit:
-                                      workoutExercise.suggestedWeightUnit,
-
-                                  onShowForm: () {
-                                    _clearRecordForm();
-                                    setState(() {
-                                      editingRecord = null;
-                                      showForm = true;
-                                    });
-                                  },
-
-                                  onCloseForm: () {
-                                    _clearRecordForm();
-                                    setState(() {
-                                      editingRecord = null;
-                                      showForm = false;
-                                    });
-                                  },
-
-                                  onSubmit: () {
-                                    _submitWorkoutRecord(
-                                      exerciseType,
-                                      workoutExercise,
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),
