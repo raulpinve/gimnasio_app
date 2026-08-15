@@ -17,6 +17,27 @@ import 'package:gym_app/features/workouts_record/data/api_workout_record.dart';
 import 'package:gym_app/features/workouts_record/presentation/pages/workout_record_page.dart';
 
 final workoutRoutes = <GoRoute>[
+  GoRoute(
+    path: '/workouts/create',
+    builder: (context, state) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => WorkoutCreateCubit(
+              workoutRepo: ApiWorkoutRepo(),
+            ),
+          ),
+          BlocProvider(
+            create: (_) => RoutineCubit(
+              routineRepo: ApiRoutineRepo(),
+            )..loadRoutines(),
+          ),
+        ],
+        child: WorkoutsCreatePage(),
+      );
+    },
+  ),
+
   // Abrir página de workout
   GoRoute(
     path: '/workouts/:workoutId',
@@ -46,27 +67,6 @@ final workoutRoutes = <GoRoute>[
         child: WorkoutExercisePage(
           workoutId: workoutId,
         ),
-      );
-    },
-  ),
-
-  GoRoute(
-    path: '/workouts/create',
-    builder: (context, state) {
-      return MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => WorkoutCreateCubit(
-              workoutRepo: ApiWorkoutRepo(),
-            ),
-          ),
-          BlocProvider(
-            create: (_) => RoutineCubit(
-              routineRepo: ApiRoutineRepo(),
-            )..loadRoutines(),
-          ),
-        ],
-        child: WorkoutsCreatePage(),
       );
     },
   ),

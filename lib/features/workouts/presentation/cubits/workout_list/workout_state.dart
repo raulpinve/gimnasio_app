@@ -8,21 +8,9 @@ class WorkoutInitial extends WorkoutState {}
 // Estado para cargar la lista inicialmente
 class WorkoutLoading extends WorkoutState {}
 
-// Estado para crear rutina
-class WorkoutCreating extends WorkoutState {}
-
-// Estado de exito para crear rutina
-class WorkoutCreated extends WorkoutState {}
-
-// Estado para indicar que se elimina un workout
-class WorkoutDeleting extends WorkoutState {}
-
-// Estado para indicar que el workout fue eliminado
-class WorkoutDeleted extends WorkoutState {}
-
-// Workouts cargados
 class WorkoutsLoaded extends WorkoutState {
   final List<Workout> workouts;
+  final bool isDeleting;
 
   // Paginación
   final int currentPage;
@@ -36,6 +24,7 @@ class WorkoutsLoaded extends WorkoutState {
     required this.currentPage,
     required this.totalPages,
     this.isLoadingMore = false,
+    this.isDeleting = false,
   });
 
   // Indica si existen más páginas
@@ -46,12 +35,14 @@ class WorkoutsLoaded extends WorkoutState {
     int? currentPage,
     int? totalPages,
     bool? isLoadingMore,
+    bool? isDeleting,
   }) {
     return WorkoutsLoaded(
       workouts: workouts ?? this.workouts,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isDeleting: isDeleting ?? this.isDeleting,
     );
   }
 }

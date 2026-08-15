@@ -9,6 +9,9 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
   WorkoutRecordCubit({required this.workoutRecordRepo})
     : super(WorkoutRecordInitial());
 
+  // ============================================================
+  // CARGAR WORKOUT RECORDS
+  // ============================================================
   Future<void> loadWorkoutRecords(
     String wokoutExerciseId,
     ExerciseType exerciseType,

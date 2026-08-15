@@ -141,4 +141,49 @@ class WorkoutCubit extends Cubit<WorkoutState> {
       }
     }
   }
+
+  Future<bool> deleteWorkout(String id) async {
+    if (isClosed) return false;
+
+    if (state is! WorkoutsLoaded) {
+      return false;
+    }
+
+    final currentState = state as WorkoutsLoaded;
+
+    emit(
+      currentState.copyWith(
+        isDeleting: true,
+      ),
+    );
+
+    try {
+      await workoutRepo.deleteWorkout(id);
+
+      if (isClosed) return false;
+
+      final updatedWorkouts = currentState.workouts
+          .where((workout) => workout.id != id)
+          .toList();
+
+      emit(
+        currentState.copyWith(
+          workouts: updatedWorkouts,
+          isDeleting: false,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      if (isClosed) return false;
+
+      emit(
+        currentState.copyWith(
+          isDeleting: false,
+        ),
+      );
+
+      return false;
+    }
+  }
 }

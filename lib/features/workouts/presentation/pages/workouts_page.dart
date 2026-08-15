@@ -1,3 +1,4 @@
+import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_state.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
@@ -135,6 +136,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         final response = await context.push<bool>(
           '/workouts/${workout.id}',
         );
+
         if (!context.mounted) return;
 
         if (response == true) {
@@ -142,130 +144,133 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         }
       },
       child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          14,
+          8,
+          14,
+        ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
           color: Theme.of(context).colorScheme.tertiary,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: 0.05,
-              ),
-              offset: const Offset(
-                0,
-                4,
-              ),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 20,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      workout.name,
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Nombre + menú
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    workout.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    width: 8,
+                ),
+
+                PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.more_vert,
+                    size: 22,
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: workout.estado == "abierto"
-                          ? Colors.blue.shade100
-                          : Colors.grey.shade100, // Tu color de fondo
-                      borderRadius: BorderRadius.circular(
-                        12.0,
-                      ), // El redondeado de las esquinas
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      child: Text(
-                        workout.estado == "abierto"
-                            ? "En progreso"
-                            : "Finalizado",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: workout.estado == "abierto"
-                              ? Colors.blue.shade800
-                              : Colors.grey.shade800,
-                        ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        // Editar workout
+                        break;
+
+                      case 'delete':
+                        // Eliminar workout
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      onTap: () {
+                        _deleteWorkoutBottomSheet(context, workout.id);
+                      },
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline),
+                          SizedBox(width: 10),
+                          Text('Eliminar'),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Row(
-                children: [
-                  if (workout.duracion != "") ...[
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade100, // Tu color de fondo
-                        borderRadius: BorderRadius.circular(
-                          12.0,
-                        ), // El redondeado de las esquinas
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          workout.duracion ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                            color: Colors.blue.shade800,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "•",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                   ],
+                ),
+              ],
+            ),
+
+            // Estado
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 9,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: workout.estado == 'abierto'
+                    ? Colors.blue.shade100
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                workout.estado == 'abierto' ? 'En progreso' : 'Finalizado',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: workout.estado == 'abierto'
+                      ? Colors.blue.shade800
+                      : Colors.grey.shade800,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Duración + fecha
+            Row(
+              children: [
+                if (workout.duracion != null &&
+                    workout.duracion!.isNotEmpty) ...[
+                  Icon(
+                    Icons.timer_outlined,
+                    size: 15,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    workout.fecha ?? "",
+                    workout.duracion!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '•',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  const SizedBox(width: 10),
                 ],
-              ),
-            ],
-          ),
+
+                Text(
+                  workout.fecha ?? '',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -353,25 +358,21 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     );
   }
 }
-/*
+
 Future<dynamic> _deleteWorkoutBottomSheet(
   BuildContext context,
   String id,
-  WorkoutCubit workoutCubit,
 ) {
+  final workoutCubit = context.read<WorkoutCubit>();
+
   return showModalBottomSheet(
     context: context,
     builder: (context) {
       return BlocProvider.value(
         value: workoutCubit,
-        child: BlocConsumer<WorkoutCubit, WorkoutState>(
-          listener: (context, state) {
-            if (state is WorkoutDeleted) {
-              Navigator.pop(context);
-            }
-          },
+        child: BlocBuilder<WorkoutCubit, WorkoutState>(
           builder: (context, state) {
-            final isLoading = state is WorkoutDeleting;
+            final isLoading = state is WorkoutsLoaded && state.isDeleting;
 
             return Padding(
               padding: const EdgeInsets.all(24),
@@ -385,16 +386,12 @@ Future<dynamic> _deleteWorkoutBottomSheet(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(
-                    height: 8,
-                  ),
+                  const SizedBox(height: 8),
                   const Text(
                     "Esta opción no se puede deshacer.",
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(
-                    height: 24,
-                  ),
+                  const SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
@@ -408,11 +405,17 @@ Future<dynamic> _deleteWorkoutBottomSheet(
                       const SizedBox(width: 12),
                       Expanded(
                         child: MyButton(
-                          onTap: () {
-                            context.read<WorkoutCubit>().deleteWorkout(
-                              id,
-                            );
-                          },
+                          onTap: isLoading
+                              ? null
+                              : () async {
+                                  final deleted = await context
+                                      .read<WorkoutCubit>()
+                                      .deleteWorkout(id);
+
+                                  if (deleted && context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                },
                           type: MyButtonType.danger,
                           isLoading: isLoading,
                           text: "Eliminar",
@@ -429,4 +432,3 @@ Future<dynamic> _deleteWorkoutBottomSheet(
     },
   );
 }
-*/
