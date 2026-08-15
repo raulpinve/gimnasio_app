@@ -1,4 +1,4 @@
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';

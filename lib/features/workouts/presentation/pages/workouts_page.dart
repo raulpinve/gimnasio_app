@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_state.dart';
+import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
+import 'package:gym_app/features/workouts/domain/entities/workout.dart';
+import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class WorkoutsPage extends StatefulWidget {
@@ -16,6 +16,27 @@ class WorkoutsPage extends StatefulWidget {
 
 class _WorkoutsPageState extends State<WorkoutsPage> {
   final apiWorkoutRepo = ApiWorkoutRepo();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<WorkoutCubit>().loadMoreWorkouts();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,49 +67,24 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             Expanded(
               child: BlocBuilder<WorkoutCubit, WorkoutState>(
                 builder: (context, state) {
+                  // CARGA INICIAL
                   if (state is WorkoutLoading) {
                     return skeletonLoader(context);
                   }
 
+                  // ERROR
                   if (state is WorkoutError) {
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        await context.read<WorkoutCubit>().loadWorkouts();
-                      },
-                      child: CustomScrollView(
-                        slivers: [
-                          SliverFillRemaining(
-                            child: Center(
-                              child: Text(
-                                state.message,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.inversePrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    return Center(
+                      child: Text(state.message),
                     );
                   }
 
+                  // ENTRENAMIENTOS CARGADOS
                   if (state is WorkoutsLoaded) {
                     if (state.workouts.isEmpty) {
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          await context.read<WorkoutCubit>().loadWorkouts();
-                        },
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverFillRemaining(
-                              child: Center(
-                                child: Text('No hay rutinas'),
-                              ),
-                            ),
-                          ],
+                      return const Center(
+                        child: Text(
+                          'No se encontraron entrenamientos',
                         ),
                       );
                     }
@@ -98,50 +94,27 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                         await context.read<WorkoutCubit>().loadWorkouts();
                       },
                       child: ListView.separated(
+                        controller: _scrollController,
                         separatorBuilder: (BuildContext context, int index) {
                           return const SizedBox(height: 16);
                         },
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount:
-                            state.workouts.length + (state.hasMore ? 1 : 0),
+                            state.workouts.length +
+                            (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          // Botón "Cargar más"
-                          if (index == state.workouts.length) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: state.isLoadingMore
-                                      ? null
-                                      : () {
-                                          context
-                                              .read<WorkoutCubit>()
-                                              .loadMoreWorkouts();
-                                        },
-                                  icon: state.isLoadingMore
-                                      ? const SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Icon(Icons.add),
-                                  label: Text(
-                                    state.isLoadingMore
-                                        ? 'Cargando...'
-                                        : 'Cargar más',
-                                  ),
-                                ),
+                          // LOADING DE PAGINACIÓN
+                          if (index >= state.workouts.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(
+                                child: CircularProgressIndicator(),
                               ),
                             );
                           }
 
                           final workout = state.workouts[index];
-                          return tarjetaRutina(context, workout);
+                          return workoutCard(context, workout);
                         },
                       ),
                     );
@@ -156,7 +129,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     );
   }
 
-  GestureDetector tarjetaRutina(BuildContext context, Workout workout) {
+  GestureDetector workoutCard(BuildContext context, Workout workout) {
     return GestureDetector(
       onTap: () async {
         final response = await context.push<bool>(

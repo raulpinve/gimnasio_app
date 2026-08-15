@@ -6,11 +6,17 @@ class WorkoutCubit extends Cubit<WorkoutState> {
   final WorkoutRepo workoutRepo;
   WorkoutCubit({required this.workoutRepo}) : super(WorkoutInitial());
 
-  // Cargar workouts
+  // ============================================================
+  // CARGAR WORKOUTS
+  // ============================================================
   Future<void> loadWorkouts({
     int page = 1,
   }) async {
     try {
+      // ==========================================================
+      // PRIMERA PÁGINA
+      // ==========================================================
+
       if (page == 1) {
         emit(WorkoutLoading());
       }
@@ -25,6 +31,7 @@ class WorkoutCubit extends Cubit<WorkoutState> {
             workouts: result.workouts,
             currentPage: result.currentPage,
             totalPages: result.totalPages,
+            isLoadingMore: false,
           ),
         );
 

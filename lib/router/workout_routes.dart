@@ -12,7 +12,7 @@ import 'package:gym_app/features/workouts_record/presentation/cubits/workout_rec
 import 'package:gym_app/features/workouts_exercises/presentation/pages/workout_exercise_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_create_page.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts_record/data/api_workout_record.dart';
 import 'package:gym_app/features/workouts_record/presentation/pages/workout_record_page.dart';
 
