@@ -23,8 +23,6 @@ class MyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     Color buttonColor;
     Color borderColor;
     Color textColor;

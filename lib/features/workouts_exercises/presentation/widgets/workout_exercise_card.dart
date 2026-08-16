@@ -53,8 +53,8 @@ class WorkoutExerciseCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        color: Theme.of(context).colorScheme.tertiary, //
+        border: Border.all(color: Theme.of(context).colorScheme.tertiary),
+        color: Theme.of(context).colorScheme.tertiary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +96,7 @@ class WorkoutExerciseCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.blue.shade100,
+            color: Theme.of(context).colorScheme.secondary,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -105,7 +105,8 @@ class WorkoutExerciseCard extends StatelessWidget {
                 : "$_completedRecords/$_targetRecords",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.blue.shade800,
+              color: Theme.of(context).colorScheme.inversePrimary,
+              fontSize: 12,
             ),
           ),
         ),

@@ -5,8 +5,8 @@ import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/pages/workouts_list_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -21,7 +21,7 @@ class _MainPageState extends State<MainPage> {
   final pages = [
     ExercisesPage(),
     RoutinesPage(),
-    WorkoutsPage(),
+    WorkoutsListPage(),
     Center(
       child: Text("Perfil"),
     ),
@@ -32,7 +32,7 @@ class _MainPageState extends State<MainPage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => WorkoutCubit(
+          create: (_) => WorkoutListCubit(
             workoutRepo: ApiWorkoutRepo(),
           )..loadWorkouts(),
         ),

@@ -1,14 +1,14 @@
 import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 
-abstract class WorkoutState {}
+abstract class WorkoutListState {}
 
 // Estado inicial
-class WorkoutInitial extends WorkoutState {}
+class WorkoutListInitial extends WorkoutListState {}
 
 // Estado para cargar la lista inicialmente
-class WorkoutLoading extends WorkoutState {}
+class WorkoutListLoading extends WorkoutListState {}
 
-class WorkoutsLoaded extends WorkoutState {
+class WorkoutsListLoaded extends WorkoutListState {
   final List<Workout> workouts;
   final bool isDeleting;
 
@@ -19,7 +19,7 @@ class WorkoutsLoaded extends WorkoutState {
   // Indica si estamos cargando otra página
   final bool isLoadingMore;
 
-  WorkoutsLoaded({
+  WorkoutsListLoaded({
     required this.workouts,
     required this.currentPage,
     required this.totalPages,
@@ -30,14 +30,14 @@ class WorkoutsLoaded extends WorkoutState {
   // Indica si existen más páginas
   bool get hasMore => currentPage < totalPages;
 
-  WorkoutsLoaded copyWith({
+  WorkoutsListLoaded copyWith({
     List<Workout>? workouts,
     int? currentPage,
     int? totalPages,
     bool? isLoadingMore,
     bool? isDeleting,
   }) {
-    return WorkoutsLoaded(
+    return WorkoutsListLoaded(
       workouts: workouts ?? this.workouts,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
@@ -47,11 +47,11 @@ class WorkoutsLoaded extends WorkoutState {
   }
 }
 
-class WorkoutError extends WorkoutState {
+class WorkoutListError extends WorkoutListState {
   final String message;
   final Map<String, dynamic>? fieldErrors;
 
-  WorkoutError(
+  WorkoutListError(
     this.message, {
     this.fieldErrors,
   });

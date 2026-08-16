@@ -255,4 +255,26 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
       );
     }
   }
+
+  @override
+  Future<bool> deleteWorkoutExercise(String workoutExerciseId) async {
+    try {
+      await apiClient.dio.delete('/workout-exercises/$workoutExerciseId');
+      return true;
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    } catch (e, stackTrace) {
+      debugPrint(
+        "Error al eliminar el workout exercises: $e",
+      );
+
+      debugPrintStack(
+        stackTrace: stackTrace,
+      );
+
+      throw Exception(
+        "Ocurrió un error inesperado.",
+      );
+    }
+  }
 }

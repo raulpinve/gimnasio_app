@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/workouts/domain/repos/workout_repo.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 
-class WorkoutCubit extends Cubit<WorkoutState> {
+class WorkoutListCubit extends Cubit<WorkoutListState> {
   final WorkoutRepo workoutRepo;
-  WorkoutCubit({required this.workoutRepo}) : super(WorkoutInitial());
+  WorkoutListCubit({required this.workoutRepo}) : super(WorkoutListInitial());
 
   // ============================================================
   // CARGAR WORKOUTS
@@ -18,7 +18,7 @@ class WorkoutCubit extends Cubit<WorkoutState> {
       // ==========================================================
 
       if (page == 1) {
-        emit(WorkoutLoading());
+        emit(WorkoutListLoading());
       }
 
       final result = await workoutRepo.getAllWorkouts(page: page);
@@ -27,7 +27,7 @@ class WorkoutCubit extends Cubit<WorkoutState> {
       // Reemplazamos la lista completa
       if (page == 1) {
         emit(
-          WorkoutsLoaded(
+          WorkoutsListLoaded(
             workouts: result.workouts,
             currentPage: result.currentPage,
             totalPages: result.totalPages,
@@ -40,8 +40,8 @@ class WorkoutCubit extends Cubit<WorkoutState> {
 
       // SI ES UNA PÁGINA SIGUIENTE
       // Agregamos las nuevas rutinas existentes
-      if (state is WorkoutsLoaded) {
-        final currentState = state as WorkoutsLoaded;
+      if (state is WorkoutsListLoaded) {
+        final currentState = state as WorkoutsListLoaded;
 
         emit(
           currentState.copyWith(
@@ -61,15 +61,15 @@ class WorkoutCubit extends Cubit<WorkoutState> {
       // Si es una carga inicial, mostramos el error normal
       if (page == 1) {
         emit(
-          WorkoutError(
+          WorkoutListError(
             "Ha ocurrido un error al intentar obtener los entrenamientos",
           ),
         );
       }
 
       // Si falla "Cargar más", conservamos la lista actual
-      if (state is WorkoutsLoaded) {
-        final currentState = state as WorkoutsLoaded;
+      if (state is WorkoutsListLoaded) {
+        final currentState = state as WorkoutsListLoaded;
 
         emit(
           currentState.copyWith(
@@ -82,10 +82,10 @@ class WorkoutCubit extends Cubit<WorkoutState> {
 
   // Cargar siguiente página
   Future<void> loadMoreWorkouts() async {
-    if (state is! WorkoutsLoaded) {
+    if (state is! WorkoutsListLoaded) {
       return;
     }
-    final currentState = state as WorkoutsLoaded;
+    final currentState = state as WorkoutsListLoaded;
 
     if (currentState.isLoadingMore) {
       return;
@@ -110,11 +110,11 @@ class WorkoutCubit extends Cubit<WorkoutState> {
         page: nextPage,
       );
 
-      if (state is! WorkoutsLoaded) {
+      if (state is! WorkoutsListLoaded) {
         return;
       }
 
-      final updatedState = state as WorkoutsLoaded;
+      final updatedState = state as WorkoutsListLoaded;
 
       emit(
         updatedState.copyWith(
@@ -130,8 +130,8 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     } catch (e) {
       if (isClosed) return;
 
-      if (state is WorkoutsLoaded) {
-        final currentState = state as WorkoutsLoaded;
+      if (state is WorkoutsListLoaded) {
+        final currentState = state as WorkoutsListLoaded;
 
         emit(
           currentState.copyWith(
@@ -142,14 +142,14 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     }
   }
 
-  Future<bool> deleteWorkout(String id) async {
+  Future<bool> deleteWorkout(String workoutId) async {
     if (isClosed) return false;
 
-    if (state is! WorkoutsLoaded) {
+    if (state is! WorkoutsListLoaded) {
       return false;
     }
 
-    final currentState = state as WorkoutsLoaded;
+    final currentState = state as WorkoutsListLoaded;
 
     emit(
       currentState.copyWith(
@@ -158,12 +158,12 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     );
 
     try {
-      await workoutRepo.deleteWorkout(id);
+      await workoutRepo.deleteWorkout(workoutId);
 
       if (isClosed) return false;
 
       final updatedWorkouts = currentState.workouts
-          .where((workout) => workout.id != id)
+          .where((workout) => workout.id != workoutId)
           .toList();
 
       emit(

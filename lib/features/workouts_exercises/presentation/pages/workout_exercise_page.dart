@@ -1,15 +1,14 @@
-import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_exercise/workout_exercise_state.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/widgets/workout_exercise_card.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/widgets/custom_app_bar.dart';
 import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercises_list/workout_exercises_list_cubit.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercises_list/workout_exercises_list_state.dart';
+import 'package:gym_app/features/workouts_exercises/presentation/widgets/workout_exercise_card.dart';
 
 class WorkoutExercisePage extends StatefulWidget {
   final String workoutId;
@@ -35,16 +34,20 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
     if (!context.mounted) return;
 
     if (result == true) {
-      await context.read<WorkoutExerciseCubit>().loadWorkoutExercises(
-        widget.workoutId,
-      );
+      // TODO: Cambiar el workout exercise
+      // await context.read<WorkoutExerciseCubit>().loadWorkoutExercises(
+      //   widget.workoutId,
+      // );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: AppBar(
+        leading: BackButton(),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -171,84 +174,75 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
             SizedBox(
               height: 16,
             ),
+
             Expanded(
-              child: BlocListener<WorkoutExerciseCubit, WorkoutExerciseState>(
-                listener: (context, state) {
-                  if (state is WorkoutExerciseSaveError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  }
-                },
-                child: BlocBuilder<WorkoutExerciseCubit, WorkoutExerciseState>(
-                  builder: (context, state) {
-                    if (state is WorkoutExerciseLoading ||
-                        state is WorkoutExerciseSaving) {
+              child:
+                  BlocBuilder<
+                    WorkoutExercisesListCubit,
+                    WorkoutExercisesListState
+                  >(
+                    builder: (context, state) {
+                      // CARGA INICIAL
+                      if (state is WorkoutExercisesListLoading) {
+                        // TODO: SKELETON LOADER
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      // ERROR
+                      if (state is WorkoutExercisesListError) {
+                        return Center(
+                          child: Text(state.message),
+                        );
+                      }
+
+                      // ENTRENAMIENTOS CARGADOS
+                      if (state is WorkoutExercisesListLoaded) {
+                        if (state.workoutExercises.isEmpty) {
+                          return const Center(
+                            child: Text("No se encontraron ejercicios"),
+                          );
+                        }
+
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            await context
+                                .read<WorkoutExercisesListCubit>()
+                                .loadWorkoutExercises(
+                                  widget.workoutId,
+                                );
+                          },
+                          child: ListView.separated(
+                            itemBuilder: (context, index) {
+                              final workoutExercise =
+                                  state.workoutExercises[index];
+
+                              return WorkoutExerciseCard(
+                                key: ValueKey(workoutExercise.exerciseId),
+                                workoutExercise: workoutExercise,
+                                onRegisterSet: () => redirectAddBottomSheet(
+                                  context,
+                                  workoutExercise,
+                                ),
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                                  return const SizedBox(
+                                    height: 16,
+                                  );
+                                },
+                            itemCount: state.workoutExercises.length,
+                          ),
+                        );
+                      }
+
                       return const Center(
                         child: CircularProgressIndicator(),
                       );
-                    }
-
-                    if (state is WorkoutExerciseError) {
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          await context
-                              .read<WorkoutExerciseCubit>()
-                              .loadWorkoutExercises(widget.workoutId);
-                        },
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverFillRemaining(
-                              child: Center(
-                                child: Text(
-                                  state.message,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Mostrar la lista tanto si se cargó inicialmente
-                    // como si se guardó una serie correctamente.
-                    if (state is WorkoutExercisesLoaded ||
-                        state is WorkoutExerciseSaveSuccess) {
-                      final workoutExercises = state is WorkoutExercisesLoaded
-                          ? state.workoutExercises
-                          : (state as WorkoutExerciseSaveSuccess)
-                                .workoutExercises;
-
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          await context
-                              .read<WorkoutExerciseCubit>()
-                              .loadWorkoutExercises(widget.workoutId);
-                        },
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: workoutExercises.length,
-                          itemBuilder: (context, index) {
-                            final workoutExercise = workoutExercises[index];
-
-                            return WorkoutExerciseCard(
-                              key: ValueKey(workoutExercise.exerciseId),
-                              workoutExercise: workoutExercise,
-                              onRegisterSet: () => redirectAddBottomSheet(
-                                context,
-                                workoutExercise,
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    }
-
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
+                    },
+                  ),
             ),
           ],
         ),

@@ -9,4 +9,6 @@ abstract class WorkoutExerciseRepo {
     String workoutId,
     String exerciseId,
   );
+
+  Future<bool> deleteWorkoutExercise(String workoutExerciseId);
 }

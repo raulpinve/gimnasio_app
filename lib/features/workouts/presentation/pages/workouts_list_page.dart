@@ -1,6 +1,6 @@
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
@@ -9,13 +9,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-class WorkoutsPage extends StatefulWidget {
-  const WorkoutsPage({super.key});
+class WorkoutsListPage extends StatefulWidget {
+  const WorkoutsListPage({super.key});
   @override
-  State<WorkoutsPage> createState() => _WorkoutsPageState();
+  State<WorkoutsListPage> createState() => _WorkoutsListPageState();
 }
 
-class _WorkoutsPageState extends State<WorkoutsPage> {
+class _WorkoutsListPageState extends State<WorkoutsListPage> {
   final apiWorkoutRepo = ApiWorkoutRepo();
   final ScrollController _scrollController = ScrollController();
 
@@ -29,7 +29,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<WorkoutCubit>().loadMoreWorkouts();
+      context.read<WorkoutListCubit>().loadMoreWorkouts();
     }
   }
 
@@ -54,7 +54,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               if (!context.mounted) return;
 
               if (response == true) {
-                context.read<WorkoutCubit>().loadWorkouts();
+                context.read<WorkoutListCubit>().loadWorkouts();
               }
             },
             icon: Icon(Icons.add),
@@ -66,22 +66,22 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         child: Column(
           children: [
             Expanded(
-              child: BlocBuilder<WorkoutCubit, WorkoutState>(
+              child: BlocBuilder<WorkoutListCubit, WorkoutListState>(
                 builder: (context, state) {
                   // CARGA INICIAL
-                  if (state is WorkoutLoading) {
+                  if (state is WorkoutListLoading) {
                     return skeletonLoader(context);
                   }
 
                   // ERROR
-                  if (state is WorkoutError) {
+                  if (state is WorkoutListError) {
                     return Center(
                       child: Text(state.message),
                     );
                   }
 
                   // ENTRENAMIENTOS CARGADOS
-                  if (state is WorkoutsLoaded) {
+                  if (state is WorkoutsListLoaded) {
                     if (state.workouts.isEmpty) {
                       return const Center(
                         child: Text(
@@ -92,7 +92,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
                     return RefreshIndicator(
                       onRefresh: () async {
-                        await context.read<WorkoutCubit>().loadWorkouts();
+                        await context.read<WorkoutListCubit>().loadWorkouts();
                       },
                       child: ListView.separated(
                         controller: _scrollController,
@@ -104,6 +104,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                             state.workouts.length +
                             (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
+                          
                           // LOADING DE PAGINACIÓN
                           if (index >= state.workouts.length) {
                             return const Padding(
@@ -134,13 +135,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     return GestureDetector(
       onTap: () async {
         final response = await context.push<bool>(
-          '/workouts/${workout.id}',
+          '/workouts-exercises/${workout.id}',
         );
 
         if (!context.mounted) return;
 
         if (response == true) {
-          context.read<WorkoutCubit>().loadWorkouts();
+          context.read<WorkoutListCubit>().loadWorkouts();
         }
       },
       child: Container(
@@ -363,16 +364,16 @@ Future<dynamic> _deleteWorkoutBottomSheet(
   BuildContext context,
   String id,
 ) {
-  final workoutCubit = context.read<WorkoutCubit>();
+  final workoutCubit = context.read<WorkoutListCubit>();
 
   return showModalBottomSheet(
     context: context,
     builder: (context) {
       return BlocProvider.value(
         value: workoutCubit,
-        child: BlocBuilder<WorkoutCubit, WorkoutState>(
+        child: BlocBuilder<WorkoutListCubit, WorkoutListState>(
           builder: (context, state) {
-            final isLoading = state is WorkoutsLoaded && state.isDeleting;
+            final isLoading = state is WorkoutsListLoaded && state.isDeleting;
 
             return Padding(
               padding: const EdgeInsets.all(24),
@@ -409,7 +410,7 @@ Future<dynamic> _deleteWorkoutBottomSheet(
                               ? null
                               : () async {
                                   final deleted = await context
-                                      .read<WorkoutCubit>()
+                                      .read<WorkoutListCubit>()
                                       .deleteWorkout(id);
 
                                   if (deleted && context.mounted) {
