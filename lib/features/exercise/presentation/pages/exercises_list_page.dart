@@ -137,23 +137,37 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         context.push('/exercises/${exercise.id}');
       },
-      borderRadius: BorderRadius.circular(16),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.fromLTRB(
+          14,
+          14,
+          14,
+          14,
+        ),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          color: colorScheme.tertiary,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+            ),
+          ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildExerciseImage(context, exercise),
+            _buildExerciseImage(
+              context,
+              exercise,
+            ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
             Expanded(
               child: Column(
@@ -163,47 +177,58 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
                     exercise.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 7),
 
-                  Text(
-                    exercise.equipment.capitalize(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        exercise.type == 'cardio'
+                            ? Icons.directions_run_outlined
+                            : Icons.fitness_center_outlined,
+                        size: 15,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+
+                      const SizedBox(width: 5),
+
+                      Flexible(
+                        child: Text(
+                          exercise.equipment.capitalize(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   if (exercise.muscleGroups?.isNotEmpty ?? false) ...[
                     const SizedBox(height: 7),
+
                     Text(
                       exercise.muscleGroups!
                           .take(2)
-                          .map((e) => mapaMusculos[e] ?? e)
+                          .map(
+                            (e) => mapaMusculos[e] ?? e,
+                          )
                           .join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelMedium?.copyWith(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ],
               ),
-            ),
-
-            const SizedBox(width: 8),
-
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 22,
-              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -215,10 +240,8 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     BuildContext context,
     Exercise exercise,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: exercise.avatarThumbnail?.isNotEmpty == true
           ? Image.network(
               exercise.avatarThumbnail!,
@@ -226,10 +249,16 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
               height: 68,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) {
-                return _buildExercisePlaceholder(context, exercise);
+                return _buildExercisePlaceholder(
+                  context,
+                  exercise,
+                );
               },
             )
-          : _buildExercisePlaceholder(context, exercise),
+          : _buildExercisePlaceholder(
+              context,
+              exercise,
+            ),
     );
   }
 
@@ -240,8 +269,8 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      width: 64,
-      height: 64,
+      width: 68,
+      height: 68,
       color: colorScheme.primaryContainer,
       alignment: Alignment.center,
       child: Icon(
@@ -250,34 +279,6 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
             : Icons.fitness_center_outlined,
         color: colorScheme.onPrimaryContainer,
         size: 28,
-      ),
-    );
-  }
-
-  Widget _crearPill(String texto, Color fondo, Color colorTexto) {
-    return Container(
-      decoration: BoxDecoration(
-        color: fondo,
-        borderRadius: BorderRadius.circular(
-          12.0,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 4,
-        ),
-        child: Text(
-          mapaMusculos[texto] ?? texto,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-            color: colorTexto,
-          ),
-        ),
       ),
     );
   }
