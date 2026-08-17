@@ -33,52 +33,57 @@ class WorkoutExercisesListCubit extends Cubit<WorkoutExercisesListState> {
 
       emit(
         WorkoutExercisesListError(
-          "Ha ocurrido un error al intentar obtener los entrenamientos",
+          e.toString(),
         ),
       );
     }
   }
 
-  Future<bool> deleteWorkoutExercise(String workoutExerciseId) async {
-    if (isClosed) return false;
+  Future<void> deleteWorkoutExercise(String workoutExerciseId) async {
+    if (isClosed) return;
 
     if (state is! WorkoutExercisesListLoaded) {
-      return false;
+      return;
     }
+
     final currentState = state as WorkoutExercisesListLoaded;
 
     emit(
       currentState.copyWith(
         isDeleting: true,
+        errorMessage: null,
       ),
     );
 
     try {
-      await workoutExerciseRepo.deleteWorkoutExercise(workoutExerciseId);
+      await workoutExerciseRepo.deleteWorkoutExercise(
+        workoutExerciseId,
+      );
 
-      if (isClosed) return false;
+      if (isClosed) return;
 
-      final updateWorkoutExercises = currentState.workoutExercises
-          .where((workout) => workout.workoutExerciseId != workoutExerciseId)
+      final updatedWorkoutExercises = currentState.workoutExercises
+          .where(
+            (workout) => workout.workoutExerciseId != workoutExerciseId,
+          )
           .toList();
 
       emit(
         currentState.copyWith(
-          workoutExercises: updateWorkoutExercises,
+          workoutExercises: updatedWorkoutExercises,
           isDeleting: false,
+          errorMessage: null,
         ),
       );
-
-      return true;
     } catch (e) {
-      if (isClosed) return false;
+      if (isClosed) return;
 
       emit(
         currentState.copyWith(
           isDeleting: false,
+          errorMessage: e.toString(),
         ),
       );
-      return false;
     }
   }
 }

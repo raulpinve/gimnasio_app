@@ -1,3 +1,4 @@
+import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
@@ -39,6 +40,71 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
       //   widget.workoutId,
       // );
     }
+  }
+
+  Future<void> _onRefresh() async {
+    await context.read<WorkoutExercisesListCubit>().loadWorkoutExercises(
+      widget.workoutId,
+    );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WorkoutExercise workoutExercise,
+  ) async {
+    final cubit = context.read<WorkoutExercisesListCubit>();
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        bool isDeleting = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Eliminar ejercicio'),
+              content: Text(
+                '¿Seguro que deseas eliminar "${workoutExercise.exerciseName}"?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          setState(() {
+                            isDeleting = true;
+                          });
+
+                          await cubit.deleteWorkoutExercise(
+                            workoutExercise.workoutExerciseId ?? '',
+                          );
+
+                          if (!dialogContext.mounted) return;
+
+                          Navigator.of(dialogContext).pop();
+                        },
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Eliminar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -177,22 +243,32 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
 
             Expanded(
               child:
-                  BlocBuilder<
+                  BlocConsumer<
                     WorkoutExercisesListCubit,
                     WorkoutExercisesListState
                   >(
+                    listener: (context, state) {
+                      if (state is WorkoutExercisesListLoaded &&
+                          state.errorMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.errorMessage!),
+                          ),
+                        );
+                      }
+                    },
                     builder: (context, state) {
-                      // CARGA INICIAL
+                      // LOADING INICIAL
                       if (state is WorkoutExercisesListLoading) {
-                        // TODO: SKELETON LOADER
-                        return const Center(
+                        return Center(
                           child: CircularProgressIndicator(),
                         );
                       }
 
                       // ERROR
                       if (state is WorkoutExercisesListError) {
-                        return Center(
+                        return RefreshableContent(
+                          onRefresh: _onRefresh,
                           child: Text(state.message),
                         );
                       }
@@ -200,19 +276,14 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
                       // ENTRENAMIENTOS CARGADOS
                       if (state is WorkoutExercisesListLoaded) {
                         if (state.workoutExercises.isEmpty) {
-                          return const Center(
+                          return RefreshableContent(
+                            onRefresh: _onRefresh,
                             child: Text("No se encontraron ejercicios"),
                           );
                         }
 
                         return RefreshIndicator(
-                          onRefresh: () async {
-                            await context
-                                .read<WorkoutExercisesListCubit>()
-                                .loadWorkoutExercises(
-                                  widget.workoutId,
-                                );
-                          },
+                          onRefresh: _onRefresh,
                           child: ListView.separated(
                             itemBuilder: (context, index) {
                               final workoutExercise =
@@ -222,6 +293,10 @@ class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
                                 key: ValueKey(workoutExercise.exerciseId),
                                 workoutExercise: workoutExercise,
                                 onRegisterSet: () => redirectAddBottomSheet(
+                                  context,
+                                  workoutExercise,
+                                ),
+                                onDelete: () => _confirmDelete(
                                   context,
                                   workoutExercise,
                                 ),

@@ -17,7 +17,7 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
   ) async {
     try {
       final response = await apiClient.dio.get(
-        '/workouts-exercises/active',
+        '/workouts-exercises',
         queryParameters: {
           'workoutId': workoutId,
         },
@@ -220,9 +220,7 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
         stackTrace: stackTrace,
       );
 
-      throw Exception(
-        "Ocurrió un error inesperado.",
-      );
+      throw Exception(e);
     }
   }
 
@@ -250,18 +248,19 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
         stackTrace: stackTrace,
       );
 
-      throw Exception(
-        "Ocurrió un error inesperado.",
-      );
+      throw Exception(e);
     }
   }
 
   @override
   Future<bool> deleteWorkoutExercise(String workoutExerciseId) async {
     try {
-      await apiClient.dio.delete('/workout-exercises/$workoutExerciseId');
+      await apiClient.dio.delete('/workouts-exercises/$workoutExerciseId');
       return true;
     } on DioException catch (e) {
+      debugPrint(
+        "Error al eliminar el workout exercises: $e",
+      );
       throw handleDioError(e);
     } catch (e, stackTrace) {
       debugPrint(
@@ -272,9 +271,7 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
         stackTrace: stackTrace,
       );
 
-      throw Exception(
-        "Ocurrió un error inesperado.",
-      );
+      throw Exception(e);
     }
   }
 }

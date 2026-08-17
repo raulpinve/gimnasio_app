@@ -11,21 +11,24 @@ class WorkoutExercisesListLoading extends WorkoutExercisesListState {}
 class WorkoutExercisesListLoaded extends WorkoutExercisesListState {
   final List<WorkoutExercise> workoutExercises;
   final bool isDeleting;
+  final String? errorMessage;
 
   WorkoutExercisesListLoaded({
     required this.workoutExercises,
     this.isDeleting = false,
+    this.errorMessage,
   });
 
   WorkoutExercisesListLoaded copyWith({
     List<WorkoutExercise>? workoutExercises,
-    int? currentPage,
     int? totalPages,
     bool? isDeleting,
+    String? errorMessage,
   }) {
     return WorkoutExercisesListLoaded(
       workoutExercises: workoutExercises ?? this.workoutExercises,
       isDeleting: isDeleting ?? this.isDeleting,
+      errorMessage: errorMessage,
     );
   }
 }

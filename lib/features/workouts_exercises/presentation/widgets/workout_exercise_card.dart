@@ -9,18 +9,19 @@ class WorkoutExerciseCard extends StatelessWidget {
     super.key,
     required this.workoutExercise,
     required this.onRegisterSet,
+    required this.onDelete,
   });
 
   final WorkoutExercise workoutExercise;
   final VoidCallback onRegisterSet;
+  final VoidCallback onDelete;
 
   bool get _isCardio => workoutExercise.exerciseType == "cardio";
-
   int get _completedRecords => workoutExercise.records.length;
-
   int get _targetRecords =>
       _isCardio ? 0 : int.tryParse(workoutExercise.targetSets ?? "0") ?? 0;
 
+  // Getters
   double get _progress {
     if (_isCardio) {
       final int completedSeconds = workoutExercise.records.fold<int>(
@@ -34,7 +35,6 @@ class WorkoutExerciseCard extends StatelessWidget {
           ? 0
           : (completedSeconds / targetSeconds).clamp(0.0, 1.0);
     }
-
     return _targetRecords == 0
         ? 0
         : (_completedRecords / _targetRecords).clamp(0.0, 1.0);
@@ -80,21 +80,33 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          onTap: () {
-            context.push(
-              "/exercises/${workoutExercise.exerciseId}",
-            );
-          },
-          child: Text(
-            workoutExercise.exerciseName ?? "Ejercicio",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              context.push(
+                "/exercises/${workoutExercise.exerciseId}",
+              );
+            },
+            child: Text(
+              workoutExercise.exerciseName ?? "Ejercicio",
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
+
+        const SizedBox(width: 8),
+
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 4,
+          ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.secondary,
             borderRadius: BorderRadius.circular(20),
@@ -109,6 +121,30 @@ class WorkoutExerciseCard extends StatelessWidget {
               fontSize: 12,
             ),
           ),
+        ),
+
+        PopupMenuButton<String>(
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.more_vert),
+          onSelected: (value) {
+            if (value == "delete") {
+              onDelete();
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem<String>(
+              value: "delete",
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline,
+                  ),
+                  SizedBox(width: 10),
+                  Text("Eliminar "),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -152,24 +188,32 @@ class WorkoutExerciseCard extends StatelessWidget {
   }
 
   Widget _buildRegisterButton(BuildContext context, String? exerciseType) {
+    final bool isCardio = exerciseType == "cardio";
+
     return Material(
       color: Theme.of(context).colorScheme.secondary,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
         onTap: onRegisterSet,
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                isCardio ? Icons.timer_outlined : Icons.add_circle_outline,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
               Text(
-                exerciseType == "cardio"
-                    ? "Registrar sesión"
-                    : exerciseType == "strength"
-                    ? "Registrar serie"
-                    : "Registrar datos",
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                isCardio ? "Registrar sesión" : "Registrar serie",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
