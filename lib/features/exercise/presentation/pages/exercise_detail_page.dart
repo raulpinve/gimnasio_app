@@ -77,84 +77,22 @@ class _ExerciseDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        22,
-                      ),
-                      child: SizedBox(
-                        width: anchoPantalla,
-                        height: 300,
-                        child:
-                            (exercise.avatar != null &&
-                                exercise.avatar!.isNotEmpty)
-                            ? Image.network(
-                                exercise.avatar!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (
-                                      BuildContext context,
-                                      Object error,
-                                      StackTrace? stackTrace,
-                                    ) {
-                                      debugPrint(
-                                        'Error cargando la imagen: $error',
-                                      );
-
-                                      if (stackTrace != null) {
-                                        debugPrint(stackTrace.toString());
-                                      }
-
-                                      return const Icon(
-                                        Icons.image_not_supported,
-                                        size: 50,
-                                      );
-                                    },
-                              )
-                            : Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                                alignment: Alignment.center,
-                                child: exercise.type == "cardio"
-                                    ? const Icon(
-                                        Icons.directions_run,
-                                        size: 70,
-                                      )
-                                    : const Icon(
-                                        Icons.fitness_center,
-                                        size: 70,
-                                      ),
-                              ),
-                      ),
-                    ),
+                    _buildExerciseHero(context, exercise),
                     SizedBox(
                       height: 20,
                     ),
-                    Text(
-                      exercise.name,
-                      style: TextTheme.of(context).headlineSmall!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    especificaciones(context, exercise),
+                    _especificaciones(context, exercise),
                     SizedBox(
                       height: 20,
                     ),
 
                     grafica(
+                      context: context,
                       progress: state.progress,
                       unit: state.unit,
                     ),
 
-                    indicaciones(context, exercise),
+                    _indicaciones(context, exercise),
                   ],
                 ),
               );
@@ -166,7 +104,84 @@ class _ExerciseDetailView extends StatelessWidget {
     );
   }
 
+  Widget _buildExerciseHero(
+    BuildContext context,
+    Exercise exercise,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: AspectRatio(
+            aspectRatio: 16 / 10,
+            child: exercise.avatar?.isNotEmpty == true
+                ? Image.network(
+                    exercise.avatar!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) {
+                      return Container(
+                        color: colorScheme.surfaceContainerHighest,
+                        child: Icon(
+                          exercise.type == 'cardio'
+                              ? Icons.directions_run_rounded
+                              : Icons.fitness_center_rounded,
+                          size: 64,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      exercise.type == 'cardio'
+                          ? Icons.directions_run_rounded
+                          : Icons.fitness_center_rounded,
+                      size: 64,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        Text(
+          exercise.name,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          [
+            ExerciseConstants.opcionesEquipos[exercise.equipment] ??
+                'Sin equipo',
+            ...(exercise.muscleGroups ?? [])
+                .take(3)
+                .map(
+                  (muscle) =>
+                      ExerciseConstants.opcionesGruposMusculares[muscle] ??
+                      muscle,
+                ),
+          ].join('  ·  '),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget grafica({
+    required BuildContext context,
     required List<ExerciseProgress> progress,
     required String unit,
   }) {
@@ -174,492 +189,270 @@ class _ExerciseDetailView extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade200,
-              width: 1.0,
-            ),
-            color: Colors.white,
-            borderRadius: const BorderRadius.all(Radius.circular(22)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(26),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "GRÁFICA DE PROGRESO",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey.shade700,
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                    // 🌟 CORREGIDO: Muestra dinámicamente Kg o Lbs según tu variable unit
-                    Text(
-                      unit.toLowerCase() == 'lb' ? "Lbs" : "Kg",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey.shade700,
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                SizedBox(
-                  height: 250,
-                  child: LineChart(
-                    LineChartData(
-                      // 🌟 1. FIJAR LÍMITES EN EL EJE Y PARA EVITAR EL DESORDEN
-                      // Buscamos el valor más alto en tus datos para darle un tope a la gráfica
-                      minY: 0,
-                      maxY: progress.isEmpty
-                          ? 30
-                          : (progress
-                                        .map((e) => e.value)
-                                        .reduce((a, b) => a > b ? a : b) +
-                                    5)
-                                .roundToDouble(),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-                      // Fijamos también el eje X como lo vimos antes
-                      minX: 0,
-                      maxX: progress.isEmpty
-                          ? 1
-                          : (progress.length - 1).toDouble(),
+    final maxValue =
+        progress.map((e) => e.value).reduce((a, b) => a > b ? a : b) + 5;
 
-                      gridData: const FlGridData(show: true),
-                      titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 30,
-                            interval: 1,
-                            getTitlesWidget: (value, meta) {
-                              final index = value.toInt();
-                              if (index < 0 || index >= progress.length) {
-                                return SizedBox.shrink();
-                              }
-                              if (index > 0 &&
-                                  progress[index].date ==
-                                      progress[index - 1].date) {
-                                return SizedBox.shrink();
-                              }
-                              return SideTitleWidget(
-                                meta: meta,
-                                space: 8,
-                                child: Text(
-                                  progress[index].date,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-
-                        // 🌟 2. EL CAMBIO EN EL EJE IZQUIERDO (Y)
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 40,
-                            // Ajusta este intervalo: '5' significa que pintará 0, 5, 10, 15, 20...
-                            // Si tus pesos son muy altos (ej. más de 100kg), cámbialo por '10' o '20'
-                            interval: 5,
-                            getTitlesWidget: (value, meta) {
-                              // Evitamos pintar números negativos innecesarios
-                              if (value < 0) return const SizedBox();
-
-                              return SideTitleWidget(
-                                meta: meta,
-                                space: 8,
-                                child: Text(
-                                  value.toStringAsFixed(
-                                    0,
-                                  ), // Elimina los decimales (.0) para que no ocupen espacio
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      borderData: FlBorderData(
-                        border: const Border(
-                          left: BorderSide(color: Colors.grey),
-                          bottom: BorderSide(color: Colors.grey),
-                          top: BorderSide.none,
-                          right: BorderSide.none,
-                        ),
-                      ),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: progress
-                              .asMap()
-                              .entries
-                              .map(
-                                (entry) => FlSpot(
-                                  entry.key.toDouble(),
-                                  entry.value.value,
-                                ),
-                              )
-                              .toList(),
-                          isCurved: true,
-                          color: Colors.blue,
-                          barWidth: 4,
-                          belowBarData: BarAreaData(show: false),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(
-          height: 25,
-        ),
-      ],
-    );
-  }
-
-  // Especificaciones
-  Widget especificaciones(BuildContext context, Exercise exercise) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF252525) : Colors.white,
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Progreso',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                unit.toLowerCase() == 'lb' ? 'Lbs' : 'Kg',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
 
-        borderRadius: BorderRadius.all(Radius.circular(22)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.05,
-            ),
-            offset: const Offset(
-              0,
-              4,
+          const SizedBox(height: 20),
+
+          SizedBox(
+            height: 230,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: maxValue.roundToDouble(),
+                minX: 0,
+                maxX: (progress.length - 1).toDouble(),
+
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 5,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+                      strokeWidth: 1,
+                    );
+                  },
+                ),
+
+                borderData: FlBorderData(show: false),
+
+                titlesData: const FlTitlesData(
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: progress
+                        .asMap()
+                        .entries
+                        .map(
+                          (entry) => FlSpot(
+                            entry.key.toDouble(),
+                            entry.value.value,
+                          ),
+                        )
+                        .toList(),
+                    isCurved: true,
+                    color: colorScheme.primary,
+                    barWidth: 3,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: colorScheme.primary.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(26),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "ESPECIFICACIONES",
-              style:
-                  TextTheme.of(
-                    context,
-                  ).bodyLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                  ),
-              textAlign: TextAlign.left,
-            ),
-            SizedBox(
-              height: 16,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // --- TARJETA 1: TIPO ---
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2B2B2B)
-                        : Colors.grey.shade100,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(16),
-                    ), // Esquinas redondeadas modernas
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 16.0,
-                    ),
-                    child: Row(
-                      // Usamos Row principal para aprovechar mejor el espacio horizontal
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: exercise.type == "strength"
-                              ? const Icon(
-                                  Icons.fitness_center_rounded,
-                                  size: 24,
-                                  color: Colors.blue,
-                                )
-                              : const Icon(
-                                  Icons.directions_run_rounded,
-                                  size: 24,
-                                  color: Colors.blue,
-                                ),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "TIPO",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.1,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "Fuerza",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+    );
+  }
 
-                const SizedBox(height: 12), // Separación limpia entre bloques
-                // --- TARJETA 2: EQUIPO ---
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2B2B2B)
-                        : Colors
-                              .grey
-                              .shade100, // Bloque gris neutro y plano para contrastar
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 16.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.sports_gymnastics_rounded,
-                            size: 24,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "EQUIPO",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.1,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              ExerciseConstants.opcionesEquipos[exercise
-                                      .equipment] ??
-                                  "Sin equipo",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+  Widget _especificaciones(
+    BuildContext context,
+    Exercise exercise,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-            SizedBox(
-              height: 20,
-            ),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(22)),
-                color: isDark ? const Color(0xFF2B2B2B) : Colors.grey.shade100,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "GRUPOS MUSCULARES",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey.shade700,
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8.0,
-                      children: (exercise.muscleGroups ?? []).map((muscle) {
-                        final nombreMusculo =
-                            ExerciseConstants
-                                .opcionesGruposMusculares[muscle] ??
-                            muscle;
+    final muscles = (exercise.muscleGroups ?? [])
+        .map(
+          (muscle) =>
+              ExerciseConstants.opcionesGruposMusculares[muscle] ?? muscle,
+        )
+        .join(' · ');
 
-                        return Chip(
-                          label: Text(
-                            nombreMusculo,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          backgroundColor: isDark
-                              ? const Color(0xFF1E3A5F)
-                              : Colors.blue.shade50,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            side: const BorderSide(
-                              color: Colors.transparent,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          _buildInfoRow(
+            context,
+            'Tipo',
+            exercise.type == 'strength' ? 'Fuerza' : 'Cardio',
+          ),
+          _buildInfoDivider(context),
+          _buildInfoRow(
+            context,
+            'Equipo',
+            ExerciseConstants.opcionesEquipos[exercise.equipment] ??
+                'Sin equipo',
+          ),
+          if (muscles.isNotEmpty) ...[
+            _buildInfoDivider(context),
+            _buildInfoRow(
+              context,
+              'Músculos',
+              muscles,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget indicaciones(BuildContext context, Exercise exercise) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoDivider(BuildContext context) {
+    return Divider(
+      height: 1,
+      color: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: 0.1),
+    );
+  }
+
+  Widget _indicaciones(
+    BuildContext context,
+    Exercise exercise,
+  ) {
     final description = exercise.description;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (description == null) {
       return const SizedBox.shrink();
     }
 
-    if (description.positionInicial.trim().isEmpty &&
-        description.ejecucion.trim().isEmpty &&
-        description.tipsExtra.trim().isEmpty) {
+    final sections = <MapEntry<String, String>>[
+      MapEntry('Posición inicial', description.positionInicial),
+      MapEntry('Ejecución', description.ejecucion),
+      MapEntry('Consejos', description.tipsExtra),
+    ].where((entry) => entry.value.trim().isNotEmpty).toList();
+
+    if (sections.isEmpty) {
       return const SizedBox.shrink();
     }
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF252525) : Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(22)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.05,
-            ), // Color de la sombra
-            offset: const Offset(
-              0,
-              4,
-            ), // Dirección de la sombra (X, Y)
-          ),
-        ],
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(26),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if ((exercise.description?.positionInicial ?? '').isNotEmpty) ...[
-              Text(
-                "Posición inicial",
-                style: TextTheme.of(
-                  context,
-                ).bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              Text(exercise.description!.positionInicial),
-              const SizedBox(
-                height: 14,
-              ),
-            ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Cómo realizarlo',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
 
-            if ((exercise.description?.ejecucion ?? '').isNotEmpty) ...[
-              Text(
-                "Ejecución",
-                style: TextTheme.of(
-                  context,
-                ).bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              Text(exercise.description!.ejecucion),
-              const SizedBox(
-                height: 14,
-              ),
-            ],
+          const SizedBox(height: 18),
 
-            if ((exercise.description?.tipsExtra ?? '').isNotEmpty) ...[
-              Text(
-                "Tips extras",
-                style: TextTheme.of(
-                  context,
-                ).bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+          for (int i = 0; i < sections.length; i++) ...[
+            Text(
+              sections[i].key,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
-              const SizedBox(height: 8),
-              Text(exercise.description!.tipsExtra),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              sections[i].value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                height: 1.5,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+
+            if (i != sections.length - 1) ...[
+              const SizedBox(height: 18),
+              Divider(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 2),
             ],
           ],
-        ),
+        ],
       ),
     );
   }
