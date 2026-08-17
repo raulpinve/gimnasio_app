@@ -1,3 +1,4 @@
+import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
@@ -39,6 +40,10 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     super.dispose();
   }
 
+  Future<void> _onRefresh() async {
+    await context.read<WorkoutListCubit>().loadWorkouts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +80,8 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
 
                   // ERROR
                   if (state is WorkoutListError) {
-                    return Center(
+                    return RefreshIndicator(
+                      onRefresh: _onRefresh,
                       child: Text(state.message),
                     );
                   }
@@ -83,7 +89,8 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                   // ENTRENAMIENTOS CARGADOS
                   if (state is WorkoutsListLoaded) {
                     if (state.workouts.isEmpty) {
-                      return const Center(
+                      return RefreshableContent(
+                        onRefresh: _onRefresh,
                         child: Text(
                           'No se encontraron entrenamientos',
                         ),
@@ -91,9 +98,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                     }
 
                     return RefreshIndicator(
-                      onRefresh: () async {
-                        await context.read<WorkoutListCubit>().loadWorkouts();
-                      },
+                      onRefresh: _onRefresh,
                       child: ListView.separated(
                         controller: _scrollController,
                         separatorBuilder: (BuildContext context, int index) {
@@ -104,7 +109,6 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                             state.workouts.length +
                             (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          
                           // LOADING DE PAGINACIÓN
                           if (index >= state.workouts.length) {
                             return const Padding(
