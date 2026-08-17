@@ -1,5 +1,4 @@
 import 'package:gym_app/core/widgets/refreshable_content.dart';
-import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
@@ -25,6 +24,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     super.initState();
 
     _scrollController.addListener(_onScroll);
+    context.read<WorkoutListCubit>().loadWorkouts();
   }
 
   void _onScroll() {
@@ -53,7 +53,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
         actions: [
           MyAppbarButton(
             onPressed: () async {
-              final response = await context.push("/workouts/create");
+              final response = await context.push<bool>("/workouts/create");
 
               // Stop execution if the user navigated away while the page was open
               if (!context.mounted) return;
@@ -80,7 +80,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
 
                   // ERROR
                   if (state is WorkoutListError) {
-                    return RefreshIndicator(
+                    return RefreshableContent(
                       onRefresh: _onRefresh,
                       child: Text(state.message),
                     );

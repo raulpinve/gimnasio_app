@@ -1,18 +1,18 @@
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 
-abstract class ExerciseState {}
+abstract class ExerciseListState {}
 
 // Estado inicial
-class ExerciseInitial extends ExerciseState {}
+class ExerciseInitial extends ExerciseListState {}
 
 // Estado para crear ejercicio
-class ExerciseCreating extends ExerciseState {}
+class ExerciseCreating extends ExerciseListState {}
 
 // Estado para cargar la lista inicialmente
-class ExerciseLoading extends ExerciseState {}
+class ExerciseLoading extends ExerciseListState {}
 
 // Ejercicios cargados
-class ExercisesLoaded extends ExerciseState {
+class ExercisesLoaded extends ExerciseListState {
   final List<Exercise> exercises;
 
   // Paginación
@@ -58,7 +58,7 @@ class ExercisesLoaded extends ExerciseState {
 }
 
 // Error
-class ExerciseError extends ExerciseState {
+class ExerciseError extends ExerciseListState {
   final String message;
   ExerciseError(this.message);
 }

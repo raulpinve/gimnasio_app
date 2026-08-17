@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 
-import 'package:gym_app/features/exercise/presentation/cubits/exercise_cubit.dart';
-import 'package:gym_app/features/exercise/presentation/cubits/exercise_state.dart';
+import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
+import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_state.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ExerciseSelectorPage extends StatefulWidget {
@@ -30,7 +30,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<ExerciseCubit>().loadMoreExercises();
+      context.read<ExerciseListCubit>().loadMoreExercises();
     }
   }
 
@@ -69,7 +69,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
           items: opciones,
           onChanged: (value) {
             selectedMusculo = value;
-            context.read<ExerciseCubit>().filterByMuscleGroup(
+            context.read<ExerciseListCubit>().filterByMuscleGroup(
               selectedMusculo ?? "",
             );
           },
@@ -106,7 +106,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                     hintText: "Buscar ejercicio...",
                     obscureText: false,
                     onChanged: (value) {
-                      context.read<ExerciseCubit>().searchExercises(value);
+                      context.read<ExerciseListCubit>().searchExercises(value);
                     },
                   ),
                 ),
@@ -123,7 +123,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
 
             // LISTA
             Expanded(
-              child: BlocBuilder<ExerciseCubit, ExerciseState>(
+              child: BlocBuilder<ExerciseListCubit, ExerciseListState>(
                 builder: (context, state) {
                   // CARGA INICIAL
                   if (state is ExerciseLoading) {
@@ -149,7 +149,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
 
                     return RefreshIndicator(
                       onRefresh: () async {
-                        await context.read<ExerciseCubit>().loadExercises();
+                        await context.read<ExerciseListCubit>().loadExercises();
                       },
                       child: ListView.separated(
                         controller: _scrollController,

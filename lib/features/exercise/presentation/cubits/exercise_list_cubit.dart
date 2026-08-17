@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/exercise/domain/repos/exercise_repo.dart';
-import 'exercise_state.dart';
+import 'exercise_list_state.dart';
 
-class ExerciseCubit extends Cubit<ExerciseState> {
+class ExerciseListCubit extends Cubit<ExerciseListState> {
   final ExerciseRepo exerciseRepo;
 
-  ExerciseCubit({
+  ExerciseListCubit({
     required this.exerciseRepo,
   }) : super(ExerciseInitial());
 

@@ -27,9 +27,7 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
     return BlocConsumer<WorkoutCreateCubit, WorkoutCreateState>(
       listener: (context, state) {
         if (state.isCreated && state.workoutId != null) {
-          context.push(
-            "/workouts/${state.workoutId}",
-          );
+          context.pop(true);
         }
 
         if (state.errorMessage != null) {
@@ -45,147 +43,158 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
       builder: (context, state) {
         final isCreating = state.isCreating;
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: isCreating
-                  ? null
-                  : () {
-                      if (context.canPop()) {
-                        context.pop();
-                      }
-                    },
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop && context.canPop()) {
+              context.pop(true);
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: isCreating
+                    ? null
+                    : () {
+                        if (context.canPop()) {
+                          context.pop(true);
+                        }
+                      },
+              ),
             ),
-          ),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "¿Qué quieres entrenar hoy?",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "¿Qué quieres entrenar hoy?",
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Selecciona una rutina para empezar:",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
+                    const SizedBox(height: 8),
+                    Text(
+                      "Selecciona una rutina para empezar:",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  Expanded(
-                    child: BlocBuilder<RoutineCubit, RoutineState>(
-                      builder: (context, state) {
-                        if (state is RoutineLoading) {
+                    Expanded(
+                      child: BlocBuilder<RoutineCubit, RoutineState>(
+                        builder: (context, state) {
+                          if (state is RoutineLoading) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          if (state is RoutineError) {
+                            return RefreshableContent(
+                              onRefresh: _onRefresh,
+                              child: Text(state.message),
+                            );
+                          }
+
+                          if (state is RoutinesLoaded) {
+                            if (state.routines.isEmpty) {
+                              return RefreshableContent(
+                                onRefresh: _onRefresh,
+                                child: Text('No hay rutinas por mostrar'),
+                              );
+                            }
+
+                            final colorScheme = Theme.of(context).colorScheme;
+
+                            return RefreshIndicator(
+                              onRefresh: () async {
+                                await context
+                                    .read<RoutineCubit>()
+                                    .loadRoutines();
+                              },
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount:
+                                    state.routines.length +
+                                    (state.hasMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  // Botón "Cargar más"
+                                  if (index == state.routines.length) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: state.isLoadingMore
+                                              ? null
+                                              : () {
+                                                  context
+                                                      .read<RoutineCubit>()
+                                                      .loadMoreRoutines();
+                                                },
+                                          icon: state.isLoadingMore
+                                              ? const SizedBox(
+                                                  width: 18,
+                                                  height: 18,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                )
+                                              : const Icon(Icons.add),
+                                          label: Text(
+                                            state.isLoadingMore
+                                                ? 'Cargando...'
+                                                : 'Cargar más',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  final rutina = state.routines[index];
+                                  final isSelected =
+                                      _selectedRoutineId == rutina.id;
+
+                                  final activeColor =
+                                      Theme.of(context).brightness ==
+                                          Brightness.light
+                                      ? Colors.blue
+                                      : Colors.blue.shade900;
+
+                                  return card(
+                                    context,
+                                    isSelected,
+                                    activeColor,
+                                    isCreating,
+                                    index,
+                                    rutina,
+                                    colorScheme,
+                                  );
+                                },
+                              ),
+                            );
+                          }
                           return Center(
                             child: CircularProgressIndicator(),
                           );
-                        }
-
-                        if (state is RoutineError) {
-                          return RefreshableContent(
-                            onRefresh: _onRefresh,
-                            child: Text(state.message),
-                          );
-                        }
-
-                        if (state is RoutinesLoaded) {
-                          if (state.routines.isEmpty) {
-                            return RefreshableContent(
-                              onRefresh: _onRefresh,
-                              child: Text('No hay rutinas por mostrar'),
-                            );
-                          }
-                          
-                          final colorScheme = Theme.of(context).colorScheme;
-
-                          return RefreshIndicator(
-                            onRefresh: () async {
-                              await context.read<RoutineCubit>().loadRoutines();
-                            },
-                            child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount:
-                                  state.routines.length +
-                                  (state.hasMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                // Botón "Cargar más"
-                                if (index == state.routines.length) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton.icon(
-                                        onPressed: state.isLoadingMore
-                                            ? null
-                                            : () {
-                                                context
-                                                    .read<RoutineCubit>()
-                                                    .loadMoreRoutines();
-                                              },
-                                        icon: state.isLoadingMore
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              )
-                                            : const Icon(Icons.add),
-                                        label: Text(
-                                          state.isLoadingMore
-                                              ? 'Cargando...'
-                                              : 'Cargar más',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                final rutina = state.routines[index];
-                                final isSelected =
-                                    _selectedRoutineId == rutina.id;
-
-                                final activeColor =
-                                    Theme.of(context).brightness ==
-                                        Brightness.light
-                                    ? Colors.blue
-                                    : Colors.blue.shade900;
-
-                                return card(
-                                  context,
-                                  isSelected,
-                                  activeColor,
-                                  isCreating,
-                                  index,
-                                  rutina,
-                                  colorScheme,
-                                );
-                              },
-                            ),
-                          );
-                        }
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      },
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Botón Dinámico de Siguiente
-                  buttonCreate(isCreating, context),
-                ],
+                    // Botón Dinámico de Siguiente
+                    buttonCreate(isCreating, context),
+                  ],
+                ),
               ),
             ),
           ),
