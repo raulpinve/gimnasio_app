@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
@@ -20,7 +20,7 @@ final workoutRoutes = <GoRoute>[
             ),
           ),
           BlocProvider(
-            create: (_) => RoutineCubit(
+            create: (_) => RoutineListCubit(
               routineRepo: ApiRoutineRepo(),
             )..loadRoutines(),
           ),

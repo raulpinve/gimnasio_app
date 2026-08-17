@@ -1,58 +1,61 @@
-import 'package:gym_app/features/workouts/domain/entities/workout.dart';
+import 'package:gym_app/features/routines/domain/entities/routine.dart';
 
-abstract class WorkoutListState {}
+abstract class RoutineListState {}
 
 // Estado inicial
-class WorkoutListInitial extends WorkoutListState {}
+class RoutineListInitial extends RoutineListState {}
 
 // Estado para mostrar el loading inicialmente
-class WorkoutListLoading extends WorkoutListState {}
+class RoutineListLoading extends RoutineListState {}
 
-// Workouts cargados
-class WorkoutsListLoaded extends WorkoutListState {
-  final List<Workout> workouts;
+// Ejercicios cargados
+class RoutinesListLoaded extends RoutineListState {
+  final List<Routine> routines;
   final bool isDeleting;
+  final String? errorMessage;
 
   // Paginación
   final int currentPage;
   final int totalPages;
 
-  // Indica si estamos cargando otra página
   final bool isLoadingMore;
 
-  WorkoutsListLoaded({
-    required this.workouts,
+  RoutinesListLoaded({
+    required this.routines,
     required this.currentPage,
     required this.totalPages,
     this.isLoadingMore = false,
     this.isDeleting = false,
+    this.errorMessage,
   });
 
-  // Indica si existen más páginas
   bool get hasMore => currentPage < totalPages;
 
-  WorkoutsListLoaded copyWith({
-    List<Workout>? workouts,
+  RoutinesListLoaded copyWith({
+    List<Routine>? routines,
     int? currentPage,
     int? totalPages,
     bool? isLoadingMore,
     bool? isDeleting,
+    String? errorMessage,
+    bool clearError = false,
   }) {
-    return WorkoutsListLoaded(
-      workouts: workouts ?? this.workouts,
+    return RoutinesListLoaded(
+      routines: routines ?? this.routines,
       currentPage: currentPage ?? this.currentPage,
       totalPages: totalPages ?? this.totalPages,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isDeleting: isDeleting ?? this.isDeleting,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
 
-class WorkoutListError extends WorkoutListState {
+class RoutineListError extends RoutineListState {
   final String message;
   final Map<String, dynamic>? fieldErrors;
 
-  WorkoutListError(
+  RoutineListError(
     this.message, {
     this.fieldErrors,
   });

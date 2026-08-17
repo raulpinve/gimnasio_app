@@ -1,25 +1,21 @@
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
+import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
+import 'package:gym_app/features/routines/presentation/pages/routine_create_page.dart';
+import 'package:gym_app/features/routines/presentation/pages/routine_list_page.dart';
+import 'package:gym_app/features/routines/domain/entities/routine.dart';
+import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
-import 'package:gym_app/features/routines/data/api_routine_repo.dart';
-import 'package:gym_app/features/routines/domain/entities/routine.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
-import 'package:gym_app/features/routines/presentation/pages/routine_create_page.dart';
-import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
-import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_create_page.dart';
-import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_page.dart';
-import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
 
 final routineRoutes = <GoRoute>[
   // Abrir la rutina
   GoRoute(
     path: '/routines',
     builder: (context, state) {
-      return RoutinesPage();
+      return RoutineListPage();
     },
   ),
 
@@ -43,7 +39,7 @@ final routineRoutes = <GoRoute>[
   ),
 
   // Agregar ejercicio a la rutina
-  GoRoute(
+  /* GoRoute(
     path: '/routine-exercises/:routineId/create',
     builder: (context, state) {
       // Capturamos el ID de los parámetros de la ruta
@@ -58,7 +54,7 @@ final routineRoutes = <GoRoute>[
           ),
           BlocProvider(
             create: (_) =>
-                RoutineCubit(routineRepo: ApiRoutineRepo())
+                RoutineListCubit(routineRepo: ApiRoutineRepo())
                   ..loadRoutineById(routineId),
           ),
         ],
@@ -67,7 +63,7 @@ final routineRoutes = <GoRoute>[
         ),
       );
     },
-  ),
+  ), */
 
   // Editar ejercicio en la rutina
   GoRoute(

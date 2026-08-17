@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 
@@ -19,7 +19,7 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
   String? _selectedRoutineId;
 
   Future<void> _onRefresh() async {
-    await context.read<RoutineCubit>().loadRoutines();
+    await context.read<RoutineListCubit>().loadRoutines();
   }
 
   @override
@@ -87,22 +87,22 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
                     const SizedBox(height: 20),
 
                     Expanded(
-                      child: BlocBuilder<RoutineCubit, RoutineState>(
+                      child: BlocBuilder<RoutineListCubit, RoutineListState>(
                         builder: (context, state) {
-                          if (state is RoutineLoading) {
+                          if (state is RoutineListLoading) {
                             return Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          if (state is RoutineError) {
+                          if (state is RoutineListError) {
                             return RefreshableContent(
                               onRefresh: _onRefresh,
                               child: Text(state.message),
                             );
                           }
 
-                          if (state is RoutinesLoaded) {
+                          if (state is RoutinesListLoaded) {
                             if (state.routines.isEmpty) {
                               return RefreshableContent(
                                 onRefresh: _onRefresh,
@@ -115,7 +115,7 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
                             return RefreshIndicator(
                               onRefresh: () async {
                                 await context
-                                    .read<RoutineCubit>()
+                                    .read<RoutineListCubit>()
                                     .loadRoutines();
                               },
                               child: ListView.builder(
@@ -137,7 +137,7 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
                                               ? null
                                               : () {
                                                   context
-                                                      .read<RoutineCubit>()
+                                                      .read<RoutineListCubit>()
                                                       .loadMoreRoutines();
                                                 },
                                           icon: state.isLoadingMore

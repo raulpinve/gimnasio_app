@@ -4,8 +4,8 @@ import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_list_page.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
-import 'package:gym_app/features/routines/presentation/pages/routines_page.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/pages/routine_list_page.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/pages/workouts_list_page.dart';
@@ -22,7 +22,7 @@ class _MainPageState extends State<MainPage> {
 
   final pages = [
     ExercisesListPage(),
-    RoutinesPage(),
+    RoutineListPage(),
     WorkoutsListPage(),
     Center(
       child: Text("Perfil"),
@@ -44,7 +44,7 @@ class _MainPageState extends State<MainPage> {
           )..loadWorkouts(),
         ),
         BlocProvider(
-          create: (_) => RoutineCubit(
+          create: (_) => RoutineListCubit(
             routineRepo: ApiRoutineRepo(),
           )..loadRoutines(),
         ),

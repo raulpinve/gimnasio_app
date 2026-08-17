@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
 
 class RoutineCreatePage extends StatefulWidget {
   const RoutineCreatePage({super.key});
@@ -26,10 +26,12 @@ class _RoutineCreatePageState extends State<RoutineCreatePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RoutineCubit(
+      create: (_) => RoutineListCubit(
         routineRepo: ApiRoutineRepo(),
       ),
-      child: BlocConsumer<RoutineCubit, RoutineState>(
+      // TODO: Completar la página para crear rutina
+      
+      /*child: BlocConsumer<RoutineListCubit, RoutineListState>(
         listener: (context, state) {
           // RUTINA CREADA CORRECTAMENTE
           if (state is RoutineCreated) {
@@ -37,7 +39,7 @@ class _RoutineCreatePageState extends State<RoutineCreatePage> {
           }
 
           // ERROR
-          if (state is RoutineError) {
+          if (state is RoutineListError) {
             // Si no hay errores específicos de campos,
             // mostramos un SnackBar
             if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
@@ -51,12 +53,12 @@ class _RoutineCreatePageState extends State<RoutineCreatePage> {
         },
         builder: (context, state) {
           // SABEMOS SI ESTÁ CREANDO
-          final isCreating = state is RoutineCreating;
+          final isCreating = state is RoutineListCreating;
 
           // ERROR ESPECÍFICO DEL NOMBRE
           String? nameError;
 
-          if (state is RoutineError) {
+          if (state is RoutineListError) {
             nameError = state.fieldErrors?['name']?.toString();
           }
 
@@ -96,7 +98,7 @@ class _RoutineCreatePageState extends State<RoutineCreatePage> {
                       text: "Crear rutina",
                       isLoading: isCreating,
                       onTap: () {
-                        context.read<RoutineCubit>().createRoutine(
+                        context.read<RoutineListCubit>().createRoutine(
                           name: _nameController.text.trim(),
                         );
                       },
@@ -107,7 +109,7 @@ class _RoutineCreatePageState extends State<RoutineCreatePage> {
             ),
           );
         },
-      ),
+      ), */
     );
   }
 }

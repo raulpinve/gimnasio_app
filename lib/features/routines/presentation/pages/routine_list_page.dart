@@ -1,66 +1,46 @@
-import 'package:gym_app/core/widgets/refreshable_content.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
-import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout.dart';
-import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
+import 'package:gym_app/core/widgets/refreshable_content.dart';
+import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
+import 'package:gym_app/features/auth/presentation/components/my_button.dart';
+import 'package:gym_app/features/routines/data/api_routine_repo.dart';
+import 'package:gym_app/features/routines/domain/entities/routine.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
 import 'package:shimmer/shimmer.dart';
 
-class WorkoutsListPage extends StatefulWidget {
-  const WorkoutsListPage({super.key});
+class RoutineListPage extends StatefulWidget {
+  const RoutineListPage({super.key});
+
   @override
-  State<WorkoutsListPage> createState() => _WorkoutsListPageState();
+  State<RoutineListPage> createState() => _RoutineListPageState();
 }
 
-class _WorkoutsListPageState extends State<WorkoutsListPage> {
-  final apiWorkoutRepo = ApiWorkoutRepo();
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController.addListener(_onScroll);
-    context.read<WorkoutListCubit>().loadWorkouts();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      context.read<WorkoutListCubit>().loadMoreWorkouts();
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+class _RoutineListPageState extends State<RoutineListPage> {
+  final apiRoutineRepo = ApiRoutineRepo();
 
   Future<void> _onRefresh() async {
-    await context.read<WorkoutListCubit>().loadWorkouts();
+    await context.read<RoutineListCubit>().loadRoutines();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workouts'),
+        title: const Text('Rutinas'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           MyAppbarButton(
             onPressed: () async {
-              final response = await context.push<bool>("/workouts/create");
+              final response = await context.push("/routines/create");
 
               // Stop execution if the user navigated away while the page was open
               if (!context.mounted) return;
 
               if (response == true) {
-                context.read<WorkoutListCubit>().loadWorkouts();
+                context.read<RoutineListCubit>().loadRoutines();
               }
             },
             icon: Icon(Icons.add),
@@ -72,47 +52,40 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
         child: Column(
           children: [
             Expanded(
-              child: BlocBuilder<WorkoutListCubit, WorkoutListState>(
+              child: BlocBuilder<RoutineListCubit, RoutineListState>(
                 builder: (context, state) {
                   // CARGA INICIAL
-                  if (state is WorkoutListLoading) {
+                  if (state is RoutineListLoading) {
                     return skeletonLoader(context);
                   }
 
                   // ERROR
-                  if (state is WorkoutListError) {
+                  if (state is RoutineListError) {
                     return RefreshableContent(
                       onRefresh: _onRefresh,
                       child: Text(state.message),
                     );
                   }
 
-                  // ENTRENAMIENTOS CARGADOS
-                  if (state is WorkoutsListLoaded) {
-                    if (state.workouts.isEmpty) {
+                  // RUTINAS CARGADAS
+                  if (state is RoutinesListLoaded) {
+                    if (state.routines.isEmpty) {
                       return RefreshableContent(
                         onRefresh: _onRefresh,
-                        child: Text(
-                          'No se encontraron entrenamientos',
-                        ),
+                        child: Text("No hay rutinas por mostrar"),
                       );
                     }
 
                     return RefreshIndicator(
                       onRefresh: _onRefresh,
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const SizedBox(height: 16);
-                        },
+                      child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount:
-                            state.workouts.length +
+                            state.routines.length +
                             (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          
                           // LOADING DE PAGINACIÓN
-                          if (index >= state.workouts.length) {
+                          if (index >= state.routines.length) {
                             return const Padding(
                               padding: EdgeInsets.all(16),
                               child: Center(
@@ -121,8 +94,8 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                             );
                           }
 
-                          final workout = state.workouts[index];
-                          return workoutCard(context, workout);
+                          final routine = state.routines[index];
+                          return routineCard(context, routine);
                         },
                       ),
                     );
@@ -137,20 +110,27 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     );
   }
 
-  GestureDetector workoutCard(BuildContext context, Workout workout) {
+  GestureDetector routineCard(
+    BuildContext context,
+    Routine routine,
+  ) {
     return GestureDetector(
       onTap: () async {
         final response = await context.push<bool>(
-          '/workouts-exercises/${workout.id}',
+          '/routine-exercises',
+          extra: routine,
         );
 
         if (!context.mounted) return;
 
         if (response == true) {
-          context.read<WorkoutListCubit>().loadWorkouts();
+          context.read<RoutineExercisesCubit>().loadRoutineExercises(
+            routineId: routine.id,
+          );
         }
       },
       child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.fromLTRB(
           16,
           14,
@@ -175,7 +155,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
               children: [
                 Expanded(
                   child: Text(
-                    workout.name,
+                    routine.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -192,14 +172,10 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                   ),
                   onSelected: (value) {
                     switch (value) {
-                      case 'edit':
-                        // Editar workout
-                        break;
-
                       case 'delete':
                         _confirmDeleteWorkout(
                           context,
-                          workout,
+                          routine,
                         );
                         break;
                     }
@@ -220,61 +196,36 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
               ],
             ),
 
-            // Estado
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 9,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: workout.estado == 'abierto'
-                    ? Colors.blue.shade100
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                workout.estado == 'abierto' ? 'En progreso' : 'Finalizado',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: workout.estado == 'abierto'
-                      ? Colors.blue.shade800
-                      : Colors.grey.shade800,
-                ),
-              ),
-            ),
+            const SizedBox(height: 8),
 
-            const SizedBox(height: 10),
-
-            // Duración + fecha
-            Row(
+            // Ejercicios
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
               children: [
-                if (workout.duracion != null &&
-                    workout.duracion!.isNotEmpty) ...[
-                  Icon(
-                    Icons.timer_outlined,
-                    size: 15,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                if (routine.exercises == null || routine.exercises!.isEmpty)
+                  _crearPill(
+                    'Sin ejercicios',
+                    Colors.grey.shade100,
+                    Colors.grey.shade800,
+                  )
+                else ...[
+                  ...routine.exercises!.take(1).map(
+                    (exercise) {
+                      return _crearPill(
+                        exercise.name,
+                        Colors.blue.shade100,
+                        Colors.blue.shade800,
+                      );
+                    },
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    workout.duracion!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '•',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  if (routine.exercises!.length > 1)
+                    _crearPill(
+                      '+${routine.exercises!.length - 1}',
+                      Colors.grey.shade100,
+                      Colors.grey.shade800,
                     ),
-                  ),
-                  const SizedBox(width: 10),
                 ],
-
-                Text(
-                  workout.fecha ?? '',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
               ],
             ),
           ],
@@ -289,7 +240,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 12),
-      itemCount: 10,
+      itemCount: 6,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
@@ -368,9 +319,9 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
 
 Future<void> _confirmDeleteWorkout(
   BuildContext context,
-  Workout workout,
+  Routine routine,
 ) async {
-  final cubit = context.read<WorkoutListCubit>();
+  final cubit = context.read<RoutineListCubit>();
 
   await showDialog<void>(
     context: context,
@@ -384,7 +335,7 @@ Future<void> _confirmDeleteWorkout(
               'Eliminar entrenamiento',
             ),
             content: Text(
-              '¿Seguro que deseas eliminar "${workout.name}"?',
+              '¿Seguro que deseas eliminar "${routine.name}"?',
             ),
             actions: [
               TextButton(
@@ -403,8 +354,8 @@ Future<void> _confirmDeleteWorkout(
                           isDeleting = true;
                         });
 
-                        final deleted = await cubit.deleteWorkout(
-                          workout.id,
+                        final deleted = await cubit.deleteRoutine(
+                          routine.id,
                         );
 
                         if (!dialogContext.mounted) return;
@@ -434,5 +385,37 @@ Future<void> _confirmDeleteWorkout(
         },
       );
     },
+  );
+}
+
+//  Función auxiliar para crear los pills rápidamente
+Widget _crearPill(String texto, Color fondo, Color colorTexto) {
+  final String textoCorto = texto.length > 25
+      ? '${texto.substring(0, 25)}...'
+      : texto;
+  return Container(
+    decoration: BoxDecoration(
+      color: fondo,
+      borderRadius: BorderRadius.circular(
+        12.0,
+      ), // El redondeado de las esquinas
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      child: Text(
+        textoCorto,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          color: colorTexto,
+        ),
+      ),
+    ),
   );
 }

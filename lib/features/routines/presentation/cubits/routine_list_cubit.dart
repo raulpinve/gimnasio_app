@@ -1,19 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/features/routines/domain/repos/routine_repo.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 
-class RoutineCubit extends Cubit<RoutineState> {
+class RoutineListCubit extends Cubit<RoutineListState> {
   final RoutineRepo routineRepo;
-  RoutineCubit({required this.routineRepo}) : super(RoutineInitial());
+  RoutineListCubit({required this.routineRepo}) : super(RoutineListInitial());
 
-  // Cargar ejercicios
+  // ============================================================
+  // CARGAR RUTINAS
+  // ============================================================
   Future<void> loadRoutines({
     int page = 1,
   }) async {
     try {
+      // PRIMERA PÁGINA
       if (page == 1) {
-        emit(RoutineLoading());
+        emit(RoutineListLoading());
       }
 
       final result = await routineRepo.getAllRoutines(page: page);
@@ -22,10 +26,11 @@ class RoutineCubit extends Cubit<RoutineState> {
       // Reemplazamos la lista completa
       if (page == 1) {
         emit(
-          RoutinesLoaded(
+          RoutinesListLoaded(
             routines: result.routines,
             currentPage: result.currentPage,
             totalPages: result.totalPages,
+            isLoadingMore: false,
           ),
         );
 
@@ -34,8 +39,8 @@ class RoutineCubit extends Cubit<RoutineState> {
 
       // SI ES UNA PÁGINA SIGUIENTE
       // Agregamos las nuevas rutinas existentes
-      if (state is RoutinesLoaded) {
-        final currentState = state as RoutinesLoaded;
+      if (state is RoutinesListLoaded) {
+        final currentState = state as RoutinesListLoaded;
 
         emit(
           currentState.copyWith(
@@ -55,13 +60,15 @@ class RoutineCubit extends Cubit<RoutineState> {
       // Si es una carga inicial, mostramos el error normal
       if (page == 1) {
         emit(
-          RoutineError("Ha ocurrido un error al intentar obtener las rutinas"),
+          RoutineListError(
+            e.toString(),
+          ),
         );
       }
 
       // Si falla "Cargar más", conservamos la lista actual
-      if (state is RoutinesLoaded) {
-        final currentState = state as RoutinesLoaded;
+      if (state is RoutinesListLoaded) {
+        final currentState = state as RoutinesListLoaded;
 
         emit(
           currentState.copyWith(
@@ -74,11 +81,11 @@ class RoutineCubit extends Cubit<RoutineState> {
 
   // Cargar siguiente página
   Future<void> loadMoreRoutines() async {
-    if (state is! RoutinesLoaded) {
+    if (state is! RoutinesListLoaded) {
       return;
     }
 
-    final currentState = state as RoutinesLoaded;
+    final currentState = state as RoutinesListLoaded;
 
     if (currentState.isLoadingMore) {
       return;
@@ -103,11 +110,11 @@ class RoutineCubit extends Cubit<RoutineState> {
         page: nextPage,
       );
 
-      if (state is! RoutinesLoaded) {
+      if (state is! RoutinesListLoaded) {
         return;
       }
 
-      final updatedState = state as RoutinesLoaded;
+      final updatedState = state as RoutinesListLoaded;
 
       emit(
         updatedState.copyWith(
@@ -123,8 +130,8 @@ class RoutineCubit extends Cubit<RoutineState> {
     } catch (e) {
       if (isClosed) return;
 
-      if (state is RoutinesLoaded) {
-        final currentState = state as RoutinesLoaded;
+      if (state is RoutinesListLoaded) {
+        final currentState = state as RoutinesListLoaded;
 
         emit(
           currentState.copyWith(
@@ -135,67 +142,47 @@ class RoutineCubit extends Cubit<RoutineState> {
     }
   }
 
-  // Create routines
-  Future<void> createRoutine({
-    required String name,
-  }) async {
-    try {
-      if (isClosed) return;
+  Future<bool> deleteRoutine(String routineId) async {
+    if (isClosed) return false;
 
-      emit(RoutineCreating());
-
-      await routineRepo.createRoutine(
-        name: name,
-      );
-
-      emit(RoutineCreated());
-    } on ApiError catch (e) {
-      if (isClosed) return;
-      emit(
-        RoutineError(
-          e.message,
-          fieldErrors: e.fieldErrors,
-        ),
-      );
-    } catch (e) {
-      if (isClosed) return;
-
-      emit(
-        RoutineError(
-          "Ocurrió un error inesperado.",
-        ),
-      );
+    if (state is! RoutinesListLoaded) {
+      return false;
     }
-  }
+    final currentState = state as RoutinesListLoaded;
 
-  // Delete routine
-  Future<void> deleteRoutine(String routineId) async {
+    emit(
+      currentState.copyWith(
+        isDeleting: true,
+        clearError: true,
+      ),
+    );
+
     try {
-      emit(RoutineDeleting());
-
       await routineRepo.deleteRoutine(routineId);
 
-      emit(RoutineDeleted());
-      await loadRoutines();
+      if (isClosed) return false;
+
+      final updatedRoutines = currentState.routines
+          .where((routine) => routine.id != routineId)
+          .toList();
+
+      emit(
+        currentState.copyWith(
+          routines: updatedRoutines,
+          isDeleting: false,
+        ),
+      );
+      return true;
     } catch (e) {
-      emit(RoutineError(e.toString()));
-    }
-  }
+      if (isClosed) return false;
 
-  // Obtener una rutina específica por su ID usando el método exacto del repositorio
-  Future<void> loadRoutineById(String routineId) async {
-    try {
-      if (isClosed) return;
-      emit(SingleRoutineLoading());
-
-      // Llama a getRoutine tal como está en tu RoutineRepo
-      final routine = await routineRepo.getRoutine(routineId);
-
-      if (isClosed) return;
-      emit(SingleRoutineLoaded(routine: routine));
-    } catch (e) {
-      if (isClosed) return;
-      emit(RoutineError("No se pudo cargar la información de la rutina."));
+      emit(
+        currentState.copyWith(
+          isDeleting: false,
+          errorMessage: 'No se pudo eliminar la rutina: ${e.toString()}',
+        ),
+      );
+      return false;
     }
   }
 }

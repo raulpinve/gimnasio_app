@@ -13,10 +13,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     int page = 1,
   }) async {
     try {
-      // ==========================================================
       // PRIMERA PÁGINA
-      // ==========================================================
-
       if (page == 1) {
         emit(WorkoutListLoading());
       }
@@ -62,7 +59,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
       if (page == 1) {
         emit(
           WorkoutListError(
-            "Ha ocurrido un error al intentar obtener los entrenamientos",
+            e.toString(),
           ),
         );
       }
