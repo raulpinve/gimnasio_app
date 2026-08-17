@@ -195,15 +195,15 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                         break;
 
                       case 'delete':
-                        // Eliminar workout
+                        _confirmDeleteWorkout(
+                          context,
+                          workout,
+                        );
                         break;
                     }
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(
-                      onTap: () {
-                        _deleteWorkoutBottomSheet(context, workout.id);
-                      },
+                    const PopupMenuItem<String>(
                       value: 'delete',
                       child: Row(
                         children: [
@@ -364,75 +364,72 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   }
 }
 
-Future<dynamic> _deleteWorkoutBottomSheet(
+Future<void> _confirmDeleteWorkout(
   BuildContext context,
-  String id,
-) {
-  final workoutCubit = context.read<WorkoutListCubit>();
+  Workout workout,
+) async {
+  final cubit = context.read<WorkoutListCubit>();
 
-  return showModalBottomSheet(
+  await showDialog<void>(
     context: context,
-    builder: (context) {
-      return BlocProvider.value(
-        value: workoutCubit,
-        child: BlocBuilder<WorkoutListCubit, WorkoutListState>(
-          builder: (context, state) {
-            final isLoading = state is WorkoutsListLoaded && state.isDeleting;
+    builder: (dialogContext) {
+      bool isDeleting = false;
 
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "¿Eliminar entrenamiento?",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Esta opción no se puede deshacer.",
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: MyButton(
-                          onTap: isLoading
-                              ? null
-                              : () => Navigator.pop(context),
-                          text: "Cancelar",
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: MyButton(
-                          onTap: isLoading
-                              ? null
-                              : () async {
-                                  final deleted = await context
-                                      .read<WorkoutListCubit>()
-                                      .deleteWorkout(id);
-
-                                  if (deleted && context.mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                },
-                          type: MyButtonType.danger,
-                          isLoading: isLoading,
-                          text: "Eliminar",
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Eliminar entrenamiento',
+            ),
+            content: Text(
+              '¿Seguro que deseas eliminar "${workout.name}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: isDeleting
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(),
+                child: const Text(
+                  'Cancelar',
+                ),
               ),
-            );
-          },
-        ),
+              TextButton(
+                onPressed: isDeleting
+                    ? null
+                    : () async {
+                        setState(() {
+                          isDeleting = true;
+                        });
+
+                        final deleted = await cubit.deleteWorkout(
+                          workout.id,
+                        );
+
+                        if (!dialogContext.mounted) return;
+
+                        if (deleted) {
+                          Navigator.of(dialogContext).pop();
+                        } else {
+                          setState(() {
+                            isDeleting = false;
+                          });
+                        }
+                      },
+                child: isDeleting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Eliminar',
+                      ),
+              ),
+            ],
+          );
+        },
       );
     },
   );

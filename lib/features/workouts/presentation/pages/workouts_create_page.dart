@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_state.dart';
@@ -16,6 +17,10 @@ class WorkoutsCreatePage extends StatefulWidget {
 
 class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
   String? _selectedRoutineId;
+
+  Future<void> _onRefresh() async {
+    await context.read<RoutineCubit>().loadRoutines();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,49 +90,20 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
                         }
 
                         if (state is RoutineError) {
-                          return RefreshIndicator(
-                            onRefresh: () async {
-                              await context.read<RoutineCubit>().loadRoutines();
-                            },
-                            child: CustomScrollView(
-                              slivers: [
-                                SliverFillRemaining(
-                                  child: Center(
-                                    child: Text(
-                                      state.message,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.inversePrimary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return RefreshableContent(
+                            onRefresh: _onRefresh,
+                            child: Text(state.message),
                           );
                         }
 
                         if (state is RoutinesLoaded) {
                           if (state.routines.isEmpty) {
-                            return RefreshIndicator(
-                              onRefresh: () async {
-                                await context
-                                    .read<RoutineCubit>()
-                                    .loadRoutines();
-                              },
-                              child: CustomScrollView(
-                                slivers: [
-                                  SliverFillRemaining(
-                                    child: Center(
-                                      child: Text('No hay rutinas'),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            return RefreshableContent(
+                              onRefresh: _onRefresh,
+                              child: Text('No hay rutinas por mostrar'),
                             );
                           }
+                          
                           final colorScheme = Theme.of(context).colorScheme;
 
                           return RefreshIndicator(
