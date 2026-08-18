@@ -266,18 +266,18 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     BuildContext context,
     Exercise exercise,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: 68,
       height: 68,
-      color: colorScheme.primaryContainer,
+      color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
       alignment: Alignment.center,
       child: Icon(
         exercise.type == 'cardio'
             ? Icons.directions_run_outlined
             : Icons.fitness_center_outlined,
-        color: colorScheme.onPrimaryContainer,
+        color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
         size: 28,
       ),
     );

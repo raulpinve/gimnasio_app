@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 
@@ -26,10 +26,13 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<WorkoutCreateCubit, WorkoutCreateState>(
       listener: (context, state) {
+
+        // DEVUELVE A LA PÁGINA ANTERIOR UNA VEZ CREADO EL WORKOUT
         if (state.isCreated && state.workoutId != null) {
           context.pop(true);
         }
 
+        // MUESTRA ERROR 
         if (state.errorMessage != null) {
           if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(

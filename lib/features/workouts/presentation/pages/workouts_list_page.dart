@@ -46,7 +46,6 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Workouts'),
@@ -110,7 +109,6 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                             state.workouts.length +
                             (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          
                           // LOADING DE PAGINACIÓN
                           if (index >= state.workouts.length) {
                             return const Padding(
@@ -381,7 +379,7 @@ Future<void> _confirmDeleteWorkout(
         builder: (context, setState) {
           return AlertDialog(
             title: const Text(
-              'Eliminar entrenamiento',
+              'Eliminar rutina',
             ),
             content: Text(
               '¿Seguro que deseas eliminar "${workout.name}"?',

@@ -4,7 +4,7 @@ import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_list_page.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routine_list_page.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';

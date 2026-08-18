@@ -18,7 +18,6 @@ class RoutineExercisesCreatePage extends StatefulWidget {
 
 class _RoutineExercisesCreatePageState
     extends State<RoutineExercisesCreatePage> {
-      
   // 1. Controladores
   final TextEditingController _targetSetsController = TextEditingController();
   final TextEditingController _targetRepsController = TextEditingController();
@@ -51,6 +50,7 @@ class _RoutineExercisesCreatePageState
             context.pop(true);
           }
         }
+
         if (state.errorMessage != null) {
           if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -256,6 +256,7 @@ class _RoutineExercisesCreatePageState
                     ],
 
                     const SizedBox(height: 16),
+
                     MyButton(
                       onTap: () {
                         context

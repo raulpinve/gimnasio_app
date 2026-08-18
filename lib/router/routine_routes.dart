@@ -1,3 +1,5 @@
+import 'package:gym_app/features/routines/data/api_routine_repo.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_create/routine_create_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/pages/routine_exercises_update_page.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
@@ -25,12 +27,9 @@ final routineRoutes = <GoRoute>[
     builder: (context, state) {
       final routine = state.extra as Routine;
       return BlocProvider(
-        create: (_) =>
-            RoutineExercisesCubit(
-              routineExerciseRepo: ApiRoutineExerciseRepo(),
-            )..loadRoutineExercises(
-              routineId: routine.id,
-            ),
+        create: (_) => RoutineExercisesCubit(
+          routineExerciseRepo: ApiRoutineExerciseRepo(),
+        )..loadRoutineExercises(routineId: routine.id),
         child: RoutineExercisesPage(
           routine: routine,
         ),
@@ -87,6 +86,11 @@ final routineRoutes = <GoRoute>[
   // Crear una nueva rutina
   GoRoute(
     path: '/routines/create',
-    builder: (_, _) => const RoutineCreatePage(),
+    builder: (context, state) {
+      return BlocProvider(
+        create: (_) => RoutineCreateCubit(routineRepo: ApiRoutineRepo()),
+        child: RoutineCreatePage(),
+      );
+    },
   ),
 ];

@@ -6,8 +6,8 @@ import 'package:gym_app/features/auth/presentation/components/my_appbar_button.d
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list_cubit.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list_state.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -38,9 +38,15 @@ class _RoutineListPageState extends State<RoutineListPage> {
 
               // Stop execution if the user navigated away while the page was open
               if (!context.mounted) return;
-
+              
               if (response == true) {
                 context.read<RoutineListCubit>().loadRoutines();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Rutina creada correctamente'),
+                  ),
+                );
               }
             },
             icon: Icon(Icons.add),

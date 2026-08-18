@@ -23,50 +23,34 @@ class MyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     Color buttonColor;
     Color borderColor;
     Color textColor;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     switch (type) {
       case MyButtonType.primary:
-        buttonColor = isDark
-            ? const Color(0xFF4F7CFF)
-            : const Color(0xFF2563EB);
-        borderColor = isDark
-            ? const Color(0xFF6B91FF)
-            : const Color(0xFF2563EB);
+        buttonColor = colorScheme.primary;
+        borderColor = colorScheme.primary.withValues(alpha: 0.4);
         textColor = Colors.white;
         break;
 
       case MyButtonType.secondary:
-        buttonColor = isDark
-            ? const Color(0xFF374151)
-            : const Color(0xFFE5E7EB);
-        borderColor = isDark
-            ? const Color(0xFF4B5563)
-            : const Color(0xFFD1D5DB);
-        textColor = isDark ? Colors.white : const Color(0xFF1F2937);
+        buttonColor = Colors.white;
+        borderColor = colorScheme.onSurface.withValues(alpha: 0.2);
+        textColor = colorScheme.onSurface;
         break;
 
       case MyButtonType.warning:
-        buttonColor = isDark
-            ? const Color(0xFFD97706)
-            : const Color(0xFFF59E0B);
-        borderColor = isDark
-            ? const Color(0xFFF59E0B)
-            : const Color(0xFFD97706);
+        buttonColor = Colors.orange;
+        borderColor = Colors.orange;
         textColor = Colors.white;
         break;
 
       case MyButtonType.danger:
-        buttonColor = isDark
-            ? const Color(0xFFDC2626)
-            : const Color(0xFFEF4444);
-        borderColor = isDark
-            ? const Color(0xFFEF4444)
-            : const Color(0xFFDC2626);
+        buttonColor = colorScheme.error;
+        borderColor = colorScheme.error;
         textColor = Colors.white;
         break;
     }

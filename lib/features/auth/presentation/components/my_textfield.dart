@@ -27,89 +27,107 @@ class MyTextfield extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final hasError = errorText != null && errorText!.isNotEmpty;
 
-    return SizedBox(
-      height: 56,
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        onChanged: onChanged,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(
-            color: hasError ? colorScheme.error : colorScheme.primary,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 56,
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            keyboardType: keyboardType,
+            decoration: InputDecoration(
+              hintText: hintText,
 
-          prefixIcon: prefixIcon != null
-              ? IconTheme(
-                  data: IconThemeData(
-                    color: hasError ? colorScheme.error : colorScheme.primary,
-                  ),
-                  child: prefixIcon!,
-                )
-              : null,
+              hintStyle: TextStyle(
+                color: hasError ? colorScheme.error : colorScheme.primary,
+              ),
 
-          suffixIcon: suffixIcon != null
-              ? IconTheme(
-                  data: IconThemeData(
-                    color: hasError ? colorScheme.error : colorScheme.primary,
-                  ),
-                  child: suffixIcon!,
-                )
-              : null,
+              prefixIcon: prefixIcon != null
+                  ? IconTheme(
+                      data: IconThemeData(
+                        color: hasError
+                            ? colorScheme.error
+                            : colorScheme.primary,
+                      ),
+                      child: prefixIcon!,
+                    )
+                  : null,
 
-          errorText: errorText,
-          filled: true,
-          fillColor: hasError
-              ? colorScheme.error.withValues(alpha: 0.08)
-              : colorScheme.secondary,
+              suffixIcon: suffixIcon != null
+                  ? IconTheme(
+                      data: IconThemeData(
+                        color: hasError
+                            ? colorScheme.error
+                            : colorScheme.primary,
+                      ),
+                      child: suffixIcon!,
+                    )
+                  : null,
 
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: hasError
-                  ? colorScheme.error
-                  : colorScheme.primary.withValues(alpha: 0.4),
-              width: 1.5,
+              filled: true,
+              fillColor: hasError
+                  ? colorScheme.error.withValues(alpha: 0.08)
+                  : colorScheme.secondary,
+
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: hasError
+                      ? colorScheme.error
+                      : colorScheme.primary.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+              ),
+
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.error,
+                  width: 1.5,
+                ),
+              ),
+
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.error,
+                  width: 2,
+                ),
+              ),
+
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
             ),
-          ),
-
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.primary,
-              width: 2,
-            ),
-          ),
-
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.error,
-              width: 1.5,
-            ),
-          ),
-
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: colorScheme.error,
-              width: 2,
-            ),
-          ),
-
-          errorStyle: TextStyle(
-            color: colorScheme.error,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
           ),
         ),
-      ),
+
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              errorText!,
+              style: TextStyle(
+                color: colorScheme.error,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
