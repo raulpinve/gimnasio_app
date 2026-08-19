@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create/routine_exercises_create_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create/routine_exercises_create_state.dart';
 
@@ -82,30 +84,19 @@ class _RoutineExercisesCreatePageState
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            // 2. Quitamos las comillas estáticas y metemos el BlocBuilder para escuchar el RoutineCubit
-            /*title: BlocBuilder<RoutineCubit, RoutineState>(
+            title: BlocBuilder<RoutineDetailCubit, RoutineDetailState>(
               builder: (context, routineState) {
-                if (routineState is SingleRoutineLoading) {
+                if (routineState is RoutineDetailLoading) {
                   return Text("Cargando...");
                 }
-                if (routineState is SingleRoutineLoaded) {
-                  routineId = routineState.routine.id;
-                  return Text(
-                    routineState.routine.name,
-                  );
+                if (routineState is RoutineDetailLoaded) {
+                  return Text(routineState.routine.name);
                 }
-                if (routineState is RoutineError) {
+                if (routineState is RoutineDetailError) {
                   return const Text("Error al cargar");
                 }
                 return const Text("Cargando...");
               },
-            ),*/
-            title: Text("Agregar ejercicio"),
-            leading: IconButton(
-              onPressed: () async {
-                context.pop();
-              },
-              icon: const Icon(Icons.arrow_back),
             ),
           ),
 

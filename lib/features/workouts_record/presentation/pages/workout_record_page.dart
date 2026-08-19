@@ -338,21 +338,23 @@ class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
 
                   return RefreshIndicator(
                     onRefresh: () async {
-                      await context
-                          .read<WorkoutExerciseDetailCubit>()
-                          .loadWorkoutExerciseById(
-                            workoutExercise.workoutExerciseId ?? "",
-                          );
+                      final workoutExerciseDetailCubit = context
+                          .read<WorkoutExerciseDetailCubit>();
+
+                      final workoutRecordCubit = context
+                          .read<WorkoutRecordCubit>();
+
+                      await workoutExerciseDetailCubit.loadWorkoutExerciseById(
+                        workoutExercise.workoutExerciseId ?? "",
+                      );
 
                       if (!mounted) return;
 
-                      await context
-                          .read<WorkoutRecordCubit>()
-                          .loadWorkoutRecords(
-                            workoutExercise.workoutExerciseId ??
-                                widget.workoutExerciseId,
-                            exerciseType,
-                          );
+                      await workoutRecordCubit.loadWorkoutRecords(
+                        workoutExercise.workoutExerciseId ??
+                            widget.workoutExerciseId,
+                        exerciseType,
+                      );
                     },
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),

@@ -35,8 +35,6 @@ class _ExerciseDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double anchoPantalla = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -69,7 +67,7 @@ class _ExerciseDetailView extends StatelessWidget {
                 ),
               );
             }
-            
+
             // EXERCISE LOADED
             if (state is ExerciseDetailLoaded) {
               final exercise = state.exercise;

@@ -11,19 +11,20 @@ import 'package:gym_app/features/routines_exercises/domain/entities/routine_exer
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_state.dart';
 
-class RoutineExercisesPage extends StatefulWidget {
+class RoutineExercisesListPage extends StatefulWidget {
   final String routineId;
 
-  const RoutineExercisesPage({
+  const RoutineExercisesListPage({
     super.key,
     required this.routineId,
   });
 
   @override
-  State<RoutineExercisesPage> createState() => _RoutineExercisesPageState();
+  State<RoutineExercisesListPage> createState() =>
+      _RoutineExercisesListPageState();
 }
 
-class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
+class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
   final apiRoutineExerciseRepo = ApiRoutineExerciseRepo();
 
   Future<void> _onRefreshRoutineExercises(String routineId) async {
@@ -186,186 +187,217 @@ Widget tarjetasExercises(
   BuildContext context,
   String routineId,
 ) {
-  final details = <String>[
-    if (routineExercise.targetSets != null)
-      "Ser: ${routineExercise.targetSets}",
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
 
-    if (routineExercise.targetReps != null)
-      "Rep: ${routineExercise.targetReps}",
+  final details = <String>[];
 
-    if (routineExercise.targetWeight != null)
-      "P: ${routineExercise.targetWeight} kg",
+  if (routineExercise.targetSets != null) {
+    details.add('Series: ${routineExercise.targetSets}');
+  }
 
-    if (routineExercise.targetDurationSeconds != null)
-      "Dur: ${routineExercise.targetDurationSeconds} s",
+  if (routineExercise.targetReps != null) {
+    details.add('Reps: ${routineExercise.targetReps}');
+  }
 
-    if (routineExercise.targetDistanceKm != null)
-      "Dist: ${routineExercise.targetDistanceKm} km",
-  ];
+  if (routineExercise.targetWeight != null) {
+    details.add('Peso: ${routineExercise.targetWeight} kg');
+  }
 
-  Wrap(
-    spacing: 8,
-    runSpacing: 4,
-    children: [
-      for (int i = 0; i < details.length; i++) ...[
-        Text(
-          details[i],
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+  if (routineExercise.targetDurationSeconds != null) {
+    details.add('Duración: ${routineExercise.targetDurationSeconds} s');
+  }
 
-        if (i < details.length - 1)
-          const Text(
-            "•",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-      ],
-    ],
-  );
+  if (routineExercise.targetDistanceKm != null) {
+    details.add('Distancia: ${routineExercise.targetDistanceKm} km');
+  }
 
   return GestureDetector(
     onTap: () {
-      context.push("/exercises/${routineExercise.exerciseId}");
+      context.push(
+        '/exercises/${routineExercise.exerciseId}',
+      );
     },
     child: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(
+        14,
+        14,
+        8,
+        14,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.tertiary, // Fondo del listTile
-        borderRadius: BorderRadius.circular(
-          12,
-        ), // Esquinas redondeadas
-
+        color: colorScheme.tertiary,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.05,
-            ), // Color de la sombra
-            offset: const Offset(
-              0,
-              4,
-            ), // Dirección de la sombra (X, Y)
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14.0, // Reduce el espacio a los lados
-          vertical: 5.0, // Reduce el espacio arriba y abajo
-        ),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child:
-              routineExercise.avatar != null &&
-                  routineExercise.avatar!.isNotEmpty
-              ? Image.network(
-                  routineExercise.avatar!,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) {
-                    return const Icon(
-                      Icons.image_not_supported,
-                    );
-                  },
-                )
-              : Container(
-                  width: 50,
-                  height: 50,
-                  alignment: Alignment.center,
-                  color: Colors.grey.shade200,
-                  child: routineExercise.exerciseType == "cardio"
-                      ? const Icon(Icons.directions_run)
-                      : const Icon(
-                          Icons.fitness_center,
-                        ),
-                ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              routineExercise.exerciseName!,
-              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (int i = 0; i < details.length; i++) ...[
-                  Text(
-                    details[i],
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Imagen
+          _buildRoutineExerciseImage(
+            context,
+            routineExercise,
+          ),
 
-                  if (i < details.length - 1)
-                    const Text(
-                      "•",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+          const SizedBox(width: 14),
+
+          // Información
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  routineExercise.exerciseName ?? '',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 7),
+
+                // Tipo de ejercicio
+                Row(
+                  children: [
+                    Icon(
+                      routineExercise.exerciseType == 'cardio'
+                          ? Icons.directions_run_outlined
+                          : Icons.fitness_center_outlined,
+                      size: 15,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+
+                    const SizedBox(width: 5),
+
+                    Text(
+                      routineExercise.exerciseType == 'cardio'
+                          ? 'Cardio'
+                          : 'Fuerza',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
+                  ],
+                ),
+
+                if (details.isNotEmpty) ...[
+                  const SizedBox(height: 7),
+
+                  Text(
+                    details.join(' · '),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ],
             ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
+          ),
 
-          color: Theme.of(context).colorScheme.surface,
+          // Menú
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            icon: const Icon(
+              Icons.more_vert,
+              size: 22,
+            ),
+            color: colorScheme.surface,
+            onSelected: (String opcion) {
+              if (opcion == 'editar') {
+                _redirigirAEditar(
+                  context,
+                  routineExercise,
+                  routineId,
+                );
+              } else if (opcion == 'eliminar') {
+                _mostrarBottomSheetEliminar(
+                  context,
+                  routineExercise.id,
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'editar',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined),
+                    SizedBox(width: 10),
+                    Text('Editar'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'eliminar',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline),
+                    SizedBox(width: 10),
+                    Text('Eliminar'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
-          onSelected: (String opcion) {
-            if (opcion == 'editar') {
-              _redirigirAEditar(
+Widget _buildRoutineExerciseImage(
+  BuildContext context,
+  RoutineExercise routineExercise,
+) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: routineExercise.avatar?.isNotEmpty == true
+        ? Image.network(
+            routineExercise.avatar!,
+            width: 68,
+            height: 68,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) {
+              return _buildRoutineExercisePlaceholder(
                 context,
                 routineExercise,
-                routineId,
               );
-            } else if (opcion == 'eliminar') {
-              _mostrarBottomSheetEliminar(
-                context,
-                routineExercise.id,
-              );
-            }
-          },
+            },
+          )
+        : _buildRoutineExercisePlaceholder(
+            context,
+            routineExercise,
+          ),
+  );
+}
 
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            PopupMenuItem<String>(
-              value: 'editar',
-              child: Text(
-                'Editar',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
+Widget _buildRoutineExercisePlaceholder(
+  BuildContext context,
+  RoutineExercise routineExercise,
+) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 
-            PopupMenuItem<String>(
-              value: 'eliminar',
-              child: Text(
-                'Eliminar',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  return Container(
+    width: 68,
+    height: 68,
+    color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+    alignment: Alignment.center,
+    child: Icon(
+      routineExercise.exerciseType == 'cardio'
+          ? Icons.directions_run_outlined
+          : Icons.fitness_center_outlined,
+      color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+      size: 28,
     ),
   );
 }
