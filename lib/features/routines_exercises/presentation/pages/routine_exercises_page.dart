@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
-import 'package:gym_app/features/routines/domain/entities/routine.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_state.dart';
 
 class RoutineExercisesPage extends StatefulWidget {
-  final Routine routine;
+  final String routineId;
 
   const RoutineExercisesPage({
     super.key,
-    required this.routine,
+    required this.routineId,
   });
 
   @override
@@ -24,130 +26,151 @@ class RoutineExercisesPage extends StatefulWidget {
 class _RoutineExercisesPageState extends State<RoutineExercisesPage> {
   final apiRoutineExerciseRepo = ApiRoutineExerciseRepo();
 
+  Future<void> _onRefreshRoutineExercises(String routineId) async {
+    await context.read<RoutineExercisesCubit>().loadRoutineExercises(
+      routineId: routineId,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.routine.name),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        actions: [
-          MyAppbarButton(
-            onPressed: () async {
-              final response = await context.push<bool>(
-                "/routine-exercises/${widget.routine.id}/create",
-                extra: widget.routine,
-              );
+    return BlocBuilder<RoutineDetailCubit, RoutineDetailState>(
+      builder: (context, state) {
+        // =================================
+        // ============= RUTINA ============
+        // =================================
 
-              // Stop execution is the user navigated away while the page was open
-              if (!context.mounted) return;
+        // LOADING RUTINA
+        if (state is RoutineDetailLoading || state is RoutineDetailInitial) {
+          return Scaffold(
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
-              if (response == true) {
-                context.read<RoutineExercisesCubit>().loadRoutineExercises(
-                  routineId: widget.routine.id,
-                );
-              }
-            },
-            icon: Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: BlocBuilder<RoutineExercisesCubit, RoutineExercisesState>(
-                builder: (context, state) {
-                  if (state is RoutineExercisesLoading) {
-                    return skeletonLoader(context);
-                  }
-
-                  if (state is RoutineExercisesError) {
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        await context
-                            .read<RoutineExercisesCubit>()
-                            .loadRoutineExercises(
-                              routineId: widget.routine.id,
-                            );
-                      },
-                      child: CustomScrollView(
-                        slivers: [
-                          SliverFillRemaining(
-                            child: Center(
-                              child: Text(
-                                state.message,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.inversePrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is RoutineExercisesLoaded) {
-                    if (state.routineExercises.isEmpty) {
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          await context
-                              .read<RoutineExercisesCubit>()
-                              .loadRoutineExercises(
-                                routineId: widget.routine.id,
-                              );
-                        },
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverFillRemaining(
-                              child: Center(
-                                child: Text(
-                                  "No hay ejercicios para esta rutina",
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        await context
-                            .read<RoutineExercisesCubit>()
-                            .loadRoutineExercises(
-                              routineId: widget.routine.id,
-                            );
-                      },
-                      child: ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 12),
-                        itemCount: state.routineExercises.length,
-                        itemBuilder: (context, index) {
-                          final exercise = state.routineExercises[index];
-
-                          return tarjetasExercises(
-                            exercise,
-                            context,
-                            widget.routine.id,
-                          );
-                        },
-                      ),
-                    );
-                  }
-
-                  return skeletonLoader(context);
-                },
+        // ERROR AL CARGAR LA RUTINA
+        if (state is RoutineDetailError) {
+          return Scaffold(
+            body: Center(
+              child: Text(
+                state.message,
+                style: TextStyle(
+                  color: Colors.red,
+                ),
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+
+        // RUTINA CARGADA
+        if (state is RoutineDetailLoaded) {
+          final routine = state.routine;
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(routine.name),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              actions: [
+                MyAppbarButton(
+                  onPressed: () async {
+                    final response = await context.push<bool>(
+                      "/routine-exercises/${routine.id}/create",
+                    );
+
+                    // Stop execution is the user navigated away while the page was open
+                    if (!context.mounted) return;
+
+                    if (response == true) {
+                      context
+                          .read<RoutineExercisesCubit>()
+                          .loadRoutineExercises(
+                            routineId: routine.id,
+                          );
+                    }
+                  },
+                  icon: Icon(Icons.add),
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // ===================================
+                  // ======== ROUTINE EXERCISES ========
+                  // ===================================
+                  Expanded(
+                    child:
+                        BlocBuilder<
+                          RoutineExercisesCubit,
+                          RoutineExercisesState
+                        >(
+                          builder: (context, state) {
+                            // LOADING EXERCISES ROUTINES
+                            if (state is RoutineExercisesLoading) {
+                              return skeletonLoader(context);
+                            }
+
+                            // SHOW EXERCISES ROUTINE ERROR
+                            if (state is RoutineExercisesError) {
+                              return RefreshableContent(
+                                child: Text(state.message),
+                                onRefresh: () =>
+                                    _onRefreshRoutineExercises(routine.id),
+                              );
+                            }
+
+                            // ROUTINES EXERCISES LOADED
+                            if (state is RoutineExercisesLoaded) {
+                              // ROUTINE EXERCISES
+                              if (state.routineExercises.isEmpty) {
+                                return RefreshableContent(
+                                  child: Text(
+                                    "No hay ejercicios para esta rutina",
+                                  ),
+                                  onRefresh: () =>
+                                      _onRefreshRoutineExercises(routine.id),
+                                );
+                              }
+
+                              return RefreshIndicator(
+                                onRefresh: () =>
+                                    _onRefreshRoutineExercises(routine.id),
+                                child: ListView.separated(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 12),
+                                  itemCount: state.routineExercises.length,
+                                  itemBuilder: (context, index) {
+                                    final exercise =
+                                        state.routineExercises[index];
+
+                                    return tarjetasExercises(
+                                      exercise,
+                                      context,
+                                      routine.id,
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+
+                            return skeletonLoader(context);
+                          },
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 

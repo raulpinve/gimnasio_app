@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_cubit.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create/routine_exercises_create_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create/routine_exercises_create_state.dart';
 
 class RoutineExercisesCreatePage extends StatefulWidget {
   final String routineId;

@@ -177,7 +177,7 @@ class RoutineListCubit extends Cubit<RoutineListState> {
       emit(
         currentState.copyWith(
           isDeleting: false,
-          errorMessage: 'No se pudo eliminar la rutina: ${e.toString()}',
+          errorMessage: 'No se pudo eliminar la rutina',
         ),
       );
       return false;

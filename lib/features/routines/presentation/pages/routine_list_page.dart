@@ -3,12 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_cubit.dart';
 import 'package:shimmer/shimmer.dart';
 
 class RoutineListPage extends StatefulWidget {
@@ -38,7 +37,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
 
               // Stop execution if the user navigated away while the page was open
               if (!context.mounted) return;
-              
+
               if (response == true) {
                 context.read<RoutineListCubit>().loadRoutines();
 
@@ -123,8 +122,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
     return GestureDetector(
       onTap: () async {
         final response = await context.push<bool>(
-          '/routine-exercises',
-          extra: routine,
+          '/routine-exercises/${routine.id}',
         );
 
         if (!context.mounted) return;
@@ -333,24 +331,38 @@ Future<void> _confirmDeleteWorkout(
     context: context,
     builder: (dialogContext) {
       bool isDeleting = false;
+      String? errorMessage;
 
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text(
-              'Eliminar entrenamiento',
-            ),
-            content: Text(
-              '¿Seguro que deseas eliminar "${routine.name}"?',
+            title: const Text('Eliminar rutina'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '¿Seguro que deseas eliminar "${routine.name}"?',
+                ),
+
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    errorMessage!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ],
             ),
             actions: [
               TextButton(
                 onPressed: isDeleting
                     ? null
                     : () => Navigator.of(dialogContext).pop(),
-                child: const Text(
-                  'Cancelar',
-                ),
+                child: const Text('Cancelar'),
               ),
               TextButton(
                 onPressed: isDeleting
@@ -358,6 +370,7 @@ Future<void> _confirmDeleteWorkout(
                     : () async {
                         setState(() {
                           isDeleting = true;
+                          errorMessage = null;
                         });
 
                         final deleted = await cubit.deleteRoutine(
@@ -369,8 +382,14 @@ Future<void> _confirmDeleteWorkout(
                         if (deleted) {
                           Navigator.of(dialogContext).pop();
                         } else {
+                          final state = cubit.state;
+
                           setState(() {
                             isDeleting = false;
+                            errorMessage = state is RoutinesListLoaded
+                                ? state.errorMessage ??
+                                      'No se pudo eliminar la rutina.'
+                                : 'No se pudo eliminar la rutina.';
                           });
                         }
                       },
@@ -382,9 +401,7 @@ Future<void> _confirmDeleteWorkout(
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Eliminar',
-                      ),
+                    : const Text('Eliminar'),
               ),
             ],
           );

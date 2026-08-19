@@ -51,13 +51,14 @@ class _ExerciseDetailView extends StatelessWidget {
       body: SafeArea(
         child: BlocBuilder<ExerciseDetailCubit, ExerciseDetailState>(
           builder: (context, state) {
+            // LOADING EXERCISES
             if (state is ExerciseDetailLoading ||
                 state is ExerciseDetailInitial) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
-
+            // SHOW EXERCISE ERROR
             if (state is ExerciseDetailError) {
               return Center(
                 child: Text(
@@ -68,7 +69,8 @@ class _ExerciseDetailView extends StatelessWidget {
                 ),
               );
             }
-
+            
+            // EXERCISE LOADED
             if (state is ExerciseDetailLoaded) {
               final exercise = state.exercise;
 

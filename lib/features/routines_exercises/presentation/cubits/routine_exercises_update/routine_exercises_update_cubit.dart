@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/features/exercise/domain/repos/exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/domain/repos/routine_exercise_repo.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update/routine_exercises_update_state.dart';
 
 class RoutineExercisesUpdateCubit extends Cubit<RoutineExercisesUpdateState> {
   final String routineExerciseId;

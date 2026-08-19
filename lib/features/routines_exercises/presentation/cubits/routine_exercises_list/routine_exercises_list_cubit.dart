@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/routines_exercises/domain/repos/routine_exercise_repo.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_state.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_state.dart';
 
 class RoutineExercisesCubit extends Cubit<RoutineExercisesState> {
   final RoutineExerciseRepo routineExerciseRepo;

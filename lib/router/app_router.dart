@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_states.dart';
+import 'package:gym_app/router/routine_exercises_routes.dart';
 import 'package:gym_app/router/routine_routes.dart';
 import 'package:gym_app/router/workout_exercises_routes.dart';
 import 'package:gym_app/router/workout_routes.dart';
@@ -15,6 +16,8 @@ GoRouter getAppRouter(BuildContext context) {
 
   return GoRouter(
     initialLocation: '/loading',
+    // initialLocation:
+    //     '/routine-exercises/9e40775e-5d40-4eba-a159-cbc8dda96070/create',
     refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = authCubit.state;
@@ -39,6 +42,7 @@ GoRouter getAppRouter(BuildContext context) {
       ...authRoutes,
       ...exerciseRoutes,
       ...routineRoutes,
+      ...routineExercisesRoutes,
       ...workoutRoutes,
       ...workoutExercisesRoutes,
     ],
