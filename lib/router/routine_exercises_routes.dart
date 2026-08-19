@@ -70,9 +70,9 @@ final routineExercisesRoutes = <GoRoute>[
                   ..loadRoutineDetail(routineId),
           ),
           BlocProvider(
-            create: (_) => RoutineExercisesCubit(
+            create: (_) => RoutineExercisesListCubit(
               routineExerciseRepo: ApiRoutineExerciseRepo(),
-            )..loadRoutineExercises(routineId: routineId),
+            )..loadRoutineExercises(routineId),
           ),
         ],
         child: RoutineExercisesListPage(

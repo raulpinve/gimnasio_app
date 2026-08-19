@@ -19,10 +19,10 @@ class WorkoutExercisePage extends StatefulWidget {
   });
 
   @override
-  State<WorkoutExercisePage> createState() => _WorkoutExercisePageState();
+  State<WorkoutExercisePage> createState() => _WorkoutExerciseListPageState();
 }
 
-class _WorkoutExercisePageState extends State<WorkoutExercisePage> {
+class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
   Future<void> redirectAddBottomSheet(
     BuildContext context,
     WorkoutExercise workoutExercise,

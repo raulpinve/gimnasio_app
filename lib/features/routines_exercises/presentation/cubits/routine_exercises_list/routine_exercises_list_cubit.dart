@@ -1,99 +1,97 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/features/routines_exercises/domain/repos/routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_state.dart';
 
-class RoutineExercisesCubit extends Cubit<RoutineExercisesState> {
+class RoutineExercisesListCubit extends Cubit<RoutineExercisesListState> {
   final RoutineExerciseRepo routineExerciseRepo;
 
-  // Guardamos el ID de la rutina actual
-  String? _routineId;
+  RoutineExercisesListCubit({required this.routineExerciseRepo})
+    : super(RoutineExercisesListInicial());
 
-  RoutineExercisesCubit({required this.routineExerciseRepo})
-    : super(RoutineExercisesInicial());
-
-  // Cargar ejercicios
-  Future<void> loadRoutineExercises({
-    int page = 1,
-    required String routineId,
-  }) async {
-    // Guardamos la rutina actual
-    _routineId = routineId;
-
+  // ============================================================
+  // CARGAR ROUTINE EXERCISES
+  // ============================================================
+  Future<void> loadRoutineExercises(
+    String routineId,
+  ) async {
     try {
-      if (page == 1) {
-        emit(RoutineExercisesLoading());
-      }
+      emit(RoutineExercisesListLoading());
+
       final result = await routineExerciseRepo.getAllRoutinesExercises(
         routineId: routineId,
       );
+      if (isClosed) return;
 
-      // SI ES LA PRIMERA PÁGINA
-      // Reemplazamos la lista completa
-      if (page == 1) {
-        emit(
-          RoutineExercisesLoaded(
-            routineExercises: result,
-          ),
-        );
+      emit(RoutineExercisesListLoaded(routineExercises: result));
+    } on ApiError catch (e) {
+      if (isClosed) return;
 
-        return;
-      }
-
-      // SI ES UNA PÁGINA SIGUIENTE
-      // Agregamos las nuevas rutinas existentes
-      if (state is RoutineExercisesLoaded) {
-        final currentState = state as RoutineExercisesLoaded;
-
-        emit(
-          currentState.copyWith(
-            routineExercises: [
-              ...currentState.routineExercises,
-            ],
-            isLoadingMore: false,
-          ),
-        );
-      }
+      emit(
+        RoutineExercisesListError(
+          e.message,
+          fieldErrors: e.fieldErrors,
+        ),
+      );
     } catch (e) {
       if (isClosed) return;
 
-      // Si es una carga inicial, mostramos el error normal
-      if (page == 1) {
-        emit(
-          RoutineExercisesError(
-            "Ha ocurrido un error al intentar obtener las rutinas",
-          ),
-        );
-      }
-
-      // Si falla "Cargar más", conservamos la lista actual
-      if (state is RoutineExercisesLoaded) {
-        final currentState = state as RoutineExercisesLoaded;
-
-        emit(
-          currentState.copyWith(
-            isLoadingMore: false,
-          ),
-        );
-      }
+      emit(
+        RoutineExercisesListError(
+          e.toString(),
+        ),
+      );
     }
   }
 
-  // Delete routine
-  Future<void> deleteRoutineExercise(String routineExerciseId) async {
+  Future<void> deleteRoutineExercise(
+    String workoutRecordId,
+  ) async {
     try {
-      emit(RoutineExercisesDeleting());
+      if (isClosed) return;
 
-      await routineExerciseRepo.deleteRoutineExercise(routineExerciseId);
+      final currentState = state;
+      if (currentState is! RoutineExercisesListLoaded) return;
 
-      emit(RoutineExercisesDeleted());
+      emit(
+        currentState.copyWith(
+          isDeleting: true,
+        ),
+      );
 
-      if (_routineId != null) {
-        await loadRoutineExercises(
-          routineId: _routineId!,
-        );
-      }
+      await routineExerciseRepo.deleteRoutineExercise(
+        workoutRecordId,
+      );
+
+      if (isClosed) return;
+
+      emit(
+        currentState.copyWith(
+          routineExercises: currentState.routineExercises
+              .where(
+                (record) => record.id != workoutRecordId,
+              )
+              .toList(),
+          isDeleting: false,
+        ),
+      );
+    } on ApiError catch (e) {
+      if (isClosed) return;
+
+      emit(
+        RoutineExercisesListError(
+          e.message,
+          fieldErrors: e.fieldErrors,
+        ),
+      );
     } catch (e) {
-      emit(RoutineExercisesError("Ocurrió un error inesperado"));
+      if (isClosed) return;
+
+      emit(
+        RoutineExercisesListError(
+          e.toString(),
+        ),
+      );
     }
   }
 }

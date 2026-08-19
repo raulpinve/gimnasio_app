@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
@@ -28,8 +27,8 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
   final apiRoutineExerciseRepo = ApiRoutineExerciseRepo();
 
   Future<void> _onRefreshRoutineExercises(String routineId) async {
-    await context.read<RoutineExercisesCubit>().loadRoutineExercises(
-      routineId: routineId,
+    await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
+      routineId,
     );
   }
 
@@ -84,10 +83,8 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
 
                     if (response == true) {
                       context
-                          .read<RoutineExercisesCubit>()
-                          .loadRoutineExercises(
-                            routineId: routine.id,
-                          );
+                          .read<RoutineExercisesListCubit>()
+                          .loadRoutineExercises(routine.id);
                     }
                   },
                   icon: Icon(Icons.add),
@@ -104,17 +101,17 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                   Expanded(
                     child:
                         BlocBuilder<
-                          RoutineExercisesCubit,
-                          RoutineExercisesState
+                          RoutineExercisesListCubit,
+                          RoutineExercisesListState
                         >(
                           builder: (context, state) {
                             // LOADING EXERCISES ROUTINES
-                            if (state is RoutineExercisesLoading) {
+                            if (state is RoutineExercisesListLoading) {
                               return skeletonLoader(context);
                             }
 
                             // SHOW EXERCISES ROUTINE ERROR
-                            if (state is RoutineExercisesError) {
+                            if (state is RoutineExercisesListError) {
                               return RefreshableContent(
                                 child: Text(state.message),
                                 onRefresh: () =>
@@ -123,7 +120,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                             }
 
                             // ROUTINES EXERCISES LOADED
-                            if (state is RoutineExercisesLoaded) {
+                            if (state is RoutineExercisesListLoaded) {
                               // ROUTINE EXERCISES
                               if (state.routineExercises.isEmpty) {
                                 return RefreshableContent(
@@ -320,9 +317,9 @@ Widget tarjetasExercises(
                   routineId,
                 );
               } else if (opcion == 'eliminar') {
-                _mostrarBottomSheetEliminar(
+                _confirmDelete(
                   context,
-                  routineExercise.id,
+                  routineExercise,
                 );
               }
             },
@@ -402,7 +399,6 @@ Widget _buildRoutineExercisePlaceholder(
   );
 }
 
-// 1. Redirección a la pantalla de edición
 Future<void> _redirigirAEditar(
   BuildContext context,
   RoutineExercise routineExercise,
@@ -415,101 +411,65 @@ Future<void> _redirigirAEditar(
   if (!context.mounted) return;
 
   if (resultado == true) {
-    await context.read<RoutineExercisesCubit>().loadRoutineExercises(
-      routineId: routineId,
+    await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
+      routineId,
     );
   }
 }
 
-// 2. Despliegue del Bottom Sheet para eliminar
-void _mostrarBottomSheetEliminar(
+Future<void> _confirmDelete(
   BuildContext context,
-  String routineExerciseId,
-) {
-  final cubit = context.read<RoutineExercisesCubit>();
+  RoutineExercise routineExercises,
+) async {
+  final cubit = context.read<RoutineExercisesListCubit>();
 
-  showModalBottomSheet(
+  await showDialog(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(20),
-      ),
-    ),
-    builder: (_) {
-      return BlocProvider.value(
-        value: cubit,
-        child: BlocConsumer<RoutineExercisesCubit, RoutineExercisesState>(
-          listener: (context, state) {
-            if (state is RoutineExercisesDeleted) {
-              context.pop();
-            }
+    builder: (dialogContext) {
+      bool isDeleting = false;
 
-            if (state is RoutineExercisesError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is RoutineExercisesDeleting;
-
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "¿Confirmas que deseas eliminar este ejercicio?",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: MyButton(
-                          onTap: isLoading
-                              ? null
-                              : () {
-                                  context.pop();
-                                },
-                          text: 'Cancelar',
-                          type: MyButtonType.secondary,
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: MyButton(
-                          onTap: isLoading
-                              ? null
-                              : () {
-                                  context
-                                      .read<RoutineExercisesCubit>()
-                                      .deleteRoutineExercise(
-                                        routineExerciseId,
-                                      );
-                                },
-                          text: 'Eliminar',
-                          type: MyButtonType.danger,
-                          isLoading: isLoading,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text("Eliminar ejercicio"),
+            content: Text(
+              '¿Segudro que deseas eliminar "${routineExercises.exerciseName}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: isDeleting
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancelar'),
               ),
-            );
-          },
-        ),
+              TextButton(
+                onPressed: isDeleting
+                    ? null
+                    : () async {
+                        setState(() {
+                          isDeleting = true;
+                        });
+
+                        await cubit.deleteRoutineExercise(
+                          routineExercises.id,
+                        );
+
+                        if (!dialogContext.mounted) return;
+                        Navigator.of(dialogContext).pop();
+                      },
+                child: isDeleting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Eliminar'),
+              ),
+            ],
+          );
+        },
       );
     },
   );

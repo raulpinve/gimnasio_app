@@ -1,45 +1,43 @@
 import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise.dart';
 
-abstract class RoutineExercisesState {}
+abstract class RoutineExercisesListState {}
 
 // Estado inicial
-class RoutineExercisesInicial extends RoutineExercisesState {}
+class RoutineExercisesListInicial extends RoutineExercisesListState {}
 
-// Estado para iniciar la eliminación del ejercicio en la rutina
-class RoutineExercisesDeleting extends RoutineExercisesState {}
-
-// Estado para indicar que el ejercicio fue eliminada de la rutina
-class RoutineExercisesDeleted extends RoutineExercisesState {}
-
-// Estado para cargar el listado inicialmente
-class RoutineExercisesLoading extends RoutineExercisesState {}
+// Estado para mostrar el loading inicialmente
+class RoutineExercisesListLoading extends RoutineExercisesListState {}
 
 // Ejercicios de la rutina cargados
-class RoutineExercisesLoaded extends RoutineExercisesState {
+class RoutineExercisesListLoaded extends RoutineExercisesListState {
   final List<RoutineExercise> routineExercises;
   final bool isLoadingMore;
+  final bool isDeleting;
 
-  RoutineExercisesLoaded({
+  RoutineExercisesListLoaded({
     required this.routineExercises,
     this.isLoadingMore = false,
+    this.isDeleting = false,
   });
 
-  RoutineExercisesLoaded copyWith({
+  RoutineExercisesListLoaded copyWith({
     List<RoutineExercise>? routineExercises,
     int? currentPage,
     int? totalPages,
     bool? isLoadingMore,
+    bool? isDeleting,
   }) {
-    return RoutineExercisesLoaded(
+    return RoutineExercisesListLoaded(
       routineExercises: routineExercises ?? this.routineExercises,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isDeleting: isDeleting ?? this.isDeleting,
     );
   }
 }
 
-class RoutineExercisesError extends RoutineExercisesState {
+class RoutineExercisesListError extends RoutineExercisesListState {
   final String message;
   final Map<String, dynamic>? fieldErrors;
 
-  RoutineExercisesError(this.message, {this.fieldErrors});
+  RoutineExercisesListError(this.message, {this.fieldErrors});
 }
