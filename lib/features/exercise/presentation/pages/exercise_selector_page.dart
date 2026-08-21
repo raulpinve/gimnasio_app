@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
+import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_state.dart';
@@ -125,19 +126,16 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
             Expanded(
               child: BlocBuilder<ExerciseListCubit, ExerciseListState>(
                 builder: (context, state) {
-                  // CARGA INICIAL
                   if (state is ExerciseLoading) {
                     return skeletonLoader(context);
                   }
 
-                  // ERROR
                   if (state is ExerciseError) {
                     return Center(
                       child: Text(state.message),
                     );
                   }
 
-                  // EJERCICIOS CARGADOS
                   if (state is ExercisesLoaded) {
                     if (state.exercises.isEmpty) {
                       return const Center(
@@ -156,12 +154,10 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                         itemCount:
                             state.exercises.length +
                             (state.isLoadingMore ? 1 : 0),
-                        separatorBuilder: (context, index) => SizedBox(
-                          height: 12,
-                        ),
-
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(height: 12);
+                        },
                         itemBuilder: (context, index) {
-                          // LOADING DE PAGINACIÓN
                           if (index >= state.exercises.length) {
                             return const Padding(
                               padding: EdgeInsets.all(16),
@@ -171,101 +167,105 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                             );
                           }
 
-                          // EJERCICIO
                           final exercise = state.exercises[index];
+                          final theme = Theme.of(context);
+                          final colorScheme = theme.colorScheme;
+
                           return GestureDetector(
                             onTap: () {
-                              // Devolvemos el ejercicio
                               if (context.canPop()) {
                                 context.pop(exercise);
                               }
                             },
                             child: Container(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                14,
+                                14,
+                                14,
+                              ),
                               decoration: BoxDecoration(
+                                color: colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(12),
-                                color: Theme.of(context).colorScheme.tertiary,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(
-                                      alpha: 0.05,
-                                    ),
-                                    offset: const Offset(0, 4),
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 8,
                                   ),
                                 ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 14,
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                        8.0,
-                                      ),
-                                      child:
-                                          exercise.avatar != null &&
-                                              exercise.avatar!.isNotEmpty
-                                          ? Image.network(
-                                              exercise.avatar!,
-                                              width: 50,
-                                              height: 50,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, _, _) {
-                                                return const Icon(
-                                                  Icons.image_not_supported,
-                                                );
-                                              },
-                                            )
-                                          : Container(
-                                              width: 50,
-                                              height: 50,
-                                              alignment: Alignment.center,
-                                              color: Theme.of(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: exercise.avatar?.isNotEmpty == true
+                                        ? Image.network(
+                                            exercise.avatar!,
+                                            width: 64,
+                                            height: 64,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, _, _) {
+                                              return _buildExercisePlaceholder(
                                                 context,
-                                              ).colorScheme.tertiary,
-                                              child: exercise.type == "cardio"
-                                                  ? const Icon(
-                                                      Icons
-                                                          .directions_run_outlined,
-                                                    )
-                                                  : const Icon(
-                                                      Icons
-                                                          .fitness_center_outlined,
-                                                    ),
+                                                exercise,
+                                              );
+                                            },
+                                          )
+                                        : _buildExercisePlaceholder(
+                                            context,
+                                            exercise,
+                                          ),
+                                  ),
+
+                                  const SizedBox(width: 12),
+
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          exercise.name,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+
+                                        const SizedBox(height: 8),
+
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              exercise.type == 'cardio'
+                                                  ? Icons
+                                                        .directions_run_outlined
+                                                  : Icons
+                                                        .fitness_center_outlined,
+                                              size: 15,
+                                              color:
+                                                  colorScheme.onSurfaceVariant,
                                             ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              exercise.type == 'strength'
+                                                  ? 'Fuerza'
+                                                  : 'Cardio',
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: colorScheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(
-                                      width: 8,
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            exercise.name,
-                                            maxLines: 3,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge!
-                                                .copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          SizedBox(width: 6),
-                                          Text(
-                                            exercise.type == "strength"
-                                                ? "Fuerza"
-                                                : "Cardio",
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -274,7 +274,6 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                     );
                   }
 
-                  // ESTADO INICIAL
                   return const SizedBox();
                 },
               ),
@@ -284,6 +283,30 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
       ),
     );
   }
+}
+
+Widget _buildExercisePlaceholder(
+  BuildContext context,
+  Exercise exercise,
+) {
+  final colorScheme = Theme.of(context).colorScheme;
+
+  return Container(
+    width: 64,
+    height: 64,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(
+      exercise.type == 'cardio'
+          ? Icons.directions_run_outlined
+          : Icons.fitness_center_outlined,
+      color: colorScheme.onSurfaceVariant,
+      size: 26,
+    ),
+  );
 }
 
 Widget skeletonLoader(BuildContext context) {
