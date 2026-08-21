@@ -43,30 +43,5 @@ final workoutRoutes = <GoRoute>[
   ),
 
   // Administradar workout-exercises
-  /* GoRoute(
-    path: '/workout-records/:workoutExerciseId',
-    builder: (context, state) {
-      final workoutExerciseId = state.pathParameters['workoutExerciseId'] ?? '';
-
-      return MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => WorkoutExerciseCubit(
-              workoutExerciseRepo: ApiWorkoutExerciseRepo(),
-            ),
-          ),
-          BlocProvider(
-            create: (_) => WorkoutExerciseDetailCubit(
-              workoutExerciseRepo: ApiWorkoutExerciseRepo(),
-            )..loadWorkoutExerciseById(workoutExerciseId),
-          ),
-          BlocProvider(
-            create: (_) =>
-                WorkoutRecordCubit(workoutRecordRepo: ApiWorkoutRecord()),
-          ),
-        ],
-        child: WorkoutRecordPage(workoutExerciseId: workoutExerciseId),
-      );
-    },
-  ), */
+  
 ];

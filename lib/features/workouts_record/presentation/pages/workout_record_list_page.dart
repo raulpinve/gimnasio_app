@@ -12,19 +12,19 @@ import 'package:gym_app/features/workouts_record/presentation/cubits/workout_rec
 import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/switcher_form.dart';
 
-class WorkoutRecordPage extends StatefulWidget {
+class WorkoutRecordListPage extends StatefulWidget {
   final String workoutExerciseId;
 
-  const WorkoutRecordPage({
+  const WorkoutRecordListPage({
     super.key,
     required this.workoutExerciseId,
   });
 
   @override
-  State<WorkoutRecordPage> createState() => _WorkoutRecordPageState();
+  State<WorkoutRecordListPage> createState() => _WorkoutRecordListPageState();
 }
 
-class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
+class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
   WorkoutRecord? editingRecord;
 
   // Controladores de fuerza
@@ -64,39 +64,68 @@ class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
   ) {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
       builder: (bottomSheetContext) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text("Editar"),
-                onTap: () {
-                  Navigator.pop(bottomSheetContext);
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              4,
+              16,
+              16,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                  ),
+                  leading: const Icon(
+                    Icons.edit_outlined,
+                  ),
+                  title: const Text('Editar'),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext);
 
-                  _editWorkoutRecord(
-                    record,
-                    exerciseType,
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline,
+                    _editWorkoutRecord(
+                      record,
+                      exerciseType,
+                    );
+                  },
                 ),
-                title: const Text("Eliminar"),
-                onTap: () {
-                  Navigator.pop(bottomSheetContext);
 
-                  _showDeleteRecordDialog(
-                    context,
-                    record.id,
-                    exerciseType,
-                  );
-                },
-              ),
-            ],
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                  ),
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                  ),
+                  title: const Text(
+                    'Eliminar',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(bottomSheetContext);
+
+                    _showDeleteRecordDialog(
+                      context,
+                      record.id,
+                      exerciseType,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -541,31 +570,57 @@ class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text("Eliminar serie"),
-          content: const Text("¿Quieres eliminar este registro?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
+        return BlocBuilder<WorkoutRecordCubit, WorkoutRecordState>(
+          bloc: cubit,
+          builder: (context, state) {
+            final isDeleting =
+                state is WorkoutRecordsLoaded && state.isDeleting;
 
-                cubit.deleteWorkoutRecord(
-                  workoutRecordId,
-                  exerciseType,
-                );
-              },
-              child: const Text(
-                "Eliminar",
-                style: TextStyle(color: Colors.red),
+            return AlertDialog(
+              title: const Text("Eliminar serie"),
+              content: const Text(
+                "¿Quieres eliminar este registro?",
               ),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: const Text("Cancelar"),
+                ),
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          await cubit.deleteWorkoutRecord(
+                            workoutRecordId,
+                            exerciseType,
+                          );
+
+                          if (!dialogContext.mounted) return;
+
+                          Navigator.pop(dialogContext);
+                        },
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Eliminar",
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

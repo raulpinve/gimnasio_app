@@ -141,7 +141,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                 builder: (context, state) {
                   // CARGA INICIAL WORKOUT
                   if (state is WorkoutDetailLoading) {
-                    return skeletonLoader(context);
+                    return SizedBox.shrink();
                   }
 
                   // ERROR DE CARGA DEL WORKOUT
