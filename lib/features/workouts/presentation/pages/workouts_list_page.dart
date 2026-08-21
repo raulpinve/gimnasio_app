@@ -78,7 +78,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                     return skeletonLoader(context);
                   }
 
-                  // ERROR
+                  // ERROR DE CARGA
                   if (state is WorkoutListError) {
                     return RefreshableContent(
                       onRefresh: _onRefresh,
@@ -88,6 +88,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
 
                   // ENTRENAMIENTOS CARGADOS
                   if (state is WorkoutsListLoaded) {
+                    // NO HAY ENTRENAMIENTOS
                     if (state.workouts.isEmpty) {
                       return RefreshableContent(
                         onRefresh: _onRefresh,

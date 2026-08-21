@@ -55,9 +55,6 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
             body: Center(
               child: Text(
                 state.message,
-                style: TextStyle(
-                  color: Colors.red,
-                ),
               ),
             ),
           );

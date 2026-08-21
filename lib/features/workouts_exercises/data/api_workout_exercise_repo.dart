@@ -232,8 +232,9 @@ class ApiWorkoutExerciseRepo implements WorkoutExerciseRepo {
     try {
       final response = await apiClient.dio.post(
         '/workouts-exercises',
-        queryParameters: {
-          'workoutId': workoutId,
+        data: {
+          "workoutId": workoutId,
+          "exerciseId": exerciseId,
         },
       );
       return WorkoutExercise.fromJSON(response.data["data"]);

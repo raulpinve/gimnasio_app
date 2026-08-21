@@ -29,7 +29,7 @@ class WorkoutExerciseDetailCubit extends Cubit<WorkoutExerciseDetailState> {
   }
 
   // Create workoutExercise
-  Future<void> createWorkoutExercise(
+  Future<bool> createWorkoutExercise(
     String workoutId,
     String exerciseId,
   ) async {
@@ -47,20 +47,24 @@ class WorkoutExerciseDetailCubit extends Cubit<WorkoutExerciseDetailState> {
 
       debugPrint('WorkoutExercise creado: $result');
 
-      if (isClosed) return;
+      if (isClosed) return false;
 
       emit(WorkoutExerciseDetailCreated());
+
+      return true;
     } catch (e, stackTrace) {
       debugPrint('ERROR creando WorkoutExercise: $e');
       debugPrintStack(stackTrace: stackTrace);
 
-      if (isClosed) return;
+      if (isClosed) return false;
 
       emit(
         WorkoutExerciseDetailError(
           e.toString(),
         ),
       );
+
+      return false;
     }
   }
 }
