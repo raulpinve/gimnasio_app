@@ -144,7 +144,7 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.fromLTRB(
-          14,
+          16,
           14,
           14,
           14,
@@ -167,7 +167,7 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
               exercise,
             ),
 
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
 
             Expanded(
               child: Column(
@@ -182,7 +182,7 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 8),
 
                   Row(
                     children: [
@@ -193,9 +193,7 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
                         size: 15,
                         color: colorScheme.onSurfaceVariant,
                       ),
-
                       const SizedBox(width: 5),
-
                       Flexible(
                         child: Text(
                           exercise.equipment.capitalize(),
@@ -210,20 +208,30 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
                   ),
 
                   if (exercise.muscleGroups?.isNotEmpty ?? false) ...[
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 8),
 
-                    Text(
-                      exercise.muscleGroups!
-                          .take(2)
-                          .map(
-                            (e) => mapaMusculos[e] ?? e,
-                          )
-                          .join(' · '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        exercise.muscleGroups!
+                            .take(2)
+                            .map(
+                              (e) => mapaMusculos[e] ?? e,
+                            )
+                            .join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -241,12 +249,12 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     Exercise exercise,
   ) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       child: exercise.avatarThumbnail?.isNotEmpty == true
           ? Image.network(
               exercise.avatarThumbnail!,
-              width: 68,
-              height: 68,
+              width: 64,
+              height: 64,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) {
                 return _buildExercisePlaceholder(
@@ -266,19 +274,22 @@ class _ExercisesListPageState extends State<ExercisesListPage> {
     BuildContext context,
     Exercise exercise,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      width: 68,
-      height: 68,
-      color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+      width: 64,
+      height: 64,
       alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Icon(
         exercise.type == 'cardio'
             ? Icons.directions_run_outlined
             : Icons.fitness_center_outlined,
-        color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
-        size: 28,
+        color: colorScheme.onSurfaceVariant,
+        size: 26,
       ),
     );
   }
