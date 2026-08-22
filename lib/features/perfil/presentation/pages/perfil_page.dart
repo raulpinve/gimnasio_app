@@ -8,7 +8,6 @@ class PerfilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthCubit>().currentUser;
-
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/auth/domain/entities/app_user.dart';
 import 'package:gym_app/features/auth/domain/repos/auth_repo.dart';
@@ -14,17 +15,26 @@ class AuthCubit extends Cubit<AuthState> {
   // Get current user
   AppUser? get currentUser => _currentUser;
 
-  // Check if user is authenticated
   Future<void> checkAuth() async {
-    // loading
     emit(AuthChecking());
 
-    // Get current user
-    final AppUser? user = await authRepo.getCurrentUser();
-    if (user != null) {
-      _currentUser = user;
-      emit(Authenticated(user));
-    } else {
+    debugPrint('CHECK AUTH -> antes de getCurrentUser');
+
+    try {
+      final AppUser? user = await authRepo.getCurrentUser();
+
+      debugPrint('CHECK AUTH -> getCurrentUser terminó');
+
+      if (user != null) {
+        _currentUser = user;
+        debugPrint('CHECK AUTH -> usuario encontrado');
+        emit(Authenticated(user));
+      } else {
+        debugPrint('CHECK AUTH -> no hay usuario');
+        emit(Unanthenticated());
+      }
+    } catch (e) {
+      debugPrint('CHECK AUTH -> ERROR: $e');
       emit(Unanthenticated());
     }
   }

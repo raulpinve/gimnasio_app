@@ -34,7 +34,9 @@ GoRouter getAppRouter(BuildContext context) {
         return state.matchedLocation == '/auth' ? null : '/auth';
       }
 
-      if (authState is Authenticated && state.matchedLocation == '/auth') {
+      if (authState is Authenticated &&
+          (state.matchedLocation == '/auth' ||
+              state.matchedLocation == '/loading')) {
         return '/';
       }
 
