@@ -4,34 +4,94 @@ import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_app/features/auth/domain/entities/app_user.dart';
 import 'package:gym_app/features/auth/domain/repos/auth_repo.dart';
+import 'package:gym_app/features/auth/domain/repos/user_repo.dart';
 
 class FirebaseAuthRepo implements AuthRepo {
-  // Access to firebase
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final UserRepo userRepo;
+
+  String _getFirebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'El correo electrónico no es válido.';
+
+      case 'user-not-found':
+        return 'No existe una cuenta con este correo.';
+
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'El correo o la contraseña son incorrectos.';
+
+      case 'email-already-in-use':
+        return 'Ya existe una cuenta con este correo.';
+
+      case 'weak-password':
+        return 'La contraseña es demasiado débil.';
+
+      case 'user-disabled':
+        return 'Esta cuenta ha sido deshabilitada.';
+
+      case 'too-many-requests':
+        return 'Demasiados intentos. Inténtalo nuevamente más tarde.';
+
+      case 'operation-not-allowed':
+        return 'Este método de autenticación no está habilitado.';
+
+      case 'network-request-failed':
+        return 'No se pudo conectar con el servidor. Revisa tu conexión.';
+
+      default:
+        return 'No se pudo iniciar sesión. Inténtalo nuevamente.';
+    }
+  }
+
+  FirebaseAuthRepo({
+    required this.userRepo,
+  });
 
   // LOGIN: Email && password
   @override
-  Future<AppUser?> loginWithEmailPassword(String email, String password) async {
+  Future<AppUser?> loginWithEmailPassword(
+    String email,
+    String password,
+  ) async {
     try {
-      // 1. Autenticación inicial
-      UserCredential userCredential = await firebaseAuth
-          .signInWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential = await firebaseAuth
+          .signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
 
       final firebaseUser = userCredential.user;
-      if (firebaseUser == null) throw Exception("Usuario no existe");
 
-      // 2. Solicitamos el token JWT asíncronamente
-      String? token = await firebaseUser.getIdToken();
+      if (firebaseUser == null) {
+        throw Exception("Usuario no existe");
+      }
 
-      // 3. Creamos y retornamos el AppUser
+      final String? token = await firebaseUser.getIdToken();
+
+      if (token == null) {
+        throw Exception("No se pudo obtener el token");
+      }
+
+      final AppUser backendUser = await userRepo.getCurrentUser();
+
       return AppUser(
-        uid: userCredential.user!.uid,
-        email: email,
-        token: token ?? "",
+        uid: firebaseUser.uid,
+        email: backendUser.email,
+        token: token,
+        firstName: backendUser.firstName,
+        lastName: backendUser.lastName,
+        username: backendUser.username,
+        avatar: backendUser.avatar,
+        avatarThumbnail: backendUser.avatarThumbnail,
       );
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Error al iniciar sesión: ${e.code}");
+      throw Exception(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       debugPrint("Error al iniciar sesión: $e");
-      throw Exception("Error al iniciar sesión");
+      throw Exception("No se pudo iniciar sesión.");
     }
   }
 
@@ -43,23 +103,57 @@ class FirebaseAuthRepo implements AuthRepo {
     String password,
   ) async {
     try {
-      // 1. Intentamos el registro en Firebase Auth
-      UserCredential userCredential = await firebaseAuth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential = await firebaseAuth
+          .createUserWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
 
       final firebaseUser = userCredential.user;
+
       if (firebaseUser == null) {
         throw Exception("Error al crear el usuario en Firebase");
       }
 
-      // 2. Obtenemos el token
-      String? token = await firebaseUser.getIdToken();
+      final String? token = await firebaseUser.getIdToken();
 
-      // 3. Creamos y retornamos el AppUser
-      return AppUser(uid: firebaseUser.uid, email: email, token: token ?? "");
+      if (token == null) {
+        throw Exception("No se pudo obtener el token");
+      }
+
+      final nameParts = name
+          .trim()
+          .split(RegExp(r'\s+'))
+          .where((part) => part.isNotEmpty)
+          .toList();
+
+      final String firstName = nameParts.isNotEmpty ? nameParts[0] : '';
+      final String lastName = nameParts.length > 1 ? nameParts[1] : '';
+
+      await userRepo.createCurrentUser(
+        firstName: firstName,
+        lastName: lastName,
+        username: firebaseUser.uid,
+      );
+
+      final backendUser = await userRepo.getCurrentUser();
+
+      return AppUser(
+        uid: backendUser.uid,
+        email: backendUser.email,
+        token: token,
+        firstName: backendUser.firstName,
+        lastName: backendUser.lastName,
+        username: backendUser.username,
+        avatar: backendUser.avatar,
+        avatarThumbnail: backendUser.avatarThumbnail,
+      );
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Error al registrarse: ${e.code}");
+      throw Exception(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       debugPrint("Error al registrarse: $e");
-      throw Exception("Error al registrarse.");
+      rethrow;
     }
   }
 
@@ -93,21 +187,35 @@ class FirebaseAuthRepo implements AuthRepo {
   // GET CURRENT USER
   @override
   Future<AppUser?> getCurrentUser() async {
-    // Get current logged in user from firebase
-    final firebaseUser = firebaseAuth.currentUser;
+    try {
+      final firebaseUser = firebaseAuth.currentUser;
 
-    // No logged in user
-    if (firebaseUser == null) return null;
+      if (firebaseUser == null) {
+        return null;
+      }
 
-    final String? tokenActualizado = await firebaseUser.getIdToken(true);
-    // developer.log("TokenActualizado: $tokenActualizado");
+      final String? tokenActualizado = await firebaseUser.getIdToken(true);
 
-    // Logged in user exists
-    return AppUser(
-      uid: firebaseUser.uid,
-      email: firebaseUser.email!,
-      token: tokenActualizado ?? '',
-    );
+      if (tokenActualizado == null) {
+        return null;
+      }
+
+      final backendUser = await userRepo.getCurrentUser();
+
+      return AppUser(
+        uid: backendUser.uid,
+        email: backendUser.email,
+        token: tokenActualizado,
+        firstName: backendUser.firstName,
+        lastName: backendUser.lastName,
+        username: backendUser.username,
+        avatar: backendUser.avatar,
+        avatarThumbnail: backendUser.avatarThumbnail,
+      );
+    } catch (e) {
+      debugPrint("Error al obtener usuario actual: $e");
+      return null;
+    }
   }
 
   @override
@@ -158,14 +266,43 @@ class FirebaseAuthRepo implements AuthRepo {
 
       final String? firebaseToken = await firebaseUser.getIdToken();
 
-      return AppUser(
-        uid: firebaseUser.uid,
-        email: firebaseUser.email ?? '',
-        token: firebaseToken ?? '',
+      if (firebaseToken == null) {
+        throw Exception("No se pudo obtener el token");
+      }
+
+      final nameParts = (firebaseUser.displayName ?? '')
+          .trim()
+          .split(RegExp(r'\s+'))
+          .where((part) => part.isNotEmpty)
+          .toList();
+
+      final String firstName = nameParts.isNotEmpty ? nameParts[0] : '';
+      final String lastName = nameParts.length > 1 ? nameParts[1] : '';
+
+      await userRepo.createCurrentUser(
+        firstName: firstName,
+        lastName: lastName,
+        username: firebaseUser.uid,
       );
+
+      final backendUser = await userRepo.getCurrentUser();
+
+      return AppUser(
+        uid: backendUser.uid,
+        email: backendUser.email,
+        token: firebaseToken,
+        firstName: backendUser.firstName,
+        lastName: backendUser.lastName,
+        username: backendUser.username,
+        avatar: backendUser.avatar,
+        avatarThumbnail: backendUser.avatarThumbnail,
+      );
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Error de Firebase con Google: ${e.code}");
+      throw Exception(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       debugPrint("Error en signInWithGoogle: $e");
-      return null;
+      throw Exception("No se pudo iniciar sesión con Google.");
     }
   }
 }

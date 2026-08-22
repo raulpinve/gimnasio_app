@@ -10,6 +10,9 @@ class AuthInitial extends AuthState {}
 // Loading
 class AuthLoading extends AuthState {}
 
+// Cheking if user is authenticated
+class AuthChecking extends AuthState {}
+
 // Authenticated
 class Authenticated extends AuthState {
   final AppUser user;

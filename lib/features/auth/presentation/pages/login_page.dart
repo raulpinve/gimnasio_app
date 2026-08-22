@@ -16,6 +16,7 @@ import 'package:gym_app/features/auth/presentation/components/google_sign_in_but
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:gym_app/features/auth/presentation/cubits/auth_states.dart';
 
 class LoginPage extends StatefulWidget {
   final void Function()? togglePages;
@@ -29,6 +30,8 @@ class _LoginPageState extends State<LoginPage> {
   // text controllers
   final emailController = TextEditingController();
   final pwController = TextEditingController();
+
+  bool isResettingPassword = false;
 
   // auth cubit
   late final authCubit = context.read<AuthCubit>();
@@ -52,50 +55,85 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // forgot password
   void openForgotPasswordBox() {
     showDialog(
       context: context,
-      builder: (builder) => AlertDialog(
-        title: const Text("Forgot Password?"),
-        content: MyTextfield(
-          controller: emailController,
-          hintText: "Enter email...",
-          obscureText: false,
-        ),
-        actions: [
-          // Cancel button
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          // reset button
-          TextButton(
-            onPressed: () async {
-              // 1. Guardamos la referencia al navigator antes del async request
-              final navigator = Navigator.of(context);
+      builder: (dialogContext) {
+        bool isResettingPassword = false;
 
-              String message = await authCubit.forgotPassword(
-                emailController.text,
-              );
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: const Text(
+                "¿Olvidaste tu contraseña?",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 320,
+                    child: MyTextfield(
+                      controller: emailController,
+                      hintText: "Ingresa tu correo electrónico",
+                      obscureText: false,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isResettingPassword
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: const Text("Cancelar"),
+                ),
+                TextButton(
+                  onPressed: isResettingPassword
+                      ? null
+                      : () async {
+                          setDialogState(() {
+                            isResettingPassword = true;
+                          });
 
-              // 2. Verificamos que el widget siga montado antes de usar el contexto
-              if (!mounted) return;
+                          final navigator = Navigator.of(dialogContext);
+                          final messenger = ScaffoldMessenger.of(context);
 
-              if (message == "Password reset email! Check your inbox.") {
-                navigator.pop(); // Usamos la referencia guardada
-                emailController.clear();
-              }
+                          final message = await authCubit.forgotPassword(
+                            emailController.text.trim(),
+                          );
 
-              // El contexto aquí ya está protegido por el chequeo de 'mounted'
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(message)),
-              );
-            },
-            child: const Text("Reset"),
-          ),
-        ],
-      ),
+                          if (!mounted) return;
+
+                          navigator.pop();
+
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(message),
+                            ),
+                          );
+
+                          emailController.clear();
+                        },
+                  child: isResettingPassword
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text("Restablecer"),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -119,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 70),
                   // name of the app
                   Text(
-                    "Gym-fit",
+                    "GymFit",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -131,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                   // email textfield
                   MyTextfield(
                     controller: emailController,
-                    hintText: "Email",
+                    hintText: "E-mail",
                     obscureText: false,
                   ),
 
@@ -140,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                   // pw textfield
                   MyTextfield(
                     controller: pwController,
-                    hintText: "password",
+                    hintText: "Contraseña",
                     obscureText: true,
                   ),
 
@@ -153,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                       GestureDetector(
                         onTap: () => openForgotPasswordBox(),
                         child: Text(
-                          "Forgot password?",
+                          "¿Olvidó la contraseña?",
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,
@@ -166,7 +204,18 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 25),
 
                   // login button
-                  MyButton(onTap: login, text: "LOGIN"),
+                  BlocBuilder<AuthCubit, AuthState>(
+                    builder: (context, state) {
+                      final isLoading = state is AuthLoading;
+
+                      return MyButton(
+                        onTap: isLoading ? null : login,
+                        text: 'Iniciar sesión',
+                        type: MyButtonType.primary,
+                        isLoading: isLoading,
+                      );
+                    },
+                  ),
 
                   const SizedBox(height: 25),
 
@@ -179,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 25.0),
-                        child: Text("Or sign in with"),
+                        child: Text("O continúa con"),
                       ),
                       Expanded(
                         child: Divider(
@@ -204,12 +253,12 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 25),
 
-                  // don't have an account? register now
+                  // ¿No tienes una cuenta? Registrate ahora
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account",
+                        "¿No tienes una cuenta?",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -217,7 +266,7 @@ class _LoginPageState extends State<LoginPage> {
                       GestureDetector(
                         onTap: widget.togglePages,
                         child: Text(
-                          " Register now",
+                          " Crea una ahora",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,

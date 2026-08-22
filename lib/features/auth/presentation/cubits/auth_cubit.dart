@@ -17,7 +17,7 @@ class AuthCubit extends Cubit<AuthState> {
   // Check if user is authenticated
   Future<void> checkAuth() async {
     // loading
-    emit(AuthLoading());
+    emit(AuthChecking());
 
     // Get current user
     final AppUser? user = await authRepo.getCurrentUser();
@@ -39,26 +39,38 @@ class AuthCubit extends Cubit<AuthState> {
         emit(Authenticated(user));
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
-      emit(Unanthenticated());
+      final message = e is Exception
+          ? e.toString().replaceFirst('Exception: ', '')
+          : e.toString();
+
+      emit(AuthError(message));
     }
   }
 
   // Register with email + pw
-  Future<void> register(String name, String email, String pw) async {
+  Future<void> register(
+    String name,
+    String email,
+    String pw,
+  ) async {
     try {
       emit(AuthLoading());
-      final user = await authRepo.registerWithEmailPassword(name, email, pw);
+      final user = await authRepo.registerWithEmailPassword(
+        name,
+        email,
+        pw,
+      );
 
       if (user != null) {
         _currentUser = user;
         emit(Authenticated(user));
-      } else {
-        emit(Unanthenticated());
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
-      emit(Unanthenticated());
+      final message = e is Exception
+          ? e.toString().replaceFirst('Exception: ', '')
+          : e.toString();
+
+      emit(AuthError(message));
     }
   }
 

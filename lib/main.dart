@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/core/network/api_client.dart';
+import 'package:gym_app/features/auth/data/api_user_repo.dart';
 import 'package:gym_app/features/auth/data/firebase_auth_repo.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_states.dart';
@@ -18,8 +20,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  final firebaseAuthRepo = FirebaseAuthRepo();
-
+  final firebaseAuthRepo = FirebaseAuthRepo(
+    userRepo: ApiUserRepo(
+      apiClient: ApiClient.instance,
+    ),
+  );
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -30,27 +35,30 @@ class MyApp extends StatelessWidget {
           )..checkAuth(),
         ),
       ],
-      child: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
-          if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-              ),
-            );
-          }
+      child: Builder(
+        builder: (context) {
+          return MaterialApp.router(
+            title: 'Gim-fit',
+            debugShowCheckedModeBanner: false,
+            theme: lightMode,
+            darkTheme: darkMode,
+            routerConfig: getAppRouter(context),
+            builder: (context, child) {
+              return BlocListener<AuthCubit, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                      ),
+                    );
+                  }
+                },
+                child: child,
+              );
+            },
+          );
         },
-        child: Builder(
-          builder: (context) {
-            return MaterialApp.router(
-              title: 'Gim-fit',
-              debugShowCheckedModeBanner: false,
-              theme: lightMode,
-              darkTheme: darkMode,
-              routerConfig: getAppRouter(context),
-            );
-          },
-        ),
       ),
     );
   }

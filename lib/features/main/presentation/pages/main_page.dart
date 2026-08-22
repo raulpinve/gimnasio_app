@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_list_page.dart';
+import 'package:gym_app/features/perfil/presentation/pages/perfil_page.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routine_list_page.dart';
@@ -24,9 +25,7 @@ class _MainPageState extends State<MainPage> {
     ExercisesListPage(),
     RoutineListPage(),
     WorkoutsListPage(),
-    Center(
-      child: Text("Perfil"),
-    ),
+    PerfilPage(),
   ];
 
   @override
@@ -51,7 +50,8 @@ class _MainPageState extends State<MainPage> {
       ],
       child: Scaffold(
         body: IndexedStack(
-          index: currentIndex,
+          // index: currentIndex,
+          index: 3,
           children: pages,
         ),
         bottomNavigationBar: SafeArea(
