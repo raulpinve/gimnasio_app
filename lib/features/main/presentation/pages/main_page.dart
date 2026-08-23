@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/exercise/data/api_exercise_repo.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/pages/exercises_list_page.dart';
-import 'package:gym_app/features/perfil/presentation/pages/perfil_page.dart';
+import 'package:gym_app/features/profile/data/api_stat_repo.dart';
+import 'package:gym_app/features/profile/presentation/cubits/stats_cubit.dart';
+import 'package:gym_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/pages/routine_list_page.dart';
@@ -25,7 +27,7 @@ class _MainPageState extends State<MainPage> {
     ExercisesListPage(),
     RoutineListPage(),
     WorkoutsListPage(),
-    PerfilPage(),
+    ProfilePage(),
   ];
 
   @override
@@ -47,6 +49,11 @@ class _MainPageState extends State<MainPage> {
             routineRepo: ApiRoutineRepo(),
           )..loadRoutines(),
         ),
+        BlocProvider(
+          create: (_) => StatsCubit(
+            statRepo: ApiStatRepo(),
+          )..loadStats(),
+        ),
       ],
       child: Scaffold(
         body: IndexedStack(
@@ -55,6 +62,7 @@ class _MainPageState extends State<MainPage> {
           children: pages,
         ),
         bottomNavigationBar: SafeArea(
+          top: false,
           child: Padding(
             padding: const EdgeInsets.only(
               left: 20,
@@ -63,68 +71,61 @@ class _MainPageState extends State<MainPage> {
               top: 10,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(30.0),
-              child: MediaQuery.removePadding(
-                context: context,
-                removeBottom: true,
-                child: SizedBox(
-                  height: 75,
-                  child: BottomNavigationBar(
-                    elevation: 0,
-                    currentIndex: currentIndex,
-                    selectedItemColor: Theme.of(context).colorScheme.primary,
-                    unselectedItemColor: Colors.grey.shade400,
-                    backgroundColor: Colors.transparent,
-                    type: BottomNavigationBarType.shifting,
-                    selectedFontSize: 11,
-                    unselectedFontSize: 11,
-                    selectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      // letterSpacing: 0.2,
-                    ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    onTap: (index) {
-                      setState(() {
-                        currentIndex = index;
-                      });
-                    },
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          currentIndex == 0
-                              ? Icons.fitness_center
-                              : Icons.fitness_center_outlined,
-                        ),
-                        label: 'Ejercicios',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          currentIndex == 1
-                              ? Icons.checklist_rounded
-                              : Icons.checklist_rtl_rounded,
-                        ),
-                        label: 'Rutinas',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          currentIndex == 2
-                              ? Icons.local_fire_department
-                              : Icons.local_fire_department_outlined,
-                        ),
-                        label: 'Workouts',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          currentIndex == 3
-                              ? Icons.person
-                              : Icons.person_outline,
-                        ),
-                        label: 'Perfil',
-                      ),
-                    ],
+              borderRadius: BorderRadius.circular(30),
+              child: SizedBox(
+                height: 75,
+                child: BottomNavigationBar(
+                  elevation: 0,
+                  currentIndex: currentIndex,
+                  selectedItemColor: Theme.of(context).colorScheme.primary,
+                  unselectedItemColor: Colors.grey.shade400,
+                  backgroundColor: Colors.transparent,
+                  type: BottomNavigationBarType.shifting,
+                  selectedFontSize: 11,
+                  unselectedFontSize: 11,
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
                   ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  onTap: (index) {
+                    setState(() {
+                      currentIndex = index;
+                    });
+                  },
+                  items: [
+                    BottomNavigationBarItem(
+                      icon: Icon(
+                        currentIndex == 0
+                            ? Icons.fitness_center
+                            : Icons.fitness_center_outlined,
+                      ),
+                      label: 'Ejercicios',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(
+                        currentIndex == 1
+                            ? Icons.checklist_rounded
+                            : Icons.checklist_rtl_rounded,
+                      ),
+                      label: 'Rutinas',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(
+                        currentIndex == 2
+                            ? Icons.local_fire_department
+                            : Icons.local_fire_department_outlined,
+                      ),
+                      label: 'Workouts',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(
+                        currentIndex == 3 ? Icons.person : Icons.person_outline,
+                      ),
+                      label: 'Perfil',
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -4,7 +4,7 @@ import 'package:gym_app/features/workouts_exercises/data/api_workout_exercise_re
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercises_list/workout_exercises_list_cubit.dart';
 import 'package:gym_app/features/workouts_record/data/api_workout_record.dart';
-import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record_cubit.dart';
+import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record/workout_record_cubit.dart';
 import 'package:gym_app/features/workouts_record/presentation/pages/workout_record_list_page.dart';
 
 final workoutRecordRoutes = <GoRoute>[

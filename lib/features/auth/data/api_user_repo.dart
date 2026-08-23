@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:gym_app/core/errors/api_error_handler.dart';
 import 'package:gym_app/core/network/api_client.dart';
 import 'package:gym_app/features/auth/domain/entities/app_user.dart';
