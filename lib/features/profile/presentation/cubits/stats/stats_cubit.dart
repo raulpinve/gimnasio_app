@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/profile/domain/repos/stat_repo.dart';
-import 'package:gym_app/features/profile/presentation/cubits/stat_state.dart';
+import 'package:gym_app/features/profile/presentation/cubits/stats/stat_state.dart';
 
 class StatsCubit extends Cubit<StatState> {
   final StatRepo statRepo;

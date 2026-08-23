@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
-import 'package:gym_app/features/profile/presentation/cubits/stat_state.dart';
-import 'package:gym_app/features/profile/presentation/cubits/stats_cubit.dart';
+import 'package:gym_app/features/profile/presentation/cubits/stats/stat_state.dart';
+import 'package:gym_app/features/profile/presentation/cubits/stats/stats_cubit.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,7 +28,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthCubit>().currentUser;
+    final user = context.watch<AuthCubit>().currentUser;
+    final firstName = user?.firstName;
 
     final buttonStyle = ElevatedButton.styleFrom(
       elevation: 0,
@@ -81,7 +83,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Center(
                   child: Text(
-                    "R",
+                    firstName != null && firstName.isNotEmpty
+                        ? firstName[0].toUpperCase()
+                        : '',
                     style: TextStyle(
                       fontSize: 70,
                       fontStyle: FontStyle.italic,
@@ -229,7 +233,17 @@ class _ProfilePageState extends State<ProfilePage> {
             SizedBox(height: 14),
 
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () async {
+                final updated = await context.push<bool>('/profile/update');
+
+                if (updated == true && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Perfil actualizado correctamente'),
+                    ),
+                  );
+                }
+              },
               icon: const Icon(
                 Icons.edit_outlined,
                 size: 18,

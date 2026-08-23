@@ -14,6 +14,18 @@ class AuthCubit extends Cubit<AuthState> {
   // Get current user
   AppUser? get currentUser => _currentUser;
 
+  // Update current user
+  void updateCurrentUser(AppUser updatedUser) {
+    if (_currentUser == null) return;
+
+    _currentUser = _currentUser!.copyWith(
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+    );
+
+    emit(Authenticated(_currentUser!));
+  }
+
   Future<void> checkAuth() async {
     emit(AuthChecking());
 

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_states.dart';
+import 'package:gym_app/router/profile_routes.dart';
 import 'package:gym_app/router/routine_exercises_routes.dart';
 import 'package:gym_app/router/routine_routes.dart';
 import 'package:gym_app/router/workout_exercises_routes.dart';
@@ -49,6 +50,7 @@ GoRouter getAppRouter(BuildContext context) {
       ...workoutRoutes,
       ...workoutExercisesRoutes,
       ...workoutRecordRoutes,
+      ...profileRoutes,
     ],
   );
 }

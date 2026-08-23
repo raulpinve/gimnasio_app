@@ -19,6 +19,28 @@ class AppUser {
     this.avatarThumbnail,
   });
 
+  AppUser copyWith({
+    String? uid,
+    String? email,
+    String? token,
+    String? firstName,
+    String? lastName,
+    String? username,
+    String? avatar,
+    String? avatarThumbnail,
+  }) {
+    return AppUser(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      token: token ?? this.token,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      username: username ?? this.username,
+      avatar: avatar ?? this.avatar,
+      avatarThumbnail: avatarThumbnail ?? this.avatarThumbnail,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
