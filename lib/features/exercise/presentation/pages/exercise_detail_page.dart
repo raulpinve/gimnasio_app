@@ -8,6 +8,7 @@ import 'package:gym_app/features/exercise/domain/entities/exercise_progress.dart
 import 'package:gym_app/features/exercise/presentation/constants/exercise_constants.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_detail_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_detail_state.dart';
+import 'package:gym_app/features/exercise/presentation/widgets/Exercise_thumbnail.dart';
 
 class ExerciseDetailPage extends StatelessWidget {
   final String exerciseId;
@@ -77,9 +78,27 @@ class _ExerciseDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildExerciseHero(context, exercise),
+                    Center(
+                      child: ExerciseThumbnail(
+                        name: exercise.name,
+                        imageUrl: exercise.avatar,
+                        size: 200,
+                      ),
+                    ),
                     SizedBox(
-                      height: 20,
+                      height: 28,
+                    ),
+                    Text(
+                      exercise.name,
+                      style:
+                          Theme.of(
+                            context,
+                          ).textTheme.headlineSmall!.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    SizedBox(
+                      height: 28,
                     ),
                     _especificaciones(context, exercise),
                     SizedBox(

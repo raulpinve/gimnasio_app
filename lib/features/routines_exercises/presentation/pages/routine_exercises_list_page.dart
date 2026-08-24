@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/exercise/presentation/widgets/Exercise_thumbnail.dart';
+import 'package:gym_app/features/exercise/presentation/widgets/exercise_thumbnail.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
@@ -67,7 +67,6 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(routine.name),
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               actions: [
                 MyAppbarButton(
@@ -92,7 +91,20 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
             body: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    routine.name,
+                    style:
+                        Theme.of(
+                          context,
+                        ).textTheme.headlineSmall!.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  SizedBox(
+                    height: 24,
+                  ),
                   // ===================================
                   // ======== ROUTINE EXERCISES ========
                   // ===================================
