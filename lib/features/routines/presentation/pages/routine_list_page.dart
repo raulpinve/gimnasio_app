@@ -28,7 +28,6 @@ class _RoutineListPageState extends State<RoutineListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rutinas'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           MyAppbarButton(
@@ -53,9 +52,22 @@ class _RoutineListPageState extends State<RoutineListPage> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              "Mis rutinas",
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 24,
+            ),
             Expanded(
               child: BlocBuilder<RoutineListCubit, RoutineListState>(
                 builder: (context, state) {
@@ -122,166 +134,150 @@ class _RoutineListPageState extends State<RoutineListPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final exercises = routine.exercises ?? [];
 
-    return GestureDetector(
-      onTap: () async {
-        final response = await context.push<bool>(
-          '/routine-exercises/${routine.id}',
-        );
-
-        if (!context.mounted) return;
-
-        if (response == true) {
-          context.read<RoutineExercisesListCubit>().loadRoutineExercises(
-            routine.id,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          final response = await context.push<bool>(
+            '/routine-exercises/${routine.id}',
           );
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
+
+          if (!context.mounted) return;
+
+          if (response == true) {
+            context.read<RoutineExercisesListCubit>().loadRoutineExercises(
+              routine.id,
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            16,
+            12,
+            16,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        routine.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      Text(
-                        exercises.isEmpty
-                            ? 'Sin ejercicios'
-                            : '${exercises.length} ${exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: PopupMenuButton<String>(
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      Icons.more_horiz,
-                      size: 20,
-                      color: Colors.grey.shade500,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'delete':
-                          _confirmDeleteWorkout(
-                            context,
-                            routine,
-                          );
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem<String>(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              size: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text('Eliminar'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.shade200,
             ),
-
-            if (exercises.isNotEmpty) ...[
-              const SizedBox(height: 16),
-
-              SizedBox(
-                height: 32,
-                child: Row(
-                  children: [
-                    ...exercises.take(2).map(
-                      (exercise) {
-                        return Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.secondary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            exercise.name,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.inversePrimary,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    if (exercises.length > 2)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          routine.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                              ),
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '+${exercises.length - 2}',
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          exercises.isEmpty
+                              ? 'Sin ejercicios'
+                              : '${exercises.length} ${exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 20,
+                        color: Colors.grey.shade500,
                       ),
-                  ],
-                ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'delete':
+                            _confirmDeleteWorkout(
+                              context,
+                              routine,
+                            );
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                size: 20,
+                              ),
+                              SizedBox(width: 10),
+                              Text('Eliminar'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+
+              if (exercises.isNotEmpty) ...[
+                const SizedBox(height: 16),
+
+                Text(
+                  exercises
+                      .take(3)
+                      .map((exercise) => exercise.name)
+                      .join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+
+                if (exercises.length > 3) ...[
+                  const SizedBox(height: 4),
+
+                  Text(
+                    '+${exercises.length - 3} más',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

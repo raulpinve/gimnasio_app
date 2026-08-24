@@ -20,8 +20,8 @@ class MyAppbarButton extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              foregroundColor: Colors.black,
               elevation: 0,
               padding: EdgeInsets.zero,
               shape: const CircleBorder(),
