@@ -115,10 +115,13 @@ class _RoutineListPageState extends State<RoutineListPage> {
     );
   }
 
-  GestureDetector routineCard(
+  Widget routineCard(
     BuildContext context,
     Routine routine,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final exercises = routine.exercises ?? [];
+
     return GestureDetector(
       onTap: () async {
         final response = await context.push<bool>(
@@ -135,103 +138,149 @@ class _RoutineListPageState extends State<RoutineListPage> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.fromLTRB(
-          16,
-          14,
-          8,
-          14,
-        ),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-            ),
-          ],
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.grey.shade200,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nombre + menú
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    routine.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        routine.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Text(
+                        exercises.isEmpty
+                            ? 'Sin ejercicios'
+                            : '${exercises.length} ${exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(
-                    Icons.more_vert,
-                    size: 22,
-                  ),
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'delete':
-                        _confirmDeleteWorkout(
-                          context,
-                          routine,
-                        );
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline),
-                          SizedBox(width: 10),
-                          Text('Eliminar'),
-                        ],
-                      ),
+                const SizedBox(width: 8),
+
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      Icons.more_horiz,
+                      size: 20,
+                      color: Colors.grey.shade500,
                     ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'delete':
+                          _confirmDeleteWorkout(
+                            context,
+                            routine,
+                          );
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text('Eliminar'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            if (exercises.isNotEmpty) ...[
+              const SizedBox(height: 16),
+
+              SizedBox(
+                height: 32,
+                child: Row(
+                  children: [
+                    ...exercises.take(2).map(
+                      (exercise) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            exercise.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: colorScheme.inversePrimary,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    if (exercises.length > 2)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '+${exercises.length - 2}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            // Ejercicios
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                if (routine.exercises == null || routine.exercises!.isEmpty)
-                  _crearPill(
-                    'Sin ejercicios',
-                    Colors.grey.shade100,
-                    Colors.grey.shade800,
-                  )
-                else ...[
-                  ...routine.exercises!.take(1).map(
-                    (exercise) {
-                      return _crearPill(
-                        exercise.name,
-                        Colors.blue.shade100,
-                        Colors.blue.shade800,
-                      );
-                    },
-                  ),
-                  if (routine.exercises!.length > 1)
-                    _crearPill(
-                      '+${routine.exercises!.length - 1}',
-                      Colors.grey.shade100,
-                      Colors.grey.shade800,
-                    ),
-                ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),
@@ -244,7 +293,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 12),
-      itemCount: 6,
+      itemCount: 10,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(

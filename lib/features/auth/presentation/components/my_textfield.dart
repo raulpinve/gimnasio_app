@@ -41,7 +41,7 @@ class MyTextfield extends StatelessWidget {
               hintText: hintText,
 
               hintStyle: TextStyle(
-                color: hasError ? colorScheme.error : colorScheme.primary,
+                color: hasError ? colorScheme.error : Colors.grey.shade500,
               ),
 
               prefixIcon: prefixIcon != null
@@ -49,7 +49,7 @@ class MyTextfield extends StatelessWidget {
                       data: IconThemeData(
                         color: hasError
                             ? colorScheme.error
-                            : colorScheme.primary,
+                            : Colors.grey.shade500,
                       ),
                       child: prefixIcon!,
                     )
@@ -60,32 +60,31 @@ class MyTextfield extends StatelessWidget {
                       data: IconThemeData(
                         color: hasError
                             ? colorScheme.error
-                            : colorScheme.primary,
+                            : Colors.grey.shade500,
                       ),
                       child: suffixIcon!,
                     )
                   : null,
 
               filled: true,
+
               fillColor: hasError
-                  ? colorScheme.error.withValues(alpha: 0.08)
-                  : colorScheme.secondary,
+                  ? colorScheme.error.withValues(alpha: 0.05)
+                  : Colors.grey.shade50,
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: hasError
-                      ? colorScheme.error
-                      : colorScheme.primary.withValues(alpha: 0.4),
-                  width: 1.5,
+                  color: hasError ? colorScheme.error : Colors.grey.shade300,
+                  width: 1,
                 ),
               ),
 
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: colorScheme.primary,
-                  width: 2,
+                  color: hasError ? colorScheme.error : colorScheme.primary,
+                  width: 1.5,
                 ),
               ),
 
@@ -93,7 +92,7 @@ class MyTextfield extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: colorScheme.error,
-                  width: 1.5,
+                  width: 1,
                 ),
               ),
 
@@ -101,7 +100,7 @@ class MyTextfield extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
                   color: colorScheme.error,
-                  width: 2,
+                  width: 1.5,
                 ),
               ),
 

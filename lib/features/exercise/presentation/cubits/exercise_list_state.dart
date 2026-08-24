@@ -5,11 +5,6 @@ abstract class ExerciseListState {}
 // Estado inicial
 class ExerciseInitial extends ExerciseListState {}
 
-// Estado para crear ejercicio
-// TODO: Check if we use ExerciseCreating
-class ExerciseCreating extends ExerciseListState {}
-
-// TODO: Check if we use ExerciseLoading
 // Estado para cargar la lista inicialmente
 class ExerciseLoading extends ExerciseListState {}
 

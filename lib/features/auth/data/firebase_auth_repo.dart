@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:gym_app/core/errors/firebase_auth_error_mapper.dart';
 import 'package:gym_app/features/auth/domain/entities/app_user.dart';
 import 'package:gym_app/features/auth/domain/repos/auth_repo.dart';
 import 'package:gym_app/features/auth/domain/repos/user_repo.dart';
@@ -9,41 +10,8 @@ import 'package:gym_app/features/auth/domain/repos/user_repo.dart';
 class FirebaseAuthRepo implements AuthRepo {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final UserRepo userRepo;
-
-  String _getFirebaseAuthErrorMessage(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'invalid-email':
-        return 'El correo electrónico no es válido.';
-
-      case 'user-not-found':
-        return 'No existe una cuenta con este correo.';
-
-      case 'wrong-password':
-      case 'invalid-credential':
-        return 'El correo o la contraseña son incorrectos.';
-
-      case 'email-already-in-use':
-        return 'Ya existe una cuenta con este correo.';
-
-      case 'weak-password':
-        return 'La contraseña es demasiado débil.';
-
-      case 'user-disabled':
-        return 'Esta cuenta ha sido deshabilitada.';
-
-      case 'too-many-requests':
-        return 'Demasiados intentos. Inténtalo nuevamente más tarde.';
-
-      case 'operation-not-allowed':
-        return 'Este método de autenticación no está habilitado.';
-
-      case 'network-request-failed':
-        return 'No se pudo conectar con el servidor. Revisa tu conexión.';
-
-      default:
-        return 'No se pudo iniciar sesión. Inténtalo nuevamente.';
-    }
-  }
+  final String googleServerClientId =
+      '739771923607-qlgvf5fjv8emk18ql40vok7e5br57t3a.apps.googleusercontent.com';
 
   FirebaseAuthRepo({
     required this.userRepo,
@@ -88,7 +56,9 @@ class FirebaseAuthRepo implements AuthRepo {
       );
     } on FirebaseAuthException catch (e) {
       debugPrint("Error al iniciar sesión: ${e.code}");
-      throw Exception(_getFirebaseAuthErrorMessage(e));
+      throw Exception(
+        FirebaseAuthErrorMapper.getMessage(e),
+      );
     } catch (e) {
       debugPrint("Error al iniciar sesión: $e");
       throw Exception("No se pudo iniciar sesión.");
@@ -149,8 +119,10 @@ class FirebaseAuthRepo implements AuthRepo {
         avatarThumbnail: backendUser.avatarThumbnail,
       );
     } on FirebaseAuthException catch (e) {
-      debugPrint("Error al registrarse: ${e.code}");
-      throw Exception(_getFirebaseAuthErrorMessage(e));
+      debugPrint("Error al iniciar sesión: ${e.code}");
+      throw Exception(
+        FirebaseAuthErrorMapper.getMessage(e),
+      );
     } catch (e) {
       debugPrint("Error al registrarse: $e");
       rethrow;
@@ -241,8 +213,7 @@ class FirebaseAuthRepo implements AuthRepo {
 
       // 2. Inicializar el plugin
       await GoogleSignIn.instance.initialize(
-        serverClientId:
-            '739771923607-qlgvf5fjv8emk18ql40vok7e5br57t3a.apps.googleusercontent.com',
+        serverClientId: googleServerClientId,
       );
 
       // 3. Abrir de manera interactiva el selector de cuentas
@@ -297,12 +268,25 @@ class FirebaseAuthRepo implements AuthRepo {
         avatar: backendUser.avatar,
         avatarThumbnail: backendUser.avatarThumbnail,
       );
-    } on FirebaseAuthException catch (e) {
-      debugPrint("Error de Firebase con Google: ${e.code}");
-      throw Exception(_getFirebaseAuthErrorMessage(e));
-    } catch (e) {
-      debugPrint("Error en signInWithGoogle: $e");
-      throw Exception("No se pudo iniciar sesión con Google.");
+    } on FirebaseAuthException catch (e, stackTrace) {
+      debugPrint('===== FIREBASE AUTH ERROR =====');
+      debugPrint('code: ${e.code}');
+      debugPrint('message: ${e.message}');
+      debugPrint('plugin: ${e.plugin}');
+      debugPrintStack(stackTrace: stackTrace);
+
+      throw Exception(
+        FirebaseAuthErrorMapper.getMessage(e),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('===== GOOGLE SIGN-IN ERROR =====');
+      debugPrint('error: $e');
+      debugPrint('type: ${e.runtimeType}');
+      debugPrintStack(stackTrace: stackTrace);
+
+      throw Exception(
+        "No se pudo iniciar sesión con Google.",
+      );
     }
   }
 }

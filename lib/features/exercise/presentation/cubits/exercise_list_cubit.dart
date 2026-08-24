@@ -215,35 +215,4 @@ class ExerciseListCubit extends Cubit<ExerciseListState> {
       muscleGroup: muscleGroup,
     );
   }
-
-  // ============================================================
-  // CREAR EJERCICIO
-  // ============================================================
-
-  Future<void> createExercise({
-    required String name,
-    required List<String> muscleGroups,
-    String? equipment,
-    required String type,
-  }) async {
-    try {
-      emit(ExerciseCreating());
-
-      await exerciseRepo.createExercise(
-        name: name,
-        muscleGroups: muscleGroups,
-        equipment: equipment,
-        type: type,
-      );
-
-      // Después de crear, recargamos la lista
-      await loadExercises();
-    } catch (e) {
-      emit(
-        ExerciseError(
-          e.toString(),
-        ),
-      );
-    }
-  }
 }

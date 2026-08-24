@@ -14,18 +14,23 @@ class MyAppbarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shadowColor: Colors.transparent,
+        SizedBox(
+          width: 35,
+          height: 35,
+          child: ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: EdgeInsets.zero,
+              shape: const CircleBorder(),
+            ),
+            child: icon,
           ),
-          child: icon,
         ),
         const SizedBox(
-          width: 12,
+          width: 16,
         ),
       ],
     );

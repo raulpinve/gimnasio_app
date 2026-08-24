@@ -50,7 +50,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -71,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Center(
               child: Container(

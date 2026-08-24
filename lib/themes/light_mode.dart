@@ -6,11 +6,13 @@ ThemeData lightMode = ThemeData(
     bodyColor: Colors.grey.shade900,
     displayColor: Colors.grey.shade900,
   ),
+
   colorScheme: ColorScheme.light(
-    primary: Colors.grey.shade600,
-    secondary: Colors.grey.shade100,
-    tertiary: Colors.white,
-    inversePrimary: Colors.grey.shade900,
+    primary: const Color(0xFF2563EB),
+    secondary: const Color(0xFFEFF6FF),
+    surface: const Color(0xFFFFFFFF),
+    inversePrimary: const Color(0xFF1E3A8A),
   ),
-  scaffoldBackgroundColor: Colors.grey.shade100,
+
+  scaffoldBackgroundColor: const Color(0xFFF8FAFC),
 );
