@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
-
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_state.dart';
+import 'package:gym_app/features/exercise/presentation/widgets/Exercise_thumbnail.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ExerciseSelectorPage extends StatefulWidget {
@@ -81,48 +81,66 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Seleccionar ejercicio'),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: theme.scaffoldBackgroundColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.pop(); // Ahora sí regresa correctamente atrás sin bucles
-          },
+          onPressed: () => context.pop(),
         ),
       ),
-
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // BUSCADOR
+            Text(
+              'Selecciona un ejercicio',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              'Busca y selecciona el ejercicio que quieres añadir a tu rutina.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
+                  flex: 3,
                   child: MyTextfield(
                     controller: _searchController,
-                    hintText: "Buscar ejercicio...",
+                    hintText: 'Buscar ejercicio',
                     obscureText: false,
                     onChanged: (value) {
                       context.read<ExerciseListCubit>().searchExercises(value);
                     },
                   ),
                 ),
+
                 const SizedBox(width: 10),
+
                 Expanded(
+                  flex: 2,
                   child: dropdown(),
                 ),
               ],
             ),
 
-            SizedBox(
-              height: 12,
-            ),
+            const SizedBox(height: 16),
 
-            // LISTA
             Expanded(
               child: BlocBuilder<ExerciseListCubit, ExerciseListState>(
                 builder: (context, state) {
@@ -138,11 +156,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
 
                   if (state is ExercisesLoaded) {
                     if (state.exercises.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No se encontraron ejercicios',
-                        ),
-                      );
+                      return _buildEmptyState(context);
                     }
 
                     return RefreshIndicator(
@@ -151,13 +165,15 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                       },
                       child: ListView.separated(
                         controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 16),
                         itemCount:
                             state.exercises.length +
                             (state.isLoadingMore ? 1 : 0),
-                        separatorBuilder: (context, index) {
-                          return const SizedBox(height: 12);
-                        },
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 10),
                         itemBuilder: (context, index) {
+                          // NO HAY EJERCICIOS
                           if (index >= state.exercises.length) {
                             return const Padding(
                               padding: EdgeInsets.all(16),
@@ -168,106 +184,9 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
                           }
 
                           final exercise = state.exercises[index];
-                          final theme = Theme.of(context);
-                          final colorScheme = theme.colorScheme;
-
-                          return GestureDetector(
-                            onTap: () {
-                              if (context.canPop()) {
-                                context.pop(exercise);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.fromLTRB(
-                                16,
-                                14,
-                                14,
-                                14,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colorScheme.tertiary,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: exercise.avatar?.isNotEmpty == true
-                                        ? Image.network(
-                                            exercise.avatar!,
-                                            width: 64,
-                                            height: 64,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, _, _) {
-                                              return _buildExercisePlaceholder(
-                                                context,
-                                                exercise,
-                                              );
-                                            },
-                                          )
-                                        : _buildExercisePlaceholder(
-                                            context,
-                                            exercise,
-                                          ),
-                                  ),
-
-                                  const SizedBox(width: 12),
-
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          exercise.name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-
-                                        const SizedBox(height: 8),
-
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              exercise.type == 'cardio'
-                                                  ? Icons
-                                                        .directions_run_outlined
-                                                  : Icons
-                                                        .fitness_center_outlined,
-                                              size: 15,
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              exercise.type == 'strength'
-                                                  ? 'Fuerza'
-                                                  : 'Cardio',
-                                              style: theme.textTheme.bodySmall
-                                                  ?.copyWith(
-                                                    color: colorScheme
-                                                        .onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          return _buildExerciseCard(
+                            context,
+                            exercise,
                           );
                         },
                       ),
@@ -283,30 +202,132 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
       ),
     );
   }
-}
 
-Widget _buildExercisePlaceholder(
-  BuildContext context,
-  Exercise exercise,
-) {
-  final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildExerciseCard(
+    BuildContext context,
+    Exercise exercise,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-  return Container(
-    width: 64,
-    height: 64,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(
-      exercise.type == 'cardio'
-          ? Icons.directions_run_outlined
-          : Icons.fitness_center_outlined,
-      color: colorScheme.onSurfaceVariant,
-      size: 26,
-    ),
-  );
+    final isCardio = exercise.type == 'cardio';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (context.canPop()) {
+            context.pop(exercise);
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.shade200,
+            ),
+          ),
+          child: Row(
+            children: [
+              ExerciseThumbnail(
+                name: exercise.name,
+                imageUrl: exercise.avatar,
+              ),
+
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercise.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      isCardio ? 'Cardio' : 'Fuerza',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 30,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              'No encontramos ejercicios',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              'Prueba con otro nombre o cambia el músculo seleccionado.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Widget skeletonLoader(BuildContext context) {

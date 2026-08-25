@@ -144,14 +144,7 @@ class _RoutineExercisesUpdatePageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Ejercicio',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                _sectionHeader(context, step: 1, title: 'Ejercicio'),
 
                 const SizedBox(height: 12),
 
@@ -159,16 +152,9 @@ class _RoutineExercisesUpdatePageState
 
                 const SizedBox(height: 28),
 
-                Text(
-                  'Objetivo',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                _sectionHeader(context, step: 2, title: 'Define el objetivo'),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
                 Container(
                   width: double.infinity,
@@ -287,6 +273,48 @@ class _RoutineExercisesUpdatePageState
           ),
         );
       },
+    );
+  }
+
+  Widget _sectionHeader(
+    BuildContext context, {
+    required int step,
+    required String title,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(
+              alpha: 0.12,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            '$step',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 

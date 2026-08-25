@@ -114,17 +114,19 @@ class _RoutineExercisesCreatePageState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Para la rutina',
+                            'RUTINA',
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.1,
+                              color: Colors.grey.shade500,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             routineState.routine.name,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
@@ -149,14 +151,7 @@ class _RoutineExercisesCreatePageState
 
                 const SizedBox(height: 28),
 
-                Text(
-                  'Ejercicio',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                _sectionHeader(context, step: 1, title: 'Elige el ejercicio'),
 
                 const SizedBox(height: 12),
 
@@ -167,16 +162,9 @@ class _RoutineExercisesCreatePageState
                 if (_selectedExercise != null) ...[
                   const SizedBox(height: 28),
 
-                  Text(
-                    'Objetivo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
+                  _sectionHeader(context, step: 2, title: 'Define el objetivo'),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
 
                   Container(
                     width: double.infinity,
@@ -274,6 +262,48 @@ class _RoutineExercisesCreatePageState
           ),
         );
       },
+    );
+  }
+
+  Widget _sectionHeader(
+    BuildContext context, {
+    required int step,
+    required String title,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withValues(
+              alpha: 0.12,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            '$step',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 

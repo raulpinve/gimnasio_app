@@ -5,6 +5,7 @@ class MyDropdown<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final String hintText;
   final ValueChanged<T?>? onChanged;
+  final String? errorText;
 
   const MyDropdown({
     super.key,
@@ -12,71 +13,107 @@ class MyDropdown<T> extends StatelessWidget {
     required this.items,
     required this.hintText,
     required this.onChanged,
+    this.errorText,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final hasError = errorText != null && errorText!.isNotEmpty;
 
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      items: items,
-      onChanged: onChanged,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 56,
+          child: DropdownButtonFormField<T>(
+            initialValue: value,
+            items: items,
+            onChanged: onChanged,
+            isExpanded: true,
+            isDense: true,
 
-      style: TextStyle(
-        color: colorScheme.onSurface,
-        fontSize: 16,
-      ),
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 16,
+            ),
 
-      dropdownColor: colorScheme.surface,
+            dropdownColor: Colors.grey.shade50,
 
-      icon: Icon(
-        Icons.arrow_drop_down_rounded,
-        color: colorScheme.primary,
-        size: 28,
-      ),
+            icon: Icon(
+              Icons.arrow_drop_down_rounded,
+              color: hasError ? colorScheme.error : Colors.grey.shade500,
+              size: 28,
+            ),
 
-      isDense: true,
+            decoration: InputDecoration(
+              hintText: hintText,
 
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 12,
-        ),
+              hintStyle: TextStyle(
+                color: hasError ? colorScheme.error : Colors.grey.shade500,
+              ),
 
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary.withValues(alpha: 0.4),
-            width: 1.5,
+              filled: true,
+
+              fillColor: hasError
+                  ? colorScheme.error.withValues(alpha: 0.05)
+                  : Colors.grey.shade50,
+
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: hasError ? colorScheme.error : Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: hasError ? colorScheme.error : colorScheme.primary,
+                  width: 1.5,
+                ),
+              ),
+
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.error,
+                  width: 1,
+                ),
+              ),
+
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: colorScheme.error,
+                  width: 1.5,
+                ),
+              ),
+
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+            ),
           ),
         ),
 
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 2,
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              errorText!,
+              style: TextStyle(
+                color: colorScheme.error,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary.withValues(alpha: 0.4),
-            width: 1.5,
-          ),
-        ),
-
-        hintText: hintText,
-
-        hintStyle: TextStyle(
-          color: colorScheme.primary,
-        ),
-
-        fillColor: colorScheme.secondary,
-        filled: true,
-      ),
+        ],
+      ],
     );
   }
 }

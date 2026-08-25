@@ -174,6 +174,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
 
           return Scaffold(
             appBar: AppBar(
+              title: Text(routine.name),
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               actions: [
                 MyAppbarButton(
@@ -190,27 +191,26 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                   // ================================
                   // ========= NOMBRE RUTINA =========
                   // ================================
-                  Text(
-                    routine.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  // Text(
+                  //   routine.name,
+                  //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 28),
+                  // const SizedBox(height: 28),
 
                   // ================================
                   // ========== EJERCICIOS ==========
                   // ================================
-                  Text(
-                    'Ejercicios',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  // Text(
+                  //   'Ejercicios',
+                  //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  //     fontWeight: FontWeight.w600,
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 12),
-
+                  // const SizedBox(height: 12),
                   Expanded(
                     child:
                         BlocBuilder<
@@ -416,11 +416,7 @@ Widget exercisesCards(
   return Material(
     color: Colors.transparent,
     child: InkWell(
-      onTap: () {
-        context.push(
-          '/exercises/${routineExercise.exerciseId}',
-        );
-      },
+      onTap: () {},
       borderRadius: BorderRadius.circular(16),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -438,9 +434,16 @@ Widget exercisesCards(
         ),
         child: Row(
           children: [
-            ExerciseThumbnail(
-              name: routineExercise.exerciseName ?? '',
-              imageUrl: routineExercise.avatar,
+            GestureDetector(
+              onTap: () {
+                context.push(
+                  '/exercises/${routineExercise.exerciseId}',
+                );
+              },
+              child: ExerciseThumbnail(
+                name: routineExercise.exerciseName ?? '',
+                imageUrl: routineExercise.avatar,
+              ),
             ),
 
             const SizedBox(width: 14),
@@ -449,13 +452,20 @@ Widget exercisesCards(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    routineExercise.exerciseName ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
+                  GestureDetector(
+                    onTap: () {
+                      context.push(
+                        '/exercises/${routineExercise.exerciseId}',
+                      );
+                    },
+                    child: Text(
+                      routineExercise.exerciseName ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
 
