@@ -80,7 +80,6 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
   }
 
   Future<void> _confirmDelete(
-    BuildContext context,
     RoutineExercise routineExercise,
   ) async {
     final cubit = context.read<RoutineExercisesListCubit>();
@@ -120,6 +119,13 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                           if (!dialogContext.mounted) return;
 
                           Navigator.of(dialogContext).pop();
+
+                          if (!mounted) return;
+
+                          showMessage(
+                            context,
+                            'Ejercicio eliminado correctamente.',
+                          );
                         },
                   child: isDeleting
                       ? const SizedBox(
@@ -366,7 +372,6 @@ Widget exercisesCards(
   )
   onEdit,
   Future<void> Function(
-    BuildContext context,
     RoutineExercise routineExercise,
   )
   onDelete,
@@ -508,10 +513,7 @@ Widget exercisesCards(
                   }
 
                   if (option == 'eliminar') {
-                    onDelete(
-                      context,
-                      routineExercise,
-                    );
+                    onDelete(routineExercise);
                   }
                 },
                 itemBuilder: (context) => [
