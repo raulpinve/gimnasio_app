@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update/routine_exercises_update_state.dart';
+import 'package:gym_app/features/exercise/presentation/widgets/Exercise_thumbnail.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update/routine_exercises_update_cubit.dart';
+import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_update/routine_exercises_update_state.dart';
 
 class RoutineExercisesUpdatePage extends StatefulWidget {
   final String routineExerciseId;
+
   const RoutineExercisesUpdatePage({
     super.key,
     required this.routineExerciseId,
@@ -21,11 +23,13 @@ class RoutineExercisesUpdatePage extends StatefulWidget {
 
 class _RoutineExercisesUpdatePageState
     extends State<RoutineExercisesUpdatePage> {
-  // 1. Controladores
   final TextEditingController _targetSetsController = TextEditingController();
+
   final TextEditingController _targetRepsController = TextEditingController();
+
   final TextEditingController _targetDurationSecondsController =
       TextEditingController();
+
   final TextEditingController _targetDistanceKmController =
       TextEditingController();
 
@@ -89,22 +93,9 @@ class _RoutineExercisesUpdatePageState
           }
         }
       },
-
       builder: (context, state) {
         final isLoading = state.isLoading;
         final isUpdating = state.isUpdating;
-
-        if (isLoading) {
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              title: const Text("Editar ejercicio"),
-            ),
-            body: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
 
         String? targetSetError;
         String? targetRepsError;
@@ -113,181 +104,261 @@ class _RoutineExercisesUpdatePageState
 
         if (state.fieldErrors != null) {
           targetSetError = state.fieldErrors!['targetSet']?.toString();
+
           targetRepsError = state.fieldErrors!['targetReps']?.toString();
+
           targetDurationSecondsError = state
               .fieldErrors!['targetDurationSeconds']
               ?.toString();
+
           targetDistanceKmError = state.fieldErrors!['targetDistanceKm']
               ?.toString();
+        }
+
+        if (isLoading) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+              title: const Text('Editar ejercicio'),
+            ),
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
 
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            title: Text("Editar ejercicio"),
-            leading: BackButton(
-              onPressed: () {
-                context.pop();
-              },
-            ),
+            elevation: 0,
+            title: const Text('Editar ejercicio'),
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              24,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (_selectedExercise != null) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child:
-                              (_selectedExercise?.avatar != null &&
-                                  _selectedExercise!.avatar!.isNotEmpty)
-                              ? Image.network(
-                                  _selectedExercise!.avatar!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) {
-                                    return const Icon(
-                                      Icons.image_not_supported,
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  alignment: Alignment.center,
-                                  color: Colors.grey.shade200,
-                                  child: _selectedExercise?.type == "cardio"
-                                      ? const Icon(Icons.directions_run)
-                                      : const Icon(Icons.fitness_center),
-                                ),
-                        ),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _selectedExercise!.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              _selectedExercise?.type == "cardio"
-                                  ? "Cardio"
-                                  : "Fuerza",
-                              style: TextStyle(
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
+                Text(
+                  'Ejercicio',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                if (_selectedExercise != null) _buildSelectedExercise(context),
+
+                const SizedBox(height: 28),
+
+                Text(
+                  'Objetivo',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                ],
+                  child: Column(
+                    children: [
+                      if (_selectedExercise?.type == 'strength') ...[
+                        MyTextfield(
+                          controller: _targetSetsController,
+                          hintText: 'Series',
+                          obscureText: false,
+                          keyboardType: TextInputType.number,
+                          errorText: targetSetError,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        MyTextfield(
+                          controller: _targetRepsController,
+                          hintText: 'Repeticiones',
+                          obscureText: false,
+                          keyboardType: TextInputType.number,
+                          errorText: targetRepsError,
+                        ),
+                      ],
+
+                      if (_selectedExercise?.type == 'cardio') ...[
+                        MyTextfield(
+                          controller: _targetDurationSecondsController,
+                          hintText: 'Duración (segundos)',
+                          obscureText: false,
+                          keyboardType: TextInputType.number,
+                          errorText: targetDurationSecondsError,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        MyTextfield(
+                          controller: _targetDistanceKmController,
+                          hintText: 'Distancia (km)',
+                          obscureText: false,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          errorText: targetDistanceKmError,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
 
                 SizedBox(
-                  height: 16,
-                ),
-                Column(
-                  children: [
-                    if (_selectedExercise?.type == 'strength') ...[
-                      MyTextfield(
-                        controller: _targetSetsController,
-                        hintText: "Series",
-                        obscureText: false,
-                        keyboardType: TextInputType.number,
-                        errorText: targetSetError,
-                      ),
+                  width: double.infinity,
+                  child: MyButton(
+                    onTap: isUpdating
+                        ? null
+                        : () {
+                            context
+                                .read<RoutineExercisesUpdateCubit>()
+                                .updateRoutineExercise({
+                                  'targetSets':
+                                      _targetSetsController.text.trim().isEmpty
+                                      ? null
+                                      : int.parse(
+                                          _targetSetsController.text.trim(),
+                                        ),
 
-                      const SizedBox(height: 16),
+                                  'targetReps':
+                                      _targetRepsController.text.trim().isEmpty
+                                      ? null
+                                      : int.parse(
+                                          _targetRepsController.text.trim(),
+                                        ),
 
-                      MyTextfield(
-                        controller: _targetRepsController,
-                        hintText: "Repeticiones",
-                        obscureText: false,
-                        keyboardType: TextInputType.number,
-                        errorText: targetRepsError,
-                      ),
-                    ],
-
-                    if (_selectedExercise?.type == 'cardio') ...[
-                      MyTextfield(
-                        controller: _targetDurationSecondsController,
-                        hintText: 'Duración (segundos)',
-                        obscureText: false,
-                        keyboardType: TextInputType.number,
-                        errorText: targetDurationSecondsError,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      MyTextfield(
-                        controller: _targetDistanceKmController,
-                        hintText: 'Distancia (km)',
-                        obscureText: false,
-                        keyboardType: TextInputType.number,
-                        errorText: targetDistanceKmError,
-                      ),
-                    ],
-
-                    const SizedBox(height: 16),
-                    MyButton(
-                      onTap: () {
-                        context
-                            .read<RoutineExercisesUpdateCubit>()
-                            .updateRoutineExercise({
-                              "targetSets":
-                                  _targetSetsController.text.trim().isEmpty
-                                  ? null
-                                  : int.parse(
-                                      _targetSetsController.text.trim(),
-                                    ),
-
-                              "targetReps":
-                                  _targetRepsController.text.trim().isEmpty
-                                  ? null
-                                  : int.parse(
-                                      _targetRepsController.text.trim(),
-                                    ),
-
-                              "targetDurationSeconds":
-                                  _targetDurationSecondsController.text
-                                      .trim()
-                                      .isEmpty
-                                  ? null
-                                  : int.parse(
+                                  'targetDurationSeconds':
                                       _targetDurationSecondsController.text
-                                          .trim(),
-                                    ),
+                                          .trim()
+                                          .isEmpty
+                                      ? null
+                                      : int.parse(
+                                          _targetDurationSecondsController.text
+                                              .trim(),
+                                        ),
 
-                              "targetDistanceKm":
-                                  _targetDistanceKmController.text
-                                      .trim()
-                                      .isEmpty
-                                  ? null
-                                  : double.parse(
-                                      _targetDistanceKmController.text.trim(),
-                                    ),
-                            });
-                      },
-                      type: MyButtonType.primary,
-                      text: "Actualizar ejercicio",
-                      isLoading: isUpdating,
-                    ),
-                  ],
+                                  'targetDistanceKm':
+                                      _targetDistanceKmController.text
+                                          .trim()
+                                          .isEmpty
+                                      ? null
+                                      : double.parse(
+                                          _targetDistanceKmController.text
+                                              .trim(),
+                                        ),
+                                });
+                          },
+                    type: MyButtonType.primary,
+                    text: 'Guardar cambios',
+                    isLoading: isUpdating,
+                  ),
                 ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSelectedExercise(BuildContext context) {
+    final exercise = _selectedExercise!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ExerciseThumbnail(
+            name: exercise.name,
+            imageUrl: exercise.avatar,
+            size: 64,
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  exercise.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    exercise.type == 'cardio' ? 'Cardio' : 'Fuerza',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

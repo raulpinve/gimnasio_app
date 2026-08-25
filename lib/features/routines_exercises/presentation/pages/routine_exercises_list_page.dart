@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/exercise/presentation/widgets/exercise_thumbnail.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
-import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
 import 'package:gym_app/features/routines_exercises/domain/entities/routine_exercise.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_state.dart';
@@ -26,9 +26,9 @@ class RoutineExercisesListPage extends StatefulWidget {
 }
 
 class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
-  final apiRoutineExerciseRepo = ApiRoutineExerciseRepo();
-
-  Future<void> _onRefreshRoutineExercises(String routineId) async {
+  Future<void> _onRefreshRoutineExercises(
+    String routineId,
+  ) async {
     await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
       routineId,
     );
@@ -42,41 +42,127 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
     if (!mounted) return;
 
     if (response == true) {
-      context.read<RoutineExercisesListCubit>().loadRoutineExercises(
+      await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
         routine.id,
       );
+
+      if (!mounted) return;
+
+      showMessage(
+        context,
+        'Ejercicio agregado a la rutina.',
+      );
     }
+  }
+
+  Future<void> _redirigirAEditar(
+    RoutineExercise routineExercise,
+    String routineId,
+  ) async {
+    final cubit = context.read<RoutineExercisesListCubit>();
+
+    final resultado = await context.push<bool>(
+      '/routine-exercises/${routineExercise.id}/update',
+    );
+
+    if (!mounted) return;
+
+    if (resultado == true) {
+      await cubit.loadRoutineExercises(routineId);
+
+      if (!mounted) return;
+
+      showMessage(
+        context,
+        'Ejercicio actualizado correctamente.',
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    RoutineExercise routineExercise,
+  ) async {
+    final cubit = context.read<RoutineExercisesListCubit>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isDeleting = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Eliminar ejercicio'),
+              content: Text(
+                '¿Seguro que deseas eliminar '
+                '"${routineExercise.exerciseName}"?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          setState(() {
+                            isDeleting = true;
+                          });
+
+                          await cubit.deleteRoutineExercise(
+                            routineExercise.id,
+                          );
+
+                          if (!dialogContext.mounted) return;
+
+                          Navigator.of(dialogContext).pop();
+                        },
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Eliminar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<RoutineDetailCubit, RoutineDetailState>(
       builder: (context, state) {
-        // =================================
-        // ============= RUTINA ============
-        // =================================
+        // ================================
+        // ============ RUTINA =============
+        // ================================
 
-        // LOADING RUTINA
         if (state is RoutineDetailLoading || state is RoutineDetailInitial) {
-          return Scaffold(
-            body: const Center(
+          return const Scaffold(
+            body: Center(
               child: CircularProgressIndicator(),
             ),
           );
         }
 
-        // ERROR AL CARGAR LA RUTINA
         if (state is RoutineDetailError) {
           return Scaffold(
             body: Center(
-              child: Text(
-                state.message,
-              ),
+              child: Text(state.message),
             ),
           );
         }
 
-        // RUTINA CARGADA
         if (state is RoutineDetailLoaded) {
           final routine = state.routine;
 
@@ -86,7 +172,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
               actions: [
                 MyAppbarButton(
                   onPressed: () => _redireccionarCrear(routine),
-                  icon: Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                 ),
               ],
             ),
@@ -95,21 +181,30 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ================================
+                  // ========= NOMBRE RUTINA =========
+                  // ================================
                   Text(
                     routine.name,
-                    style:
-                        Theme.of(
-                          context,
-                        ).textTheme.headlineSmall!.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  SizedBox(
-                    height: 24,
+
+                  const SizedBox(height: 28),
+
+                  // ================================
+                  // ========== EJERCICIOS ==========
+                  // ================================
+                  Text(
+                    'Ejercicios',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  // ===================================
-                  // ======== ROUTINE EXERCISES ========
-                  // ===================================
+
+                  const SizedBox(height: 12),
+
                   Expanded(
                     child:
                         BlocBuilder<
@@ -117,30 +212,43 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                           RoutineExercisesListState
                         >(
                           builder: (context, state) {
-                            // LOADING EXERCISES ROUTINES
+                            // ================================
+                            // ============ LOADING ============
+                            // ================================
+
                             if (state is RoutineExercisesListLoading) {
                               return skeletonLoader(context);
                             }
 
-                            // SHOW EXERCISES ROUTINE ERROR
+                            // ================================
+                            // ============== ERROR ============
+                            // ================================
+
                             if (state is RoutineExercisesListError) {
                               return RefreshableContent(
                                 child: Text(state.message),
-                                onRefresh: () =>
-                                    _onRefreshRoutineExercises(routine.id),
+                                onRefresh: () => _onRefreshRoutineExercises(
+                                  routine.id,
+                                ),
                               );
                             }
 
-                            // ROUTINES EXERCISES LOADED
+                            // ================================
+                            // ============ CARGADOS ===========
+                            // ================================
+
                             if (state is RoutineExercisesListLoaded) {
-                              // ROUTINE EXERCISES
                               if (state.routineExercises.isEmpty) {
-                                return _buildEmptyExercises(context, routine);
+                                return _buildEmptyExercises(
+                                  context,
+                                  routine,
+                                );
                               }
 
                               return RefreshIndicator(
-                                onRefresh: () =>
-                                    _onRefreshRoutineExercises(routine.id),
+                                onRefresh: () => _onRefreshRoutineExercises(
+                                  routine.id,
+                                ),
                                 child: ListView.separated(
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
@@ -155,6 +263,8 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                                       exercise,
                                       context,
                                       routine.id,
+                                      _redirigirAEditar,
+                                      _confirmDelete,
                                     );
                                   },
                                 ),
@@ -171,15 +281,17 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
           );
         }
 
-        return const Center(
-          child: CircularProgressIndicator(),
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
         );
       },
     );
   }
 
   Widget skeletonLoader(BuildContext context) {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(),
     );
   }
@@ -198,6 +310,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
           vertical: 48,
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Tu rutina está vacía',
@@ -247,6 +360,16 @@ Widget exercisesCards(
   RoutineExercise routineExercise,
   BuildContext context,
   String routineId,
+  Future<void> Function(
+    RoutineExercise routineExercise,
+    String routineId,
+  )
+  onEdit,
+  Future<void> Function(
+    BuildContext context,
+    RoutineExercise routineExercise,
+  )
+  onDelete,
 ) {
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
@@ -302,9 +425,13 @@ Widget exercisesCards(
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -339,6 +466,7 @@ Widget exercisesCards(
                       color: Colors.grey.shade500,
                     ),
                   ),
+
                   if (details.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
@@ -373,13 +501,14 @@ Widget exercisesCards(
                 ),
                 onSelected: (option) {
                   if (option == 'editar') {
-                    _redirigirAEditar(
-                      context,
+                    onEdit(
                       routineExercise,
                       routineId,
                     );
-                  } else if (option == 'eliminar') {
-                    _confirmDelete(
+                  }
+
+                  if (option == 'eliminar') {
+                    onDelete(
                       context,
                       routineExercise,
                     );
@@ -419,81 +548,5 @@ Widget exercisesCards(
         ),
       ),
     ),
-  );
-}
-
-Future<void> _redirigirAEditar(
-  BuildContext context,
-  RoutineExercise routineExercise,
-  String routineId,
-) async {
-  final resultado = await context.push<bool>(
-    '/routine-exercises/${routineExercise.id}/update',
-  );
-
-  if (!context.mounted) return;
-
-  if (resultado == true) {
-    await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
-      routineId,
-    );
-  }
-}
-
-Future<void> _confirmDelete(
-  BuildContext context,
-  RoutineExercise routineExercises,
-) async {
-  final cubit = context.read<RoutineExercisesListCubit>();
-
-  await showDialog(
-    context: context,
-    builder: (dialogContext) {
-      bool isDeleting = false;
-
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text("Eliminar ejercicio"),
-            content: Text(
-              '¿Segudro que deseas eliminar "${routineExercises.exerciseName}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () async {
-                        setState(() {
-                          isDeleting = true;
-                        });
-
-                        await cubit.deleteRoutineExercise(
-                          routineExercises.id,
-                        );
-
-                        if (!dialogContext.mounted) return;
-                        Navigator.of(dialogContext).pop();
-                      },
-                child: isDeleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Eliminar'),
-              ),
-            ],
-          );
-        },
-      );
-    },
   );
 }
