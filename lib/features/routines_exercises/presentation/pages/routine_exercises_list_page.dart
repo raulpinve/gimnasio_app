@@ -309,14 +309,16 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Center(
+    return Align(
+      alignment: Alignment.topCenter,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 24,
-          vertical: 48,
+          vertical: 20,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               'Tu rutina está vacía',
@@ -326,9 +328,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 6),
-
             Text(
               'Añade ejercicios para comenzar.',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -336,9 +336,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 20),
-
             TextButton(
               onPressed: () => _redireccionarCrear(routine),
               style: TextButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
@@ -24,6 +25,18 @@ class _RoutineListPageState extends State<RoutineListPage> {
     await context.read<RoutineListCubit>().loadRoutines();
   }
 
+  Future<void> _redireccionarCrear() async {
+    final response = await context.push("/routines/create");
+
+    // Stop execution if the user navigated away while the page was open
+    if (!mounted) return;
+
+    if (response == true) {
+      context.read<RoutineListCubit>().loadRoutines();
+      showMessage(context, 'Rutina creada correctamente');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,22 +44,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           MyAppbarButton(
-            onPressed: () async {
-              final response = await context.push("/routines/create");
-
-              // Stop execution if the user navigated away while the page was open
-              if (!context.mounted) return;
-
-              if (response == true) {
-                context.read<RoutineListCubit>().loadRoutines();
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Rutina creada correctamente'),
-                  ),
-                );
-              }
-            },
+            onPressed: _redireccionarCrear,
             icon: Icon(Icons.add),
           ),
         ],
@@ -87,10 +85,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
                   // RUTINAS CARGADAS
                   if (state is RoutinesListLoaded) {
                     if (state.routines.isEmpty) {
-                      return RefreshableContent(
-                        onRefresh: _onRefresh,
-                        child: Text("No hay rutinas por mostrar"),
-                      );
+                      return _buildEmptyRoutines(context);
                     }
 
                     return RefreshIndicator(
@@ -122,6 +117,63 @@ class _RoutineListPageState extends State<RoutineListPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyRoutines(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return RefreshableContent(
+      onRefresh: _onRefresh,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'No hay rutinas por mostrar',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Crea una rutina para comenzar.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey.shade500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: _redireccionarCrear,
+                style: TextButton.styleFrom(
+                  foregroundColor: colorScheme.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                child: const Text(
+                  'Crear rutina',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -220,7 +272,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
                       onSelected: (value) {
                         switch (value) {
                           case 'delete':
-                            _confirmDeleteWorkout(
+                            _confirmDeleteRoutine(
                               context,
                               routine,
                             );
@@ -366,7 +418,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
   }
 }
 
-Future<void> _confirmDeleteWorkout(
+Future<void> _confirmDeleteRoutine(
   BuildContext context,
   Routine routine,
 ) async {
@@ -426,6 +478,10 @@ Future<void> _confirmDeleteWorkout(
 
                         if (deleted) {
                           Navigator.of(dialogContext).pop();
+                          showMessage(
+                            context,
+                            "Rutina eliminada correctamente",
+                          );
                         } else {
                           final state = cubit.state;
 
