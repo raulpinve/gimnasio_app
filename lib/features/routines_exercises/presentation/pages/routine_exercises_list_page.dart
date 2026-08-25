@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
 import 'package:gym_app/features/exercise/presentation/widgets/exercise_thumbnail.dart';
+import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_state.dart';
 import 'package:gym_app/features/routines_exercises/data/api_routine_exercise_repo.dart';
@@ -31,6 +32,20 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
     await context.read<RoutineExercisesListCubit>().loadRoutineExercises(
       routineId,
     );
+  }
+
+  Future<void> _redireccionarCrear(Routine routine) async {
+    final response = await context.push<bool>(
+      '/routine-exercises/${routine.id}/create',
+    );
+
+    if (!mounted) return;
+
+    if (response == true) {
+      context.read<RoutineExercisesListCubit>().loadRoutineExercises(
+        routine.id,
+      );
+    }
   }
 
   @override
@@ -70,20 +85,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               actions: [
                 MyAppbarButton(
-                  onPressed: () async {
-                    final response = await context.push<bool>(
-                      "/routine-exercises/${routine.id}/create",
-                    );
-
-                    // Stop execution is the user navigated away while the page was open
-                    if (!context.mounted) return;
-
-                    if (response == true) {
-                      context
-                          .read<RoutineExercisesListCubit>()
-                          .loadRoutineExercises(routine.id);
-                    }
-                  },
+                  onPressed: () => _redireccionarCrear(routine),
                   icon: Icon(Icons.add),
                 ),
               ],
@@ -133,13 +135,7 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
                             if (state is RoutineExercisesListLoaded) {
                               // ROUTINE EXERCISES
                               if (state.routineExercises.isEmpty) {
-                                return RefreshableContent(
-                                  child: Text(
-                                    "No hay ejercicios para esta rutina",
-                                  ),
-                                  onRefresh: () =>
-                                      _onRefreshRoutineExercises(routine.id),
-                                );
+                                return _buildEmptyExercises(context, routine);
                               }
 
                               return RefreshIndicator(
@@ -185,6 +181,64 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
   Widget skeletonLoader(BuildContext context) {
     return Center(
       child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildEmptyExercises(
+    BuildContext context,
+    Routine routine,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 48,
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Tu rutina está vacía',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              'Añade ejercicios para comenzar.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 20),
+
+            TextButton(
+              onPressed: () => _redireccionarCrear(routine),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              child: const Text(
+                'Añadir ejercicio',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

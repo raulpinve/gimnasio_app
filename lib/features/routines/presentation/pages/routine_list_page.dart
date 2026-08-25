@@ -455,35 +455,3 @@ Future<void> _confirmDeleteWorkout(
     },
   );
 }
-
-//  Función auxiliar para crear los pills rápidamente
-Widget _crearPill(String texto, Color fondo, Color colorTexto) {
-  final String textoCorto = texto.length > 25
-      ? '${texto.substring(0, 25)}...'
-      : texto;
-  return Container(
-    decoration: BoxDecoration(
-      color: fondo,
-      borderRadius: BorderRadius.circular(
-        12.0,
-      ), // El redondeado de las esquinas
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
-      child: Text(
-        textoCorto,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-          color: colorTexto,
-        ),
-      ),
-    ),
-  );
-}
