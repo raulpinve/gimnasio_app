@@ -23,7 +23,7 @@ class WorkoutExercisePage extends StatefulWidget {
 }
 
 class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
-  Future<void> redirectAddBottomSheet(
+  Future<void> redirectAddWorkoutRecord(
     BuildContext context,
     WorkoutExercise workoutExercise,
   ) async {
@@ -35,10 +35,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
     if (!context.mounted) return;
 
     if (result == true) {
-      // TODO: Cambiar el workout exercise
-      // await context.read<WorkoutExerciseCubit>().loadWorkoutExercises(
-      //   widget.workoutId,
-      // );
+      await _onRefresh();
     }
   }
 
@@ -289,7 +286,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                               return WorkoutExerciseCard(
                                 key: ValueKey(workoutExercise.exerciseId),
                                 workoutExercise: workoutExercise,
-                                onRegisterSet: () => redirectAddBottomSheet(
+                                onRegisterSet: () => redirectAddWorkoutRecord(
                                   context,
                                   workoutExercise,
                                 ),
