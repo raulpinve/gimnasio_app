@@ -15,13 +15,18 @@ class WorkoutCreateCubit extends Cubit<WorkoutCreateState> {
   // Agregar workout
   Future<void> createWorkout(
     Map<String, dynamic> workoutBody,
-  ) async {
+    String creationType, {
+    String? routineId,
+  }) async {
     try {
       if (isClosed) return;
 
       emit(
         state.copyWith(
           isCreating: true,
+          isCreated: false,
+          creationType: creationType,
+          routineId: routineId,
           errorMessage: null,
           fieldErrors: null,
         ),

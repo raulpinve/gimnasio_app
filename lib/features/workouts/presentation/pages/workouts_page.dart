@@ -1,0 +1,444 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
+
+class WorkoutsPage extends StatefulWidget {
+  const WorkoutsPage({super.key});
+
+  @override
+  State<WorkoutsPage> createState() => _WorkoutsPageState();
+}
+
+class _WorkoutsPageState extends State<WorkoutsPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<RoutineListCubit>().loadRoutines();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<WorkoutCreateCubit, WorkoutCreateState>(
+          listener: (context, state) {
+            if (state.isCreated && state.workoutId != null) {
+              context.push('/workouts/${state.workoutId}');
+            }
+
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                ),
+              );
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 18),
+
+                Text(
+                  '¿Qué vas a entrenar hoy?',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  'Elige cómo quieres empezar tu entrenamiento.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                _buildFreeWorkoutCard(context),
+
+                const SizedBox(height: 32),
+
+                Text(
+                  'Tus rutinas',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                _buildRoutines(context),
+
+                const SizedBox(height: 20),
+
+                _buildRecentSection(context),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFreeWorkoutCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final workoutState = context.watch<WorkoutCreateCubit>().state;
+
+    final isLoading =
+        workoutState.isCreating && workoutState.creationType == 'free';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isLoading
+            ? null
+            : () {
+                context.read<WorkoutCreateCubit>().createWorkout({}, 'free');
+              },
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Entrenamiento libre',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Text(
+                      'Empieza desde cero y agrega los ejercicios que quieras.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimary.withValues(
+                          alpha: 0.82,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary.withValues(
+                    alpha: 0.14,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.onPrimary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.arrow_forward_rounded,
+                        color: colorScheme.onPrimary,
+                        size: 20,
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoutines(BuildContext context) {
+    final state = context.watch<RoutineListCubit>().state;
+
+    if (state is RoutineListLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (state is RoutineListError) {
+      return Text(
+        state.message,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+
+    if (state is RoutinesListLoaded) {
+      if (state.routines.isEmpty) {
+        return Text(
+          'No tienes rutinas creadas.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        );
+      }
+
+      final workoutState = context.watch<WorkoutCreateCubit>().state;
+
+      return Column(
+        children: [
+          for (int i = 0; i < state.routines.length; i++) ...[
+            _buildRoutineCard(
+              context,
+              routine: state.routines[i],
+              isLoading:
+                  workoutState.isCreating &&
+                  workoutState.creationType == 'routine' &&
+                  workoutState.routineId == state.routines[i].id,
+            ),
+
+            if (i < state.routines.length - 1) const SizedBox(height: 12),
+          ],
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildRoutineCard(
+    BuildContext context, {
+    required dynamic routine,
+    required bool isLoading,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isLoading
+            ? null
+            : () {
+                context.read<WorkoutCreateCubit>().createWorkout(
+                  {
+                    'routineId': routine.id,
+                  },
+                  'routine',
+                  routineId: routine.id,
+                );
+              },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 16,
+          ),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      routine.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      routine.exercises
+                              ?.map((exercise) => exercise.name)
+                              .join(' · ') ??
+                          '',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (isLoading)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                  ),
+                )
+              else
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recientes',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Ver todo →'),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        _buildRecentWorkoutCard(
+          context,
+          date: '24 AGO',
+          title: 'Pecho + Tríceps',
+          details: '42 min · 18 series',
+        ),
+
+        const SizedBox(height: 10),
+
+        _buildRecentWorkoutCard(
+          context,
+          date: '22 AGO',
+          title: 'Espalda + Bíceps',
+          details: '51 min · 21 series',
+        ),
+
+        const SizedBox(height: 10),
+
+        _buildRecentWorkoutCard(
+          context,
+          date: '20 AGO',
+          title: 'Piernas',
+          details: '58 min · 24 series',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentWorkoutCard(
+    BuildContext context, {
+    required String date,
+    required String title,
+    required String details,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          // Ver entrenamiento
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                date,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      details,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

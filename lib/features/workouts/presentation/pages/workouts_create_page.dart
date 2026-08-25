@@ -26,13 +26,12 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<WorkoutCreateCubit, WorkoutCreateState>(
       listener: (context, state) {
-
         // DEVUELVE A LA PÁGINA ANTERIOR UNA VEZ CREADO EL WORKOUT
         if (state.isCreated && state.workoutId != null) {
           context.pop(true);
         }
 
-        // MUESTRA ERROR 
+        // MUESTRA ERROR
         if (state.errorMessage != null) {
           if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -217,9 +216,9 @@ class _WorkoutsCreatePageState extends State<WorkoutsCreatePage> {
         onPressed: (_selectedRoutineId == null || isCreating)
             ? null
             : () {
-                context.read<WorkoutCreateCubit>().createWorkout({
-                  "routineId": _selectedRoutineId,
-                });
+                // context.read<WorkoutCreateCubit>().createWorkout({
+                //   "routineId": _selectedRoutineId,
+                // });
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: _selectedRoutineId != null

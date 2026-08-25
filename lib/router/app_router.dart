@@ -17,7 +17,8 @@ GoRouter getAppRouter(BuildContext context) {
   final authCubit = context.read<AuthCubit>();
 
   return GoRouter(
-    initialLocation: '/loading',
+    // initialLocation: '/loading',
+    initialLocation: "/workouts",
     refreshListenable: GoRouterRefreshStream(authCubit.stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = authCubit.state;

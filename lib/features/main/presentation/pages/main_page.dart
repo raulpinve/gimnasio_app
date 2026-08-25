@@ -158,7 +158,7 @@ class _MainPageState extends State<MainPage> {
                             ),
                           ),
                         ),
-                        label: 'Workouts',
+                        label: 'Entrenar',
                       ),
                       BottomNavigationBarItem(
                         icon: const SizedBox(
