@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
+import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 
 class WorkoutsPage extends StatefulWidget {
   const WorkoutsPage({super.key});
@@ -32,15 +35,11 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         BlocListener<WorkoutCreateCubit, WorkoutCreateState>(
           listener: (context, state) {
             if (state.isCreated && state.workoutId != null) {
-              context.push('/workouts/${state.workoutId}');
+              context.push('/workouts-exercises/${state.workoutId}');
             }
 
             if (state.errorMessage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage!),
-                ),
-              );
+              showMessage(context, state.errorMessage!);
             }
           },
         ),
@@ -271,7 +270,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: colorScheme.outlineVariant,
+              color: Colors.grey.shade200,
             ),
           ),
           child: Row(
@@ -323,6 +322,27 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   Widget _buildRecentSection(BuildContext context) {
+    final state = context.watch<WorkoutListCubit>().state;
+
+    if (state is WorkoutListLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (state is WorkoutListError) {
+      return const SizedBox.shrink();
+    }
+
+    if (state is! WorkoutsListLoaded || state.workouts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final recentWorkouts = state.workouts.take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -336,7 +356,9 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                // Ir a todos los entrenamientos
+              },
               child: const Text('Ver todo →'),
             ),
           ],
@@ -344,39 +366,21 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
         const SizedBox(height: 12),
 
-        _buildRecentWorkoutCard(
-          context,
-          date: '24 AGO',
-          title: 'Pecho + Tríceps',
-          details: '42 min · 18 series',
-        ),
+        for (int i = 0; i < recentWorkouts.length; i++) ...[
+          _buildRecentWorkoutCard(
+            context,
+            workout: recentWorkouts[i],
+          ),
 
-        const SizedBox(height: 10),
-
-        _buildRecentWorkoutCard(
-          context,
-          date: '22 AGO',
-          title: 'Espalda + Bíceps',
-          details: '51 min · 21 series',
-        ),
-
-        const SizedBox(height: 10),
-
-        _buildRecentWorkoutCard(
-          context,
-          date: '20 AGO',
-          title: 'Piernas',
-          details: '58 min · 24 series',
-        ),
+          if (i < recentWorkouts.length - 1) const SizedBox(height: 10),
+        ],
       ],
     );
   }
 
   Widget _buildRecentWorkoutCard(
     BuildContext context, {
-    required String date,
-    required String title,
-    required String details,
+    required Workout workout,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -385,7 +389,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // Ver entrenamiento
+          context.push("/workouts-exercises/${workout.id}");
         },
         borderRadius: BorderRadius.circular(16),
         child: Ink(
@@ -395,13 +399,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: colorScheme.outlineVariant,
+              color: Colors.grey.shade200,
             ),
           ),
           child: Row(
             children: [
               Text(
-                date,
+                _formatWorkoutDate(workout.fecha),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
@@ -415,14 +419,20 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      workout.name,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+
                     const SizedBox(height: 4),
+
                     Text(
-                      details,
+                      workout.duracion?.isNotEmpty == true
+                          ? '${workout.duracion} min'
+                          : workout.estado == 'abierto'
+                          ? 'En curso'
+                          : '',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -440,5 +450,30 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         ),
       ),
     );
+  }
+
+  String _formatWorkoutDate(String? fecha) {
+    if (fecha == null || fecha.isEmpty) return '';
+
+    final date = DateTime.tryParse(fecha);
+
+    if (date == null) return '';
+
+    const months = [
+      'ENE',
+      'FEB',
+      'MAR',
+      'ABR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AGO',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DIC',
+    ];
+
+    return '${date.day} ${months[date.month - 1]}';
   }
 }

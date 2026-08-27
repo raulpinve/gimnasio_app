@@ -1,3 +1,4 @@
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
@@ -11,6 +12,7 @@ import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/profile/data/api_stat_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_app/features/workouts/presentation/pages/workouts_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -24,7 +26,7 @@ class _MainPageState extends State<MainPage> {
   final pages = [
     // ExercisesListPage(),
     RoutineListPage(),
-    WorkoutsListPage(),
+    WorkoutsPage(),
     ProfilePage(),
   ];
 
@@ -51,6 +53,17 @@ class _MainPageState extends State<MainPage> {
           create: (_) => StatsCubit(
             statRepo: ApiStatRepo(),
           )..loadStats(),
+        ),
+        BlocProvider(
+          create: (_) => WorkoutCreateCubit(
+            workoutRepo: ApiWorkoutRepo(),
+          ),
+        ),
+
+        BlocProvider(
+          create: (_) => WorkoutListCubit(
+            workoutRepo: ApiWorkoutRepo(),
+          )..loadWorkouts(),
         ),
       ],
       child: Scaffold(
