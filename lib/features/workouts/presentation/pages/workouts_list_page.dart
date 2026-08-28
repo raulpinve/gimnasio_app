@@ -1,14 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
+import 'package:shimmer/shimmer.dart';
+
 import 'package:gym_app/core/widgets/refreshable_content.dart';
+
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
+
+import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
-import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/recent_workout_card.dart';
-import 'package:shimmer/shimmer.dart';
 
 class WorkoutsListPage extends StatefulWidget {
   const WorkoutsListPage({super.key});
+
   @override
   State<WorkoutsListPage> createState() => _WorkoutsListPageState();
 }
@@ -17,12 +24,16 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   final apiWorkoutRepo = ApiWorkoutRepo();
   final ScrollController _scrollController = ScrollController();
 
+  String? _selectedRoutineId;
+
   @override
   void initState() {
     super.initState();
 
     _scrollController.addListener(_onScroll);
+
     context.read<WorkoutListCubit>().loadWorkouts();
+    context.read<RoutineListCubit>().loadRoutines();
   }
 
   void _onScroll() {
@@ -39,7 +50,17 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   }
 
   Future<void> _onRefresh() async {
-    await context.read<WorkoutListCubit>().loadWorkouts();
+    await context.read<WorkoutListCubit>().loadWorkouts(
+      routineId: _selectedRoutineId,
+    );
+  }
+
+  Future<void> _onRoutineChanged(String? routineId) async {
+    setState(() {
+      _selectedRoutineId = routineId;
+    });
+
+    await context.read<WorkoutListCubit>().filterByRoutine(routineId);
   }
 
   @override
@@ -48,12 +69,22 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
       appBar: AppBar(
         title: const Text('Ultimos workouts'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        leading: BackButton(),
+        leading: const BackButton(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // ============================================================
+            // FILTRO DE RUTINA
+            // ============================================================
+            _buildRoutineFilter(),
+
+            const SizedBox(height: 16),
+
+            // ============================================================
+            // LISTA DE WORKOUTS
+            // ============================================================
             Expanded(
               child: BlocBuilder<WorkoutListCubit, WorkoutListState>(
                 builder: (context, state) {
@@ -76,7 +107,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                     if (state.workouts.isEmpty) {
                       return RefreshableContent(
                         onRefresh: _onRefresh,
-                        child: Text(
+                        child: const Text(
                           'No se encontraron entrenamientos',
                         ),
                       );
@@ -86,7 +117,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                       onRefresh: _onRefresh,
                       child: ListView.separated(
                         controller: _scrollController,
-                        separatorBuilder: (BuildContext context, int index) {
+                        separatorBuilder: (context, index) {
                           return const SizedBox(height: 10);
                         },
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -105,11 +136,16 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                           }
 
                           final workout = state.workouts[index];
-                          return recentWorkoutCard(context, workout: workout);
+
+                          return recentWorkoutCard(
+                            context,
+                            workout: workout,
+                          );
                         },
                       ),
                     );
                   }
+
                   return skeletonLoader(context);
                 },
               ),
@@ -120,6 +156,50 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     );
   }
 
+  // ============================================================
+  // FILTRO DE RUTINA
+  // ============================================================
+  Widget _buildRoutineFilter() {
+    return BlocBuilder<RoutineListCubit, RoutineListState>(
+      builder: (context, state) {
+        if (state is RoutineListLoading) {
+          return const SizedBox(
+            height: 56,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (state is! RoutinesListLoaded) {
+          return const SizedBox.shrink();
+        }
+
+        return MyDropdown<String?>(
+          value: _selectedRoutineId,
+          hintText: 'Filtrar por rutina',
+          items: [
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text('Todas las rutinas'),
+            ),
+
+            ...state.routines.map(
+              (routine) => DropdownMenuItem<String?>(
+                value: routine.id,
+                child: Text(routine.name),
+              ),
+            ),
+          ],
+          onChanged: _onRoutineChanged,
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // SKELETON
+  // ============================================================
   Widget skeletonLoader(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -170,9 +250,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-
                       const SizedBox(width: 6),
-
                       Container(
                         width: 45,
                         height: 24,

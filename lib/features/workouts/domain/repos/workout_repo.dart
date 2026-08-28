@@ -4,6 +4,7 @@ import 'package:gym_app/features/workouts/domain/entities/workout_pagination.dar
 abstract class WorkoutRepo {
   Future<WorkoutPagination> getAllWorkouts({
     int page = 1,
+    String? routineId,
   });
 
   Future<Workout> getWorkout(String id);
@@ -20,5 +21,6 @@ abstract class WorkoutRepo {
   );
 
   Future<void> deleteWorkout(String workoutId);
+
   Future<void> finishWorkout(String workoutId);
 }

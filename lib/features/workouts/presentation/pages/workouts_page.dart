@@ -449,7 +449,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     }
 
     if (state is WorkoutListError) {
-      return const SizedBox.shrink();
+      return Text(state.message);
     }
 
     if (state is! WorkoutsListLoaded || state.workouts.isEmpty) {

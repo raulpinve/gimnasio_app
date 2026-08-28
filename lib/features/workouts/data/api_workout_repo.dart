@@ -28,12 +28,16 @@ class ApiWorkoutRepo implements WorkoutRepo {
   }
 
   @override
-  Future<WorkoutPagination> getAllWorkouts({int page = 1}) async {
+  getAllWorkouts({
+    int page = 1,
+    String? routineId,
+  }) async {
     try {
       final response = await apiClient.dio.get(
         '/workouts',
         queryParameters: {
           'page': page,
+          if (routineId != null) 'routineId': routineId,
         },
       );
 

@@ -4,7 +4,14 @@ import 'package:gym_app/features/workouts/presentation/cubits/workout_list/worko
 
 class WorkoutListCubit extends Cubit<WorkoutListState> {
   final WorkoutRepo workoutRepo;
-  WorkoutListCubit({required this.workoutRepo}) : super(WorkoutListInitial());
+
+  // Rutina actualmente seleccionada para filtrar.
+  // null = todas las rutinas.
+  String? _routineId;
+
+  WorkoutListCubit({
+    required this.workoutRepo,
+  }) : super(WorkoutListInitial());
 
   // ============================================================
   // CARGAR WORKOUTS
@@ -12,8 +19,14 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
   Future<void> loadWorkouts({
     int page = 1,
     bool showLoading = true,
+    String? routineId,
   }) async {
     if (isClosed) return;
+
+    // Solo cambiamos el filtro cuando empezamos desde la primera página.
+    if (page == 1) {
+      _routineId = routineId;
+    }
 
     try {
       // PRIMERA PÁGINA
@@ -21,12 +34,15 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
         emit(WorkoutListLoading());
       }
 
-      final result = await workoutRepo.getAllWorkouts(page: page);
+      final result = await workoutRepo.getAllWorkouts(
+        page: page,
+        routineId: _routineId,
+      );
 
       if (isClosed) return;
 
       // SI ES LA PRIMERA PÁGINA
-      // Reemplazamos la lista completa
+      // Reemplazamos la lista completa.
       if (page == 1) {
         emit(
           WorkoutsListLoaded(
@@ -40,7 +56,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
       }
 
       // SI ES UNA PÁGINA SIGUIENTE
-      // Agregamos los nuevos workouts
+      // Agregamos los nuevos workouts.
       if (state is WorkoutsListLoaded) {
         final currentState = state as WorkoutsListLoaded;
 
@@ -59,7 +75,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     } catch (e) {
       if (isClosed) return;
 
-      // Error durante carga inicial
+      // Error durante carga inicial.
       if (page == 1 && showLoading) {
         emit(
           WorkoutListError(
@@ -68,7 +84,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
         );
       }
 
-      // Error cargando una página adicional
+      // Error cargando una página adicional.
       if (state is WorkoutsListLoaded) {
         final currentState = state as WorkoutsListLoaded;
 
@@ -81,11 +97,24 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     }
   }
 
-  // Cargar siguiente página
+  // ============================================================
+  // FILTRAR POR RUTINA
+  // ============================================================
+  Future<void> filterByRoutine(String? routineId) async {
+    await loadWorkouts(
+      page: 1,
+      routineId: routineId,
+    );
+  }
+
+  // ============================================================
+  // CARGAR SIGUIENTE PÁGINA
+  // ============================================================
   Future<void> loadMoreWorkouts() async {
     if (state is! WorkoutsListLoaded) {
       return;
     }
+
     final currentState = state as WorkoutsListLoaded;
 
     if (currentState.isLoadingMore) {
@@ -95,11 +124,13 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     if (!currentState.hasMore) {
       return;
     }
+
     emit(
       currentState.copyWith(
         isLoadingMore: true,
       ),
     );
+
     try {
       final nextPage = currentState.currentPage + 1;
 
@@ -109,6 +140,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
 
       final result = await workoutRepo.getAllWorkouts(
         page: nextPage,
+        routineId: _routineId,
       );
 
       if (state is! WorkoutsListLoaded) {
@@ -143,6 +175,9 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     }
   }
 
+  // ============================================================
+  // ELIMINAR WORKOUT
+  // ============================================================
   Future<bool> deleteWorkout(String workoutId) async {
     if (isClosed) return false;
 
