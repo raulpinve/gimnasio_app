@@ -160,12 +160,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
     return BlocBuilder<RoutineListCubit, RoutineListState>(
       builder: (context, state) {
         if (state is RoutineListLoading) {
-          return const SizedBox(
-            height: 56,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return dropdownSkeletonLoader(context); 
         }
 
         if (state is! RoutinesListLoaded) {
@@ -197,13 +192,57 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   // ============================================================
   // SKELETON
   // ============================================================
-  Widget skeletonLoader(BuildContext context) {
+  Widget dropdownSkeletonLoader(
+    BuildContext context, {
+    double height = 56,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Shimmer.fromColors(
+      baseColor: isDark ? const Color(0xFF232323) : Colors.grey.shade200,
+      highlightColor: isDark ? const Color(0xFF353535) : Colors.grey.shade100,
+      child: Container(
+        width: double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF232323) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget skeletonLoader(BuildContext context, {int itemCount = 10}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
       padding: const EdgeInsets.only(bottom: 12),
-      itemCount: 10,
+      itemCount: itemCount,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(

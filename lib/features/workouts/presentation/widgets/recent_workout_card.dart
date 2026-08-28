@@ -53,7 +53,7 @@ Widget recentWorkoutCard(
 
                   Text(
                     workout.duracion?.isNotEmpty == true
-                        ? '${workout.duracion} min'
+                        ? '${workout.duracion}'
                         : workout.estado == 'abierto'
                         ? 'En curso'
                         : '',
