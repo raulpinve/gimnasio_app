@@ -11,15 +11,12 @@ class RoutineListCubit extends Cubit<RoutineListState> {
   // ============================================================
   Future<void> loadRoutines({
     int page = 1,
-    bool showLoading = true,
   }) async {
     if (isClosed) return;
 
     try {
       // PRIMERA PÁGINA
-      if (page == 1 && showLoading) {
-        emit(RoutineListLoading());
-      }
+      emit(RoutineListLoading());
 
       final result = await routineRepo.getAllRoutines(page: page);
 
@@ -60,13 +57,11 @@ class RoutineListCubit extends Cubit<RoutineListState> {
       if (isClosed) return;
 
       // Si es una carga inicial, mostramos el error normal
-      if (page == 1 && showLoading) {
-        emit(
-          RoutineListError(
-            e.toString(),
-          ),
-        );
-      }
+      emit(
+        RoutineListError(
+          e.toString(),
+        ),
+      );
 
       // Si falla "Cargar más", conservamos la lista actual
       if (state is RoutinesListLoaded) {

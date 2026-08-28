@@ -9,12 +9,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this.workoutRepo,
   }) : super(ActiveWorkoutInitial());
 
-  Future<void> loadActiveWorkout({bool showLoading = true}) async {
+  Future<void> loadActiveWorkout() async {
     if (isClosed) return;
 
-    if (showLoading) {
-      emit(ActiveWorkoutLoading());
-    }
+    emit(ActiveWorkoutLoading());
 
     try {
       final workout = await workoutRepo.getActiveWorkout();

@@ -11,6 +11,7 @@ import 'package:gym_app/features/workouts/presentation/cubits/create_workout/wor
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
 import 'package:gym_app/features/workouts/presentation/widgets/recent_workout_card.dart';
+import 'package:shimmer/shimmer.dart';
 
 class WorkoutsPage extends StatefulWidget {
   const WorkoutsPage({super.key});
@@ -22,9 +23,9 @@ class WorkoutsPage extends StatefulWidget {
 class _WorkoutsPageState extends State<WorkoutsPage> {
   Future<void> onRefresh() async {
     await Future.wait([
-      context.read<RoutineListCubit>().loadRoutines(showLoading: false),
-      context.read<WorkoutListCubit>().loadWorkouts(showLoading: false),
-      context.read<ActiveWorkoutCubit>().loadActiveWorkout(showLoading: false),
+      context.read<RoutineListCubit>().loadRoutines(),
+      context.read<WorkoutListCubit>().loadWorkouts(),
+      context.read<ActiveWorkoutCubit>().loadActiveWorkout(),
     ]);
   }
 
@@ -67,69 +68,76 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               child: SafeArea(
                 child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
                   builder: (context, state) {
-                    if (state is ActiveWorkoutLoading) {
-                      return const CircularProgressIndicator();
-                    }
+                    final isActiveLoading = state is ActiveWorkoutLoading;
+                    final workout = state is ActiveWorkoutLoaded
+                        ? state.workout
+                        : null;
 
-                    if (state is ActiveWorkoutLoaded) {
-                      final workout = state.workout;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (workout == null) ...[
+                          const SizedBox(height: 18),
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (workout == null) ...[
-                            const SizedBox(height: 18),
-
-                            Text(
-                              '¿Qué vas a entrenar hoy?',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          Text(
+                            '¿Qué vas a entrenar hoy?',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(height: 6),
+                          ),
 
-                            Text(
-                              'Elige cómo quieres empezar tu entrenamiento.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          const SizedBox(height: 6),
+
+                          Text(
+                            'Elige cómo quieres empezar tu entrenamiento.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
                             ),
+                          ),
 
-                            const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                            _buildFreeWorkoutCard(context),
+                          isActiveLoading
+                              ? _buildFreeWorkoutCardSkeleton(context)
+                              : _buildFreeWorkoutCard(context),
 
-                            const SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
-                            Text(
-                              'Tus rutinas',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          Text(
+                            'Tus rutinas',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(height: 12),
-                            _buildRoutines(context),
-                            const SizedBox(height: 20),
-                          ],
+                          ),
 
-                          if (workout != null) ...[
-                            const SizedBox(height: 18),
-                            Text(
-                              'Continúa tu entrenamiento',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            _buildWorkoutActive(context, workout.id),
-                            const SizedBox(height: 32),
-                          ],
+                          const SizedBox(height: 12),
 
-                          _buildRecentSection(context),
+                          // Este cubit controla solamente las rutinas
+                          _buildRoutines(context),
+
+                          const SizedBox(height: 20),
                         ],
-                      );
-                    }
-                    return const SizedBox();
+
+                        if (workout != null) ...[
+                          const SizedBox(height: 18),
+
+                          Text(
+                            'Continúa tu entrenamiento',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          _buildWorkoutActive(context, workout.id),
+
+                          const SizedBox(height: 32),
+                        ],
+
+                        _buildRecentSection(context),
+                      ],
+                    );
                   },
                 ),
               ),
@@ -302,12 +310,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     final state = context.watch<RoutineListCubit>().state;
 
     if (state is RoutineListLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return _buildRoutinesSkeleton(context);
     }
 
     if (state is RoutineListError) {
@@ -447,12 +450,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     final state = context.watch<WorkoutListCubit>().state;
 
     if (state is WorkoutListLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return _buildRecentSectionSkeleton(context);
     }
 
     if (state is WorkoutListError) {
@@ -496,6 +494,281 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
           if (i < recentWorkouts.length - 1) const SizedBox(height: 8),
         ],
+      ],
+    );
+  }
+
+  // SKELETONS
+  Widget _buildFreeWorkoutCardSkeleton(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Shimmer.fromColors(
+      baseColor: isDark ? const Color(0xFF232323) : Colors.grey.shade200,
+      highlightColor: isDark ? const Color(0xFF353535) : Colors.grey.shade100,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF232323) : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título
+                  Container(
+                    width: 200,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Descripción - línea 1
+                  Container(
+                    width: double.infinity,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Descripción - línea 2
+                  Container(
+                    width: 220,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Botón / icono circular
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoutinesSkeleton(
+    BuildContext context, {
+    int itemCount = 3,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Shimmer.fromColors(
+      baseColor: isDark ? const Color(0xFF232323) : Colors.grey.shade200,
+      highlightColor: isDark ? const Color(0xFF353535) : Colors.grey.shade100,
+      child: Column(
+        children: List.generate(
+          itemCount,
+          (index) => Padding(
+            padding: EdgeInsets.only(
+              bottom: index < itemCount - 1 ? 12 : 0,
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 16,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF232323) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF353535)
+                      : Colors.grey.shade200,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Nombre de la rutina
+                        Container(
+                          width: 160,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Ejercicios
+                        Container(
+                          width: double.infinity,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Chevron
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentSectionSkeleton(
+    BuildContext context, {
+    int itemCount = 3,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recientes',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextButton(
+              onPressed: null,
+              child: const Text('Ver todo →'),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        Shimmer.fromColors(
+          baseColor: isDark ? const Color(0xFF232323) : Colors.grey.shade200,
+          highlightColor: isDark
+              ? const Color(0xFF353535)
+              : Colors.grey.shade100,
+          child: Column(
+            children: List.generate(
+              itemCount,
+              (index) => Padding(
+                padding: EdgeInsets.only(
+                  bottom: index < itemCount - 1 ? 8 : 0,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF232323) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF353535)
+                          : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Ícono / imagen del workout
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Nombre del workout
+                            Container(
+                              width: 140,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Fecha / info secundaria
+                            Container(
+                              width: 90,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

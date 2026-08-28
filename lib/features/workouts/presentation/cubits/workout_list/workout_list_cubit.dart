@@ -18,7 +18,6 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
   // ============================================================
   Future<void> loadWorkouts({
     int page = 1,
-    bool showLoading = true,
     String? routineId,
   }) async {
     if (isClosed) return;
@@ -30,9 +29,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
 
     try {
       // PRIMERA PÁGINA
-      if (page == 1 && showLoading) {
-        emit(WorkoutListLoading());
-      }
+      emit(WorkoutListLoading());
 
       final result = await workoutRepo.getAllWorkouts(
         page: page,
@@ -76,13 +73,11 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
       if (isClosed) return;
 
       // Error durante carga inicial.
-      if (page == 1 && showLoading) {
-        emit(
-          WorkoutListError(
-            e.toString(),
-          ),
-        );
-      }
+      emit(
+        WorkoutListError(
+          e.toString(),
+        ),
+      );
 
       // Error cargando una página adicional.
       if (state is WorkoutsListLoaded) {
