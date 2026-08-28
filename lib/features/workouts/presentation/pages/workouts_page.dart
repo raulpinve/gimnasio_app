@@ -116,6 +116,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                           _buildRoutines(context),
 
                           const SizedBox(height: 20),
+
+                          _buildRecentSection(context),
                         ],
 
                         if (workout != null) ...[
@@ -134,8 +136,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
                           const SizedBox(height: 32),
                         ],
-
-                        _buildRecentSection(context),
                       ],
                     );
                   },
