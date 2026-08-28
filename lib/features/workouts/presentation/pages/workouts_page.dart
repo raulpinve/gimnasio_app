@@ -1,10 +1,12 @@
+import 'package:gym_app/features/workouts/presentation/cubits/active_workout/active_workout_cubit.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/active_workout/active_workout_state.dart';
+import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
+import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/utils/snackbar_helper.dart';
-import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
-import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
@@ -18,11 +20,12 @@ class WorkoutsPage extends StatefulWidget {
 }
 
 class _WorkoutsPageState extends State<WorkoutsPage> {
-  @override
-  void initState() {
-    super.initState();
-
-    context.read<RoutineListCubit>().loadRoutines();
+  Future<void> onRefresh() async {
+    await Future.wait([
+      context.read<RoutineListCubit>().loadRoutines(showLoading: false),
+      context.read<WorkoutListCubit>().loadWorkouts(showLoading: false),
+      context.read<ActiveWorkoutCubit>().loadActiveWorkout(showLoading: false),
+    ]);
   }
 
   @override
@@ -33,64 +36,176 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     return MultiBlocListener(
       listeners: [
         BlocListener<WorkoutCreateCubit, WorkoutCreateState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.isCreated && state.workoutId != null) {
-              context.push('/workouts-exercises/${state.workoutId}');
+              if (!context.mounted) return;
+
+              await context.push(
+                '/workouts-exercises/${state.workoutId}',
+              );
+
+              if (!context.mounted) return;
+
+              await onRefresh();
             }
 
             if (state.errorMessage != null) {
+              if (!context.mounted) return;
+
               showMessage(context, state.errorMessage!);
             }
           },
         ),
       ],
       child: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 18),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: RefreshIndicator(
+            onRefresh: onRefresh,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SafeArea(
+                child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
+                  builder: (context, state) {
+                    if (state is ActiveWorkoutLoading) {
+                      return const CircularProgressIndicator();
+                    }
 
-                Text(
-                  '¿Qué vas a entrenar hoy?',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                    if (state is ActiveWorkoutLoaded) {
+                      final workout = state.workout;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (workout == null) ...[
+                            const SizedBox(height: 18),
+
+                            Text(
+                              '¿Qué vas a entrenar hoy?',
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+
+                            Text(
+                              'Elige cómo quieres empezar tu entrenamiento.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            _buildFreeWorkoutCard(context),
+
+                            const SizedBox(height: 32),
+
+                            Text(
+                              'Tus rutinas',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildRoutines(context),
+                            const SizedBox(height: 20),
+                          ],
+
+                          if (workout != null) ...[
+                            const SizedBox(height: 18),
+                            Text(
+                              'Continúa tu entrenamiento',
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            _buildWorkoutActive(context, workout.id),
+                            const SizedBox(height: 32),
+                          ],
+
+                          _buildRecentSection(context),
+                        ],
+                      );
+                    }
+                    return const SizedBox();
+                  },
                 ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  'Elige cómo quieres empezar tu entrenamiento.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildFreeWorkoutCard(context),
-
-                const SizedBox(height: 32),
-
-                Text(
-                  'Tus rutinas',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                _buildRoutines(context),
-
-                const SizedBox(height: 20),
-
-                _buildRecentSection(context),
-              ],
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkoutActive(BuildContext context, String? workoutId) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (workoutId != null) {
+            context.push("/workouts-exercises/$workoutId");
+          }
+        },
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Entrenamiento en curso',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Text(
+                      'Tienes un entrenamiento pendiente. Continúa donde lo dejaste.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimary.withValues(
+                          alpha: 0.82,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary.withValues(
+                    alpha: 0.14,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 20,
+                ),
+              ),
+            ],
           ),
         ),
       ),

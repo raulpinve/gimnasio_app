@@ -11,14 +11,19 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
   // ============================================================
   Future<void> loadWorkouts({
     int page = 1,
+    bool showLoading = true,
   }) async {
+    if (isClosed) return;
+
     try {
       // PRIMERA PÁGINA
-      if (page == 1) {
+      if (page == 1 && showLoading) {
         emit(WorkoutListLoading());
       }
 
       final result = await workoutRepo.getAllWorkouts(page: page);
+
+      if (isClosed) return;
 
       // SI ES LA PRIMERA PÁGINA
       // Reemplazamos la lista completa
@@ -31,12 +36,11 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
             isLoadingMore: false,
           ),
         );
-
         return;
       }
 
       // SI ES UNA PÁGINA SIGUIENTE
-      // Agregamos las nuevas rutinas existentes
+      // Agregamos los nuevos workouts
       if (state is WorkoutsListLoaded) {
         final currentState = state as WorkoutsListLoaded;
 
@@ -55,8 +59,8 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
     } catch (e) {
       if (isClosed) return;
 
-      // Si es una carga inicial, mostramos el error normal
-      if (page == 1) {
+      // Error durante carga inicial
+      if (page == 1 && showLoading) {
         emit(
           WorkoutListError(
             e.toString(),
@@ -64,7 +68,7 @@ class WorkoutListCubit extends Cubit<WorkoutListState> {
         );
       }
 
-      // Si falla "Cargar más", conservamos la lista actual
+      // Error cargando una página adicional
       if (state is WorkoutsListLoaded) {
         final currentState = state as WorkoutsListLoaded;
 

@@ -8,6 +8,8 @@ abstract class WorkoutRepo {
 
   Future<Workout> getWorkout(String id);
 
+  Future<Workout?> getActiveWorkout();
+
   Future<Workout> createWorkout({
     required Map<String, dynamic> workoutBody,
   });

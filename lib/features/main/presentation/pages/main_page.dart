@@ -1,3 +1,4 @@
+import 'package:gym_app/features/workouts/presentation/cubits/active_workout/active_workout_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
@@ -58,11 +59,10 @@ class _MainPageState extends State<MainPage> {
             workoutRepo: ApiWorkoutRepo(),
           ),
         ),
-
         BlocProvider(
-          create: (_) => WorkoutListCubit(
+          create: (_) => ActiveWorkoutCubit(
             workoutRepo: ApiWorkoutRepo(),
-          )..loadWorkouts(),
+          )..loadActiveWorkout(),
         ),
       ],
       child: Scaffold(

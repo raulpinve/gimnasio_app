@@ -71,6 +71,28 @@ class ApiWorkoutRepo implements WorkoutRepo {
   }
 
   @override
+  Future<Workout?> getActiveWorkout() async {
+    try {
+      final response = await apiClient.dio.get('/workouts/active');
+
+      final data = response.data["data"];
+
+      if (data == null) {
+        return null;
+      }
+
+      return Workout.fromJSON(
+        data as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    } catch (e) {
+      debugPrint("Error al obtener el workout: $e");
+      throw Exception("Ocurrió un error inesperado.");
+    }
+  }
+
+  @override
   Future<Workout> updateWorkout(
     String workoutId,
     Map<String, dynamic> workoutBody,
