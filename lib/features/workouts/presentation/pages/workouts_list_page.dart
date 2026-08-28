@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
 import 'package:shimmer/shimmer.dart';
-
 import 'package:gym_app/core/widgets/refreshable_content.dart';
-
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
-
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
@@ -67,7 +64,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ultimos workouts'),
+        title: const Text('Entrenamientos recientes'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         leading: const BackButton(),
       ),

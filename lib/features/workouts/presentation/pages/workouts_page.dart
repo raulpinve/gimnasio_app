@@ -402,6 +402,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     ),
 
                     const SizedBox(height: 4),
+                    if (routine.exercises.length == 0)
+                      Text(
+                        "Sin ejercicios",
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
 
                     Text(
                       routine.exercises
