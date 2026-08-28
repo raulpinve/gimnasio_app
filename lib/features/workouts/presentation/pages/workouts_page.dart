@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/create_workout/workout_create_state.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
+import 'package:gym_app/features/workouts/presentation/widgets/recent_workout_card.dart';
 
 class WorkoutsPage extends StatefulWidget {
   const WorkoutsPage({super.key});
@@ -357,7 +357,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             ),
             TextButton(
               onPressed: () {
-                // Ir a todos los entrenamientos
+                context.push("/workouts-list");
               },
               child: const Text('Ver todo →'),
             ),
@@ -367,113 +367,14 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         const SizedBox(height: 12),
 
         for (int i = 0; i < recentWorkouts.length; i++) ...[
-          _buildRecentWorkoutCard(
+          recentWorkoutCard(
             context,
             workout: recentWorkouts[i],
           ),
 
-          if (i < recentWorkouts.length - 1) const SizedBox(height: 10),
+          if (i < recentWorkouts.length - 1) const SizedBox(height: 8),
         ],
       ],
     );
-  }
-
-  Widget _buildRecentWorkoutCard(
-    BuildContext context, {
-    required Workout workout,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          context.push("/workouts-exercises/${workout.id}");
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
-          ),
-          child: Row(
-            children: [
-              Text(
-                _formatWorkoutDate(workout.fecha),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      workout.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      workout.duracion?.isNotEmpty == true
-                          ? '${workout.duracion} min'
-                          : workout.estado == 'abierto'
-                          ? 'En curso'
-                          : '',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Icon(
-                Icons.chevron_right_rounded,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatWorkoutDate(String? fecha) {
-    if (fecha == null || fecha.isEmpty) return '';
-
-    final date = DateTime.tryParse(fecha);
-
-    if (date == null) return '';
-
-    const months = [
-      'ENE',
-      'FEB',
-      'MAR',
-      'ABR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AGO',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DIC',
-    ];
-
-    return '${date.day} ${months[date.month - 1]}';
   }
 }

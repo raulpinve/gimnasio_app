@@ -1,12 +1,10 @@
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_cubit.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_list/workout_list_state.dart';
-import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/data/api_workout_repo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_app/features/workouts/presentation/widgets/recent_workout_card.dart';
 import 'package:shimmer/shimmer.dart';
 
 class WorkoutsListPage extends StatefulWidget {
@@ -48,23 +46,9 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workouts'),
+        title: const Text('Ultimos workouts'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        actions: [
-          MyAppbarButton(
-            onPressed: () async {
-              final response = await context.push<bool>("/workouts/create");
-
-              // Stop execution if the user navigated away while the page was open
-              if (!context.mounted) return;
-
-              if (response == true) {
-                context.read<WorkoutListCubit>().loadWorkouts();
-              }
-            },
-            icon: Icon(Icons.add),
-          ),
-        ],
+        leading: BackButton(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -103,7 +87,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                       child: ListView.separated(
                         controller: _scrollController,
                         separatorBuilder: (BuildContext context, int index) {
-                          return const SizedBox(height: 16);
+                          return const SizedBox(height: 10);
                         },
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount:
@@ -121,7 +105,7 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                           }
 
                           final workout = state.workouts[index];
-                          return workoutCard(context, workout);
+                          return recentWorkoutCard(context, workout: workout);
                         },
                       ),
                     );
@@ -129,152 +113,6 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
                   return skeletonLoader(context);
                 },
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  GestureDetector workoutCard(BuildContext context, Workout workout) {
-    return GestureDetector(
-      onTap: () async {
-        final response = await context.push<bool>(
-          '/workouts-exercises/${workout.id}',
-        );
-
-        if (!context.mounted) return;
-
-        if (response == true) {
-          context.read<WorkoutListCubit>().loadWorkouts();
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          16,
-          14,
-          8,
-          14,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Nombre + menú
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    workout.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(
-                    Icons.more_vert,
-                    size: 22,
-                  ),
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'edit':
-                        // Editar workout
-                        break;
-
-                      case 'delete':
-                        _confirmDeleteWorkout(
-                          context,
-                          workout,
-                        );
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline),
-                          SizedBox(width: 10),
-                          Text('Eliminar'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            // Estado
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 9,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: workout.estado == 'abierto'
-                    ? Colors.blue.shade100
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                workout.estado == 'abierto' ? 'En progreso' : 'Finalizado',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: workout.estado == 'abierto'
-                      ? Colors.blue.shade800
-                      : Colors.grey.shade800,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Duración + fecha
-            Row(
-              children: [
-                if (workout.duracion != null &&
-                    workout.duracion!.isNotEmpty) ...[
-                  Icon(
-                    Icons.timer_outlined,
-                    size: 15,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    workout.duracion!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '•',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-
-                Text(
-                  workout.fecha ?? '',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
             ),
           ],
         ),
@@ -363,75 +201,4 @@ class _WorkoutsListPageState extends State<WorkoutsListPage> {
       },
     );
   }
-}
-
-Future<void> _confirmDeleteWorkout(
-  BuildContext context,
-  Workout workout,
-) async {
-  final cubit = context.read<WorkoutListCubit>();
-
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) {
-      bool isDeleting = false;
-
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text(
-              'Eliminar rutina',
-            ),
-            content: Text(
-              '¿Seguro que deseas eliminar "${workout.name}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () => Navigator.of(dialogContext).pop(),
-                child: const Text(
-                  'Cancelar',
-                ),
-              ),
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () async {
-                        setState(() {
-                          isDeleting = true;
-                        });
-
-                        final deleted = await cubit.deleteWorkout(
-                          workout.id,
-                        );
-
-                        if (!dialogContext.mounted) return;
-
-                        if (deleted) {
-                          Navigator.of(dialogContext).pop();
-                        } else {
-                          setState(() {
-                            isDeleting = false;
-                          });
-                        }
-                      },
-                child: isDeleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Eliminar',
-                      ),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
 }
