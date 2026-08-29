@@ -40,12 +40,14 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
   }
 
   Future<void> _onRefresh() async {
-    await context.read<WorkoutExercisesListCubit>().loadWorkoutExercises(
-      widget.workoutId,
-    );
+    final exercisesCubit = context.read<WorkoutExercisesListCubit>();
+    final workoutCubit = context.read<WorkoutDetailCubit>();
+
+    await exercisesCubit.loadWorkoutExercises(widget.workoutId);
+    await workoutCubit.loadWorkoutById(widget.workoutId);
   }
 
-  Future<void> _confirmDelete(
+  Future<void> _confirmDeleteExercise(
     BuildContext context,
     WorkoutExercise workoutExercise,
   ) async {
@@ -144,65 +146,87 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
     );
   }
 
-  // Eliminar el entrenamiento completo (no un ejercicio individual).
-  // Acción destructiva y poco frecuente: vive en el menú "⋮" del AppBar.
   Future<void> _confirmDeleteWorkout(BuildContext context) async {
     final cubit = context.read<WorkoutDetailCubit>();
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        bool isDeleting = false;
+        return BlocProvider.value(
+          value: cubit,
+          child: BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
+            listener: (context, state) {
+              if (state is WorkoutDetailDeleted) {
+                Navigator.of(dialogContext).pop();
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Eliminar entrenamiento'),
-              content: const Text(
-                '¿Seguro que deseas eliminar este entrenamiento? '
-                'Se perderán todos los ejercicios y registros asociados.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isDeleting
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: isDeleting
-                      ? null
-                      : () async {
-                          setState(() {
-                            isDeleting = true;
-                          });
+                if (context.mounted) {
+                  context.pop(true);
+                }
+              }
+            },
+            child: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
+              builder: (context, state) {
+                final isDeleting = state is WorkoutDetailDeleting;
 
-                          await cubit.deleteWorkout(widget.workoutId);
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.of(dialogContext).pop();
-
-                          if (!context.mounted) return;
-                          context.pop(true); // vuelve a la pantalla anterior
-                        },
-                  child: isDeleting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                return AlertDialog(
+                  title: const Text('Eliminar entrenamiento'),
+                  content: state is WorkoutDetailError
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '¿Seguro que deseas eliminar este entrenamiento? '
+                              'Se perderán todos los ejercicios y registros asociados.',
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              state.message,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         )
-                      : const Text('Eliminar'),
-                ),
-              ],
-            );
-          },
+                      : const Text(
+                          '¿Seguro que deseas eliminar este entrenamiento? '
+                          'Se perderán todos los ejercicios y registros asociados.',
+                        ),
+                  actions: [
+                    TextButton(
+                      onPressed: isDeleting
+                          ? null
+                          : () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: isDeleting
+                          ? null
+                          : () async {
+                              await cubit.deleteWorkout(widget.workoutId);
+                            },
+                      child: isDeleting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Eliminar'),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
         );
       },
     );
   }
 
-  // Finalizar el entrenamiento en curso. También pide confirmación porque
-  // es una acción irreversible (cambia el estado a "completado").
   Future<void> _confirmFinishWorkout(BuildContext context) async {
     final cubit = context.read<WorkoutDetailCubit>();
 
@@ -210,55 +234,90 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
       context: context,
       builder: (dialogContext) {
         bool isFinishing = false;
+        String? errorMessage;
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Finalizar entrenamiento'),
-              content: const Text(
-                '¿Seguro que deseas finalizar este entrenamiento? '
-                'No podrás agregar más ejercicios después.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isFinishing
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancelar'),
+        return BlocProvider.value(
+          value: cubit,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
+                listener: (context, state) {
+                  if (state is WorkoutDetailFinishing) {
+                    setState(() {
+                      isFinishing = true;
+                      errorMessage = null;
+                    });
+                  }
+
+                  if (state is WorkoutDetailError) {
+                    setState(() {
+                      isFinishing = false;
+                      errorMessage = state.message;
+                    });
+                  }
+
+                  if (state is WorkoutDetailFinished) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+                child: AlertDialog(
+                  title: const Text('Finalizar entrenamiento'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '¿Seguro que deseas finalizar este entrenamiento? '
+                        'No podrás agregar más ejercicios después.',
+                      ),
+                      if (errorMessage != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: isFinishing
+                          ? null
+                          : () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: isFinishing
+                          ? null
+                          : () async {
+                              await cubit.finishWorkout(
+                                widget.workoutId,
+                              );
+                            },
+                      child: isFinishing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Finalizar'),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: isFinishing
-                      ? null
-                      : () async {
-                          setState(() {
-                            isFinishing = true;
-                          });
-
-                          // TODO: reemplazar por el método real del cubit,
-                          // ej: await cubit.finishWorkout(widget.workoutId);
-                          await cubit.finishWorkout(widget.workoutId);
-
-                          if (!dialogContext.mounted) return;
-                          Navigator.of(dialogContext).pop();
-                        },
-                  child: isFinishing
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Finalizar'),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
   }
 
-  // Extraído: la acción de navegar a agregar ejercicio y refrescar la lista.
-  // Ahora la usan tanto el estado vacío como el botón de abajo.
   Future<void> _goToAddExercise(BuildContext context, String workoutId) async {
     final exercisesCubit = context.read<WorkoutExercisesListCubit>();
 
@@ -280,11 +339,13 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: BackButton(
+          onPressed: () {
+            context.pop(true);
+          },
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
-          // "Finalizar": acción primaria, estilo texto, tipo "Listo" de iOS.
-          // Solo se muestra si el entrenamiento sigue en curso.
           BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
             builder: (context, state) {
               final isOpen =
@@ -303,7 +364,6 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
             },
           ),
 
-          // "⋮" acciones destructivas/secundarias, al final del todo.
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'eliminar') {
@@ -351,18 +411,13 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                   // ERROR DE CARGA DEL WORKOUT
                   if (state is WorkoutDetailError) {
-                    return RefreshableContent(
-                      onRefresh: _onRefresh,
-                      child: Text(state.message),
-                    );
+                    return SizedBox.shrink();
                   }
 
                   // WORKOUT CARGADO
                   if (state is WorkoutDetailLoaded) {
                     final workout = state.workout;
 
-                    // El header ahora es solo informativo: nombre + estado.
-                    // El botón de agregar se movió debajo de la lista.
                     return Row(
                       children: [
                         Expanded(
@@ -446,9 +501,6 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                       // ENTRENAMIENTOS CARGADOS
                       if (state is WorkoutExercisesListLoaded) {
-                        // Estado del workout (abierto/cerrado + id), lo
-                        // necesitamos acá porque el botón de agregar ahora
-                        // vive dentro de este mismo ListView, como último item.
                         final workoutDetailState = context
                             .watch<WorkoutDetailCubit>()
                             .state;
@@ -459,6 +511,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                         Widget addExerciseButton() {
                           final colorScheme = Theme.of(context).colorScheme;
+                          if (!isOpen) return SizedBox.shrink();
 
                           return Padding(
                             padding: const EdgeInsets.only(top: 4),
@@ -557,7 +610,8 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                                   context,
                                   workoutExercise,
                                 ),
-                                onDelete: () => _confirmDelete(
+                                isOpen: isOpen,
+                                onDelete: () => _confirmDeleteExercise(
                                   context,
                                   workoutExercise,
                                 ),

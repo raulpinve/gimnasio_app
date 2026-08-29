@@ -50,11 +50,13 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
 
   Future<void> finishWorkout(String workoutId) async {
     try {
-      emit(WorkoutDetailLoading());
+      emit(WorkoutDetailFinishing());
 
       await workoutRepo.finishWorkout(workoutId);
 
       if (isClosed) return;
+
+      emit(WorkoutDetailFinished());
 
       await loadWorkoutById(workoutId);
     } catch (e) {

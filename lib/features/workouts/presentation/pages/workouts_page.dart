@@ -41,19 +41,24 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
             if (state.isCreated && state.workoutId != null) {
               if (!context.mounted) return;
 
-              await context.push(
+              final result = await context.push<bool>(
                 '/workouts-exercises/${state.workoutId}',
               );
 
               if (!context.mounted) return;
 
-              await onRefresh();
+              if (result == true) {
+                await onRefresh();
+              }
             }
 
             if (state.errorMessage != null) {
               if (!context.mounted) return;
 
-              showMessage(context, state.errorMessage!);
+              showMessage(
+                context,
+                state.errorMessage!,
+              );
             }
           },
         ),
@@ -155,9 +160,15 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           if (workoutId != null) {
-            context.push("/workouts-exercises/$workoutId");
+            final result = await context.push<bool>(
+              "/workouts-exercises/$workoutId",
+            );
+
+            if (result == true) {
+              onRefresh();
+            }
           }
         },
         borderRadius: BorderRadius.circular(18),

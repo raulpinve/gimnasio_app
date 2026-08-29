@@ -10,11 +10,13 @@ class WorkoutExerciseCard extends StatelessWidget {
     required this.workoutExercise,
     required this.onRegisterSet,
     required this.onDelete,
+    required this.isOpen,
   });
 
   final WorkoutExercise workoutExercise;
   final VoidCallback onRegisterSet;
   final VoidCallback onDelete;
+  final bool isOpen;
 
   bool get _isCardio => workoutExercise.exerciseType == "cardio";
   int get _completedRecords => workoutExercise.records.length;
@@ -74,7 +76,8 @@ class WorkoutExerciseCard extends StatelessWidget {
           const SizedBox(height: 10),
           _buildRecordsList(),
           const SizedBox(height: 20),
-          _buildRegisterButton(context, workoutExercise.exerciseType),
+          if (isOpen)
+            _buildRegisterButton(context, workoutExercise.exerciseType),
         ],
       ),
     );
@@ -125,29 +128,30 @@ class WorkoutExerciseCard extends StatelessWidget {
           ),
         ),
 
-        PopupMenuButton<String>(
-          padding: EdgeInsets.zero,
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            if (value == "delete") {
-              onDelete();
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem<String>(
-              value: "delete",
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.delete_outline,
-                  ),
-                  SizedBox(width: 10),
-                  Text("Eliminar "),
-                ],
+        if (isOpen)
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == "delete") {
+                onDelete();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                value: "delete",
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                    ),
+                    SizedBox(width: 10),
+                    Text("Eliminar "),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ],
     );
   }

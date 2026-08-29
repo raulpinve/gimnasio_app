@@ -136,7 +136,7 @@ class ApiWorkoutRepo implements WorkoutRepo {
     } on DioException catch (e) {
       throw handleDioError(e);
     } catch (e, stackTrace) {
-      debugPrint("Error al finalizar el entreamiento: e");
+      debugPrint("Error al finalizar el entrenamiento: $e");
       debugPrintStack(stackTrace: stackTrace);
       throw Exception("Ocurrió un error inesperado.");
     }

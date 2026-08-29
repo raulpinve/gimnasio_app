@@ -8,10 +8,15 @@ class WorkoutDetailLoading extends WorkoutDetailState {}
 
 class WorkoutDetailLoaded extends WorkoutDetailState {
   final Workout workout;
+
   WorkoutDetailLoaded({
     required this.workout,
   });
 }
+
+class WorkoutDetailFinishing extends WorkoutDetailState {}
+
+class WorkoutDetailFinished extends WorkoutDetailState {}
 
 class WorkoutDetailDeleting extends WorkoutDetailState {}
 
