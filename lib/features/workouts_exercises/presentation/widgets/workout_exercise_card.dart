@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
-import 'package:gym_app/features/workouts_exercises/presentation/widgets/set_card.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
 
 class WorkoutExerciseCard extends StatelessWidget {
@@ -171,23 +170,55 @@ class WorkoutExerciseCard extends StatelessWidget {
       );
     }
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: workoutExercise.records.map((record) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: workoutExercise.records.asMap().entries.map((entry) {
+        final index = entry.key;
+        final record = entry.value;
+
+        final String primaryText;
+        final String secondaryText;
+
         if (_isCardio) {
-          return SetCard(
-            primaryText: "${(record.durationSeconds ?? 0) ~/ 60} min",
-            secondaryText: "${formatNumber(record.distanceKm)} km",
-            color: Colors.grey.shade100,
-          );
+          primaryText = "${(record.durationSeconds ?? 0) ~/ 60} min";
+          secondaryText = "${formatNumber(record.distanceKm)} km";
+        } else {
+          primaryText =
+              "${formatNumber(record.weight)} ${record.weightUnit ?? "kg"}";
+          secondaryText = "${record.reps ?? 0} reps";
         }
 
-        return SetCard(
-          primaryText:
-              "${formatNumber(record.weight)} ${record.weightUnit ?? "kg"}",
-          secondaryText: "${record.reps ?? 0} reps",
-          color: Colors.grey.shade100,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                child: Text(
+                  "${index + 1}.",
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              Text(
+                primaryText,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "· $secondaryText",
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
         );
       }).toList(),
     );

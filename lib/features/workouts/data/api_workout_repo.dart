@@ -37,7 +37,7 @@ class ApiWorkoutRepo implements WorkoutRepo {
         '/workouts',
         queryParameters: {
           'page': page,
-          if (routineId != null) 'routineId': routineId,
+          ...?routineId != null ? {'routineId': routineId} : null,
         },
       );
 

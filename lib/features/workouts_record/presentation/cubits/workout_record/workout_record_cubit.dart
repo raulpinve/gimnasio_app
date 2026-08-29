@@ -41,18 +41,12 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
     ExerciseType exerciseType,
     Map<String, dynamic> workoutRecordBody,
   ) async {
+    final currentState = state;
+    if (currentState is! WorkoutRecordsLoaded) return;
+
+    emit(currentState.copyWith(isSaving: true, actionError: null));
+
     try {
-      if (isClosed) return;
-      final currentState = state;
-
-      if (currentState is! WorkoutRecordsLoaded) return;
-
-      emit(
-        currentState.copyWith(
-          isSaving: true,
-        ),
-      );
-
       final newWorkoutRecord = await workoutRecordRepo.createWorkoutRecord(
         exerciseType,
         workoutRecordBody,
@@ -62,30 +56,16 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
 
       emit(
         currentState.copyWith(
-          workoutRecords: [
-            ...currentState.workoutRecords,
-            newWorkoutRecord,
-          ],
+          workoutRecords: [...currentState.workoutRecords, newWorkoutRecord],
           isSaving: false,
         ),
       );
     } on ApiError catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.message,
-          fieldErrors: e.fieldErrors,
-        ),
-      );
+      emit(currentState.copyWith(isSaving: false, actionError: e.message));
     } catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.toString(),
-        ),
-      );
+      emit(currentState.copyWith(isSaving: false, actionError: e.toString()));
     }
   }
 
@@ -94,19 +74,12 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
     ExerciseType exerciseType,
     Map<String, dynamic> workoutRecordBody,
   ) async {
+    final currentState = state;
+    if (currentState is! WorkoutRecordsLoaded) return;
+
+    emit(currentState.copyWith(isSaving: true, actionError: null));
+
     try {
-      if (isClosed) return;
-
-      final currentState = state;
-
-      if (currentState is! WorkoutRecordsLoaded) return;
-
-      emit(
-        currentState.copyWith(
-          isSaving: true,
-        ),
-      );
-
       final updatedWorkoutRecord = await workoutRecordRepo.updateWorkoutRecord(
         workoutRecordId,
         exerciseType,
@@ -131,21 +104,11 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
       );
     } on ApiError catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.message,
-          fieldErrors: e.fieldErrors,
-        ),
-      );
+      // seguimos en WorkoutRecordsLoaded, con la lista intacta
+      emit(currentState.copyWith(isSaving: false, actionError: e.message));
     } catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.toString(),
-        ),
-      );
+      emit(currentState.copyWith(isSaving: false, actionError: e.toString()));
     }
   }
 
@@ -153,18 +116,12 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
     String workoutRecordId,
     ExerciseType exerciseType,
   ) async {
+    final currentState = state;
+    if (currentState is! WorkoutRecordsLoaded) return;
+
+    emit(currentState.copyWith(isDeleting: true, actionError: null));
+
     try {
-      if (isClosed) return;
-
-      final currentState = state;
-      if (currentState is! WorkoutRecordsLoaded) return;
-
-      emit(
-        currentState.copyWith(
-          isDeleting: true,
-        ),
-      );
-
       await workoutRecordRepo.deleteWorkoutRecord(
         workoutRecordId,
         exerciseType,
@@ -175,30 +132,18 @@ class WorkoutRecordCubit extends Cubit<WorkoutRecordState> {
       emit(
         currentState.copyWith(
           workoutRecords: currentState.workoutRecords
-              .where(
-                (record) => record.id != workoutRecordId,
-              )
+              .where((record) => record.id != workoutRecordId)
               .toList(),
           isDeleting: false,
         ),
       );
     } on ApiError catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.message,
-          fieldErrors: e.fieldErrors,
-        ),
-      );
+      // seguimos en WorkoutRecordsLoaded, con la lista intacta
+      emit(currentState.copyWith(isDeleting: false, actionError: e.message));
     } catch (e) {
       if (isClosed) return;
-
-      emit(
-        WorkoutRecordError(
-          e.toString(),
-        ),
-      );
+      emit(currentState.copyWith(isDeleting: false, actionError: e.toString()));
     }
   }
 }

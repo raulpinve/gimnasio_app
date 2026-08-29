@@ -53,19 +53,58 @@ class SwitcherForm extends StatelessWidget {
           child: child,
         );
       },
-      child: showForm ? _buildFormCard(context) : _buildAddButton(),
+      child: showForm ? _buildFormCard(context) : _buildAddButton(context),
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return KeyedSubtree(
       key: const ValueKey('addButton'),
       child: Padding(
         padding: const EdgeInsets.only(top: 20),
-        child: TextButton.icon(
-          onPressed: onShowForm,
-          icon: Icon(Icons.add),
-          label: Text("Registrar serie"),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onShowForm,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 16,
+              ),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add,
+                    size: 20,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    formType == FormType.strengthForm
+                        ? 'Registrar serie'
+                        : 'Registrar sesión',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
