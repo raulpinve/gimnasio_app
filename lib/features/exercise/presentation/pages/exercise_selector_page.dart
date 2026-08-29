@@ -328,6 +328,9 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
       ),
     );
   }
+
+
+  
 }
 
 Widget skeletonLoader(BuildContext context) {

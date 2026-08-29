@@ -7,6 +7,7 @@ import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
 
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_cubit.dart';
 import 'package:gym_app/features/exercise/presentation/cubits/exercise_list_state.dart';
+import 'package:gym_app/features/exercise/presentation/widgets/exercise_thumbnail.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_state.dart';
 import 'package:shimmer/shimmer.dart';
@@ -235,7 +236,7 @@ class _WorkoutExerciseAddExercisePageState
 
                   final exercise = state.exercises[index];
 
-                  return _buildExerciseItem(
+                  return _buildExerciseCard(
                     context,
                     exercise,
                   );
@@ -285,147 +286,79 @@ class _WorkoutExerciseAddExercisePageState
     );
   }
 
-  Widget _buildExerciseItem(
+  Widget _buildExerciseCard(
     BuildContext context,
     Exercise exercise,
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return GestureDetector(
-      onTap: () async {
-        final cubit = context.read<WorkoutExerciseDetailCubit>();
+    final isCardio = exercise.type == 'cardio';
 
-        final success = await cubit.createWorkoutExercise(
-          widget.workoutId,
-          exercise.id,
-        );
-
-        if (!context.mounted) return;
-
-        if (success) {
-          context.pop(true);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          16,
-          14,
-          14,
-          14,
-        ),
-        decoration: BoxDecoration(
-          color: colorScheme.tertiary,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (context.canPop()) {
+            context.pop(true);
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.shade200,
             ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildExerciseAvatar(
-              context,
-              exercise,
-            ),
+          ),
+          child: Row(
+            children: [
+              ExerciseThumbnail(
+                name: exercise.name,
+                imageUrl: exercise.avatar,
+              ),
 
-            const SizedBox(width: 12),
+              const SizedBox(width: 14),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    exercise.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: exercise.type == 'strength'
-                          ? Colors.blue.shade100
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      exercise.type == 'strength' ? 'Fuerza' : 'Cardio',
-                      style: TextStyle(
-                        fontSize: 11,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercise.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: exercise.type == 'strength'
-                            ? Colors.blue.shade800
-                            : Colors.grey.shade800,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      isCardio ? 'Cardio' : 'Fuerza',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(width: 8),
+
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildExerciseAvatar(
-    BuildContext context,
-    Exercise exercise,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (exercise.avatar != null && exercise.avatar!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          exercise.avatar!,
-          width: 50,
-          height: 50,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) {
-            return Container(
-              width: 50,
-              height: 50,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                exercise.type == 'cardio'
-                    ? Icons.directions_run_outlined
-                    : Icons.fitness_center_outlined,
-              ),
-            );
-          },
-        ),
-      );
-    }
-
-    return Container(
-      width: 50,
-      height: 50,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(
-        exercise.type == 'cardio'
-            ? Icons.directions_run_outlined
-            : Icons.fitness_center_outlined,
       ),
     );
   }

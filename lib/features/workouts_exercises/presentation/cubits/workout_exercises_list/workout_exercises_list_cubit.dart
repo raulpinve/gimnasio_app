@@ -39,11 +39,11 @@ class WorkoutExercisesListCubit extends Cubit<WorkoutExercisesListState> {
     }
   }
 
-  Future<void> deleteWorkoutExercise(String workoutExerciseId) async {
-    if (isClosed) return;
+  Future<bool> deleteWorkoutExercise(String workoutExerciseId) async {
+    if (isClosed) return false;
 
     if (state is! WorkoutExercisesListLoaded) {
-      return;
+      return false;
     }
 
     final currentState = state as WorkoutExercisesListLoaded;
@@ -60,7 +60,7 @@ class WorkoutExercisesListCubit extends Cubit<WorkoutExercisesListState> {
         workoutExerciseId,
       );
 
-      if (isClosed) return;
+      if (isClosed) return false;
 
       final updatedWorkoutExercises = currentState.workoutExercises
           .where(
@@ -75,8 +75,10 @@ class WorkoutExercisesListCubit extends Cubit<WorkoutExercisesListState> {
           errorMessage: null,
         ),
       );
+
+      return true;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return false;
 
       emit(
         currentState.copyWith(
@@ -84,6 +86,8 @@ class WorkoutExercisesListCubit extends Cubit<WorkoutExercisesListState> {
           errorMessage: e.toString(),
         ),
       );
+
+      return false;
     }
   }
 }
