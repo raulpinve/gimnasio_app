@@ -14,7 +14,13 @@ class WorkoutDetailLoaded extends WorkoutDetailState {
   });
 }
 
-class WorkoutDetailFinishing extends WorkoutDetailState {}
+class WorkoutDetailFinishing extends WorkoutDetailState {
+  final Workout workout;
+
+  WorkoutDetailFinishing({
+    required this.workout,
+  });
+}
 
 class WorkoutDetailFinished extends WorkoutDetailState {}
 
@@ -25,9 +31,11 @@ class WorkoutDetailDeleted extends WorkoutDetailState {}
 class WorkoutDetailError extends WorkoutDetailState {
   final String message;
   final Map<String, dynamic>? fieldErrors;
+  final Workout? workout;
 
   WorkoutDetailError(
     this.message, {
     this.fieldErrors,
+    this.workout,
   });
 }

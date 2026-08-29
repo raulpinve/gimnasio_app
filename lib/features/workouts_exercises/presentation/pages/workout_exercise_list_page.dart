@@ -11,6 +11,7 @@ import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercises_list/workout_exercises_list_cubit.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercises_list/workout_exercises_list_state.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/widgets/workout_exercise_card.dart';
+import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 
 class WorkoutExercisePage extends StatefulWidget {
   final String workoutId;
@@ -404,63 +405,57 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
               },
               child: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
                 builder: (context, state) {
-                  // CARGA INICIAL WORKOUT
-                  if (state is WorkoutDetailLoading) {
-                    return SizedBox.shrink();
-                  }
+                  Workout? workout;
 
-                  // ERROR DE CARGA DEL WORKOUT
-                  if (state is WorkoutDetailError) {
-                    return SizedBox.shrink();
-                  }
-
-                  // WORKOUT CARGADO
                   if (state is WorkoutDetailLoaded) {
-                    final workout = state.workout;
-
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            workout.name,
-                            style: Theme.of(context).textTheme.headlineSmall!
-                                .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                        ),
-
-                        Container(
-                          decoration: BoxDecoration(
-                            color: workout.estado == "abierto"
-                                ? Colors.blue.shade100
-                                : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          child: Text(
-                            workout.estado == "abierto"
-                                ? "En curso"
-                                : "Completado",
-                            style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                              color: workout.estado == "abierto"
-                                  ? Colors.blue.shade800
-                                  : Colors.grey.shade800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
+                    workout = state.workout;
+                  } else if (state is WorkoutDetailFinishing) {
+                    workout = state.workout;
+                  } else if (state is WorkoutDetailError) {
+                    workout = state.workout;
                   }
 
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  if (workout == null) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          workout.name,
+                          style: Theme.of(context).textTheme.headlineSmall!
+                              .copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: workout.estado == "abierto"
+                              ? Colors.blue.shade100
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          workout.estado == "abierto"
+                              ? "En curso"
+                              : "Completado",
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                            color: workout.estado == "abierto"
+                                ? Colors.blue.shade800
+                                : Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -504,9 +499,16 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                         final workoutDetailState = context
                             .watch<WorkoutDetailCubit>()
                             .state;
-                        final isOpen =
-                            workoutDetailState is WorkoutDetailLoaded &&
-                            workoutDetailState.workout.estado == "abierto";
+
+                        final isOpen = switch (workoutDetailState) {
+                          WorkoutDetailLoaded state =>
+                            state.workout.estado == "abierto",
+                          WorkoutDetailFinishing state =>
+                            state.workout.estado == "abierto",
+                          WorkoutDetailError state =>
+                            state.workout?.estado == "abierto",
+                          _ => false,
+                        };
                         final workoutId = widget.workoutId;
 
                         Widget addExerciseButton() {

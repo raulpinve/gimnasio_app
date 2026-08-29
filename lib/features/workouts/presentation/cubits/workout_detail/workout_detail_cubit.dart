@@ -1,14 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/features/workouts/domain/entities/workout.dart';
 import 'package:gym_app/features/workouts/domain/repos/workout_repo.dart';
 import 'package:gym_app/features/workouts/presentation/cubits/workout_detail/workout_detail_state.dart';
 
 class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
   final WorkoutRepo workoutRepo;
 
-  WorkoutDetailCubit({required this.workoutRepo})
-    : super(WorkoutDetailInitial());
+  Workout? _currentWorkout;
 
-  // Cargar workout
+  WorkoutDetailCubit({
+    required this.workoutRepo,
+  }) : super(WorkoutDetailInitial());
+
   Future<void> loadWorkoutById(String workoutId) async {
     try {
       emit(WorkoutDetailLoading());
@@ -17,23 +20,31 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
 
       if (isClosed) return;
 
-      emit(WorkoutDetailLoaded(workout: response));
+      _currentWorkout = response;
+
+      emit(
+        WorkoutDetailLoaded(
+          workout: response,
+        ),
+      );
     } catch (e) {
       if (isClosed) return;
+
       emit(
         WorkoutDetailError(
           e.toString(),
+          workout: _currentWorkout,
         ),
       );
     }
   }
 
-  // Delete routine
   Future<void> deleteWorkout(String workoutId) async {
     try {
       emit(WorkoutDetailDeleting());
 
       await workoutRepo.deleteWorkout(workoutId);
+
       if (isClosed) return;
 
       emit(WorkoutDetailDeleted());
@@ -43,6 +54,7 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
       emit(
         WorkoutDetailError(
           e.toString(),
+          workout: _currentWorkout,
         ),
       );
     }
@@ -50,7 +62,22 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
 
   Future<void> finishWorkout(String workoutId) async {
     try {
-      emit(WorkoutDetailFinishing());
+      final workout = _currentWorkout;
+
+      if (workout == null) {
+        emit(
+          WorkoutDetailError(
+            'No se encontró el workout actual.',
+          ),
+        );
+        return;
+      }
+
+      emit(
+        WorkoutDetailFinishing(
+          workout: workout,
+        ),
+      );
 
       await workoutRepo.finishWorkout(workoutId);
 
@@ -65,6 +92,7 @@ class WorkoutDetailCubit extends Cubit<WorkoutDetailState> {
       emit(
         WorkoutDetailError(
           e.toString(),
+          workout: _currentWorkout,
         ),
       );
     }
