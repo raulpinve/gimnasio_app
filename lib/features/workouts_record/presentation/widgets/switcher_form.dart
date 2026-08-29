@@ -81,11 +81,10 @@ class SwitcherForm extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.tertiary,
-              borderRadius: BorderRadius.circular(12),
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Theme.of(context).colorScheme.tertiary,
-                width: 1.5,
+                color: Colors.grey.shade200,
               ),
             ),
             child: Column(
@@ -105,6 +104,9 @@ class SwitcherForm extends StatelessWidget {
                     ),
                     TextButton(
                       style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.inversePrimary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8.0,
                           vertical: 4.0,
