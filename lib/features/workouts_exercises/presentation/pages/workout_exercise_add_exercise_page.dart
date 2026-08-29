@@ -117,7 +117,6 @@ class _WorkoutExerciseAddExercisePageState
             SizedBox(
               height: 24,
             ),
-            // BUSCADOR + FILTRO
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -298,8 +297,17 @@ class _WorkoutExerciseAddExercisePageState
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
-          if (context.canPop()) {
+        onTap: () async {
+          final cubit = context.read<WorkoutExerciseDetailCubit>();
+
+          final success = await cubit.createWorkoutExercise(
+            widget.workoutId,
+            exercise.id,
+          );
+
+          if (!context.mounted) return;
+
+          if (success) {
             context.pop(true);
           }
         },
