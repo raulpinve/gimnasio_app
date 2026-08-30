@@ -3,7 +3,8 @@ import 'package:gym_app/core/network/auth_interceptor.dart';
 
 class ApiClient {
   late final Dio dio;
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';https://fitness.gestorempresarial.cloud/
+  static const String baseUrl = 'https://fitness.gestorempresarial.cloud/api';
 
   // 1. Crear una instancia estática y privada de la misma clase
   static final ApiClient _instance = ApiClient._internal();

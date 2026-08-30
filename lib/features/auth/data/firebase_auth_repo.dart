@@ -61,7 +61,7 @@ class FirebaseAuthRepo implements AuthRepo {
       );
     } catch (e) {
       debugPrint("Error al iniciar sesión: $e");
-      throw Exception("No se pudo iniciar sesión.");
+      throw Exception(e.toString());
     }
   }
 
@@ -285,7 +285,7 @@ class FirebaseAuthRepo implements AuthRepo {
       debugPrintStack(stackTrace: stackTrace);
 
       throw Exception(
-        "No se pudo iniciar sesión con Google.",
+        e,
       );
     }
   }

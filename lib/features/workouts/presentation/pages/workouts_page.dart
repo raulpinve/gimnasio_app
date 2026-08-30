@@ -422,7 +422,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
                     const SizedBox(height: 4),
 
-                    if (routine.exercises.isEmpty)
+                    if (routine.exercises?.isEmpty ?? true)
                       Text(
                         "Sin ejercicios",
                         style: theme.textTheme.bodySmall?.copyWith(
