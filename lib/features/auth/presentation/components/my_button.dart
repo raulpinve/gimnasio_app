@@ -25,33 +25,33 @@ class MyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    Color buttonColor;
-    Color borderColor;
-    Color textColor;
+    late Color buttonColor;
+    late Color borderColor;
+    late Color textColor;
 
     switch (type) {
       case MyButtonType.primary:
         buttonColor = colorScheme.primary;
         borderColor = colorScheme.primary.withValues(alpha: 0.4);
-        textColor = Colors.white;
+        textColor = colorScheme.onPrimary;
         break;
 
       case MyButtonType.secondary:
-        buttonColor = Colors.white;
+        buttonColor = colorScheme.surface;
         borderColor = colorScheme.onSurface.withValues(alpha: 0.2);
         textColor = colorScheme.onSurface;
         break;
 
       case MyButtonType.warning:
-        buttonColor = Colors.orange;
-        borderColor = Colors.orange;
-        textColor = Colors.white;
+        buttonColor = colorScheme.tertiary;
+        borderColor = colorScheme.tertiary.withValues(alpha: 0.4);
+        textColor = colorScheme.onTertiary;
         break;
 
       case MyButtonType.danger:
         buttonColor = colorScheme.error;
-        borderColor = colorScheme.error;
-        textColor = Colors.white;
+        borderColor = colorScheme.error.withValues(alpha: 0.4);
+        textColor = colorScheme.onError;
         break;
     }
 
@@ -60,9 +60,7 @@ class MyButton extends StatelessWidget {
       child: GestureDetector(
         onTap: isLoading ? null : onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: buttonColor,
             borderRadius: BorderRadius.circular(12),

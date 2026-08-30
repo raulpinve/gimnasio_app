@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MyAppbarButton extends StatelessWidget {
-  final Function()? onPressed;
+  final VoidCallback? onPressed;
   final Widget icon;
 
   const MyAppbarButton({
@@ -12,6 +12,8 @@ class MyAppbarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         SizedBox(
@@ -20,8 +22,8 @@ class MyAppbarButton extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              foregroundColor: Colors.black,
+              backgroundColor: colorScheme.surface,
+              foregroundColor: colorScheme.onSurface,
               elevation: 0,
               padding: EdgeInsets.zero,
               shape: const CircleBorder(),
@@ -29,9 +31,7 @@ class MyAppbarButton extends StatelessWidget {
             child: icon,
           ),
         ),
-        const SizedBox(
-          width: 16,
-        ),
+        const SizedBox(width: 16),
       ],
     );
   }

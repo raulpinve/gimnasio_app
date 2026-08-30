@@ -398,9 +398,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.onSurface.withValues(alpha: 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -411,38 +415,44 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     Text(
                       routine.name,
                       style: theme.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
 
                     const SizedBox(height: 4),
-                    if (routine.exercises.length == 0)
+
+                    if (routine.exercises.isEmpty)
                       Text(
                         "Sin ejercicios",
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
+                      )
+                    else
+                      Text(
+                        routine.exercises
+                            .map((exercise) => exercise.name)
+                            .join(' · '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-
-                    Text(
-                      routine.exercises
-                              ?.map((exercise) => exercise.name)
-                              .join(' · ') ??
-                          '',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
                   ],
                 ),
               ),
 
+              const SizedBox(width: 12),
+
               if (isLoading)
-                const SizedBox(
+                SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
+                    color: colorScheme.primary,
                   ),
                 )
               else

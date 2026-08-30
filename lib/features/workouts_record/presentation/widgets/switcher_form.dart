@@ -65,22 +65,15 @@ class SwitcherForm extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Material(
-          color: Colors.transparent,
+          color: colorScheme.primary,
+          borderRadius: BorderRadius.circular(12),
           child: InkWell(
             onTap: onShowForm,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: double.infinity,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: 14,
                 horizontal: 16,
-              ),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.grey.shade200,
-                ),
+                vertical: 12,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -88,7 +81,7 @@ class SwitcherForm extends StatelessWidget {
                   Icon(
                     Icons.add,
                     size: 20,
-                    color: colorScheme.primary,
+                    color: colorScheme.onPrimary,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -96,9 +89,8 @@ class SwitcherForm extends StatelessWidget {
                         ? 'Registrar serie'
                         : 'Registrar sesión',
                     style: TextStyle(
-                      fontSize: 14,
+                      color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.primary,
                     ),
                   ),
                 ],
@@ -111,6 +103,8 @@ class SwitcherForm extends StatelessWidget {
   }
 
   Widget _buildFormCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return KeyedSubtree(
       key: const ValueKey('formCard'),
       child: Column(
@@ -120,11 +114,15 @@ class SwitcherForm extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.grey.shade200,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.onSurface.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -137,15 +135,14 @@ class SwitcherForm extends StatelessWidget {
                   children: [
                     Text(
                       _formTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     TextButton(
                       style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.inversePrimary,
+                        foregroundColor: colorScheme.onSurfaceVariant,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8.0,
                           vertical: 4.0,
@@ -173,12 +170,12 @@ class SwitcherForm extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "PESO",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF6B7280),
+                                color: colorScheme.onSurfaceVariant,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -203,7 +200,7 @@ class SwitcherForm extends StatelessWidget {
                                         : "Kg",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF9CA3AF),
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -217,7 +214,7 @@ class SwitcherForm extends StatelessWidget {
                       Container(
                         height: 45,
                         width: 1,
-                        color: const Color(0xFFE5E7EB),
+                        color: colorScheme.onSurface.withValues(alpha: 0.08),
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                       ),
 
@@ -226,12 +223,12 @@ class SwitcherForm extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "REPETICIONES",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF6B7280),
+                                color: colorScheme.onSurfaceVariant,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -247,13 +244,13 @@ class SwitcherForm extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const SizedBox(
+                                SizedBox(
                                   width: 38,
                                   child: Text(
                                     "Reps",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF9CA3AF),
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -275,12 +272,12 @@ class SwitcherForm extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "MINUTOS",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF6B7280),
+                                color: colorScheme.onSurfaceVariant,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -296,13 +293,13 @@ class SwitcherForm extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const SizedBox(
+                                SizedBox(
                                   width: 38,
                                   child: Text(
                                     "min",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF9CA3AF),
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -316,7 +313,7 @@ class SwitcherForm extends StatelessWidget {
                       Container(
                         height: 45,
                         width: 1,
-                        color: const Color(0xFFE5E7EB),
+                        color: colorScheme.onSurface.withValues(alpha: 0.08),
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                       ),
 
@@ -325,12 +322,12 @@ class SwitcherForm extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "DISTANCIA",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF6B7280),
+                                color: colorScheme.onSurfaceVariant,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -349,13 +346,13 @@ class SwitcherForm extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const SizedBox(
+                                SizedBox(
                                   width: 38,
                                   child: Text(
                                     "Km",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF9CA3AF),
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),

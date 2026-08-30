@@ -19,7 +19,12 @@ class MyDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     final hasError = errorText != null && errorText!.isNotEmpty;
+
+    final secondaryTextColor = colorScheme.onSurface.withValues(alpha: 0.5);
+
+    final borderColor = colorScheme.onSurface.withValues(alpha: 0.15);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,16 +38,19 @@ class MyDropdown<T> extends StatelessWidget {
             isExpanded: true,
             isDense: true,
 
+            // Texto seleccionado
             style: TextStyle(
               color: colorScheme.onSurface,
               fontSize: 16,
             ),
 
-            dropdownColor: Colors.grey.shade50,
+            // Fondo del menú desplegable
+            dropdownColor: colorScheme.surface,
 
+            // Flecha
             icon: Icon(
               Icons.arrow_drop_down_rounded,
-              color: hasError ? colorScheme.error : Colors.grey.shade500,
+              color: hasError ? colorScheme.error : secondaryTextColor,
               size: 28,
             ),
 
@@ -50,19 +58,20 @@ class MyDropdown<T> extends StatelessWidget {
               hintText: hintText,
 
               hintStyle: TextStyle(
-                color: hasError ? colorScheme.error : Colors.grey.shade500,
+                color: hasError ? colorScheme.error : secondaryTextColor,
               ),
 
               filled: true,
 
+              // Fondo del campo
               fillColor: hasError
                   ? colorScheme.error.withValues(alpha: 0.05)
-                  : Colors.grey.shade50,
+                  : colorScheme.surface,
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: hasError ? colorScheme.error : Colors.grey.shade300,
+                  color: hasError ? colorScheme.error : borderColor,
                   width: 1,
                 ),
               ),

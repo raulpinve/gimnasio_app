@@ -419,6 +419,8 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                     return const SizedBox.shrink();
                   }
 
+                  final colorScheme = Theme.of(context).colorScheme;
+
                   return Row(
                     children: [
                       Expanded(
@@ -427,14 +429,16 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                           style: Theme.of(context).textTheme.headlineSmall!
                               .copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
                               ),
                         ),
                       ),
+
                       Container(
                         decoration: BoxDecoration(
                           color: workout.estado == "abierto"
-                              ? Colors.blue.shade100
-                              : Colors.grey.shade200,
+                              ? colorScheme.primary.withValues(alpha: 0.12)
+                              : colorScheme.onSurface.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -450,8 +454,8 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                             color: workout.estado == "abierto"
-                                ? Colors.blue.shade800
-                                : Colors.grey.shade800,
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -513,16 +517,18 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                         Widget addExerciseButton() {
                           final colorScheme = Theme.of(context).colorScheme;
-                          if (!isOpen) return SizedBox.shrink();
+
+                          if (!isOpen) {
+                            return const SizedBox.shrink();
+                          }
 
                           return Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: isOpen
-                                    ? () => _goToAddExercise(context, workoutId)
-                                    : null,
+                                onTap: () =>
+                                    _goToAddExercise(context, workoutId),
                                 borderRadius: BorderRadius.circular(16),
                                 child: Container(
                                   width: double.infinity,
@@ -533,9 +539,15 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                                   decoration: BoxDecoration(
                                     color: colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Colors.grey.shade200,
-                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.04,
+                                        ),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -543,11 +555,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                                       Icon(
                                         Icons.add,
                                         size: 20,
-                                        color: isOpen
-                                            ? colorScheme.primary
-                                            : colorScheme.onSurface.withValues(
-                                                alpha: 0.38,
-                                              ),
+                                        color: colorScheme.primary,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -555,10 +563,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
-                                          color: isOpen
-                                              ? colorScheme.primary
-                                              : colorScheme.onSurface
-                                                    .withValues(alpha: 0.38),
+                                          color: colorScheme.primary,
                                         ),
                                       ),
                                     ],

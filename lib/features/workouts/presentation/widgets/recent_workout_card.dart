@@ -22,9 +22,13 @@ Widget recentWorkoutCard(
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.onSurface.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -44,7 +48,10 @@ Widget recentWorkoutCard(
                 children: [
                   Text(
                     workout.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -53,7 +60,7 @@ Widget recentWorkoutCard(
 
                   Text(
                     workout.duracion?.isNotEmpty == true
-                        ? '${workout.duracion}'
+                        ? workout.duracion!
                         : workout.estado == 'abierto'
                         ? 'En curso'
                         : '',
@@ -64,6 +71,8 @@ Widget recentWorkoutCard(
                 ],
               ),
             ),
+
+            const SizedBox(width: 8),
 
             Icon(
               Icons.chevron_right_rounded,

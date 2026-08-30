@@ -291,7 +291,6 @@ class _WorkoutExerciseAddExercisePageState
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
     final isCardio = exercise.type == 'cardio';
 
     return Material(
@@ -317,9 +316,13 @@ class _WorkoutExerciseAddExercisePageState
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.grey.shade200,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.onSurface.withValues(alpha: 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [

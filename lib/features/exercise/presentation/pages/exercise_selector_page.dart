@@ -227,7 +227,7 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.grey.shade200,
+              color: colorScheme.onSurface.withValues(alpha: 0.12),
             ),
           ),
           child: Row(
@@ -328,9 +328,6 @@ class _ExerciseSelectorPageState extends State<ExerciseSelectorPage> {
       ),
     );
   }
-
-
-  
 }
 
 Widget skeletonLoader(BuildContext context) {

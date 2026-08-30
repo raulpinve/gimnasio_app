@@ -25,6 +25,7 @@ class MyTextfield extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     final hasError = errorText != null && errorText!.isNotEmpty;
 
     return Column(
@@ -37,11 +38,16 @@ class MyTextfield extends StatelessWidget {
             obscureText: obscureText,
             onChanged: onChanged,
             keyboardType: keyboardType,
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
             decoration: InputDecoration(
               hintText: hintText,
 
               hintStyle: TextStyle(
-                color: hasError ? colorScheme.error : Colors.grey.shade500,
+                color: hasError
+                    ? colorScheme.error
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
               ),
 
               prefixIcon: prefixIcon != null
@@ -49,7 +55,7 @@ class MyTextfield extends StatelessWidget {
                       data: IconThemeData(
                         color: hasError
                             ? colorScheme.error
-                            : Colors.grey.shade500,
+                            : colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       child: prefixIcon!,
                     )
@@ -60,7 +66,7 @@ class MyTextfield extends StatelessWidget {
                       data: IconThemeData(
                         color: hasError
                             ? colorScheme.error
-                            : Colors.grey.shade500,
+                            : colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       child: suffixIcon!,
                     )
@@ -70,12 +76,14 @@ class MyTextfield extends StatelessWidget {
 
               fillColor: hasError
                   ? colorScheme.error.withValues(alpha: 0.05)
-                  : Colors.grey.shade50,
+                  : colorScheme.surface,
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: hasError ? colorScheme.error : Colors.grey.shade300,
+                  color: hasError
+                      ? colorScheme.error
+                      : colorScheme.onSurface.withValues(alpha: 0.15),
                   width: 1,
                 ),
               ),

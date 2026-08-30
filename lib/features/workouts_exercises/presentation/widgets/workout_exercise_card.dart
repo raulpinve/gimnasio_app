@@ -18,17 +18,19 @@ class WorkoutExerciseCard extends StatelessWidget {
   final bool isOpen;
 
   bool get _isCardio => workoutExercise.exerciseType == "cardio";
+
   int get _completedRecords => workoutExercise.records.length;
+
   int get _targetRecords =>
       _isCardio ? 0 : int.tryParse(workoutExercise.targetSets ?? "0") ?? 0;
 
-  // Getters
   double get _progress {
     if (_isCardio) {
       final int completedSeconds = workoutExercise.records.fold<int>(
         0,
         (sum, record) => sum + (record.durationSeconds ?? 0),
       );
+
       final int targetSeconds =
           int.tryParse(workoutExercise.targetDurationSeconds ?? "0") ?? 0;
 
@@ -36,6 +38,7 @@ class WorkoutExerciseCard extends StatelessWidget {
           ? 0
           : (completedSeconds / targetSeconds).clamp(0.0, 1.0);
     }
+
     return _targetRecords == 0
         ? 0
         : (_completedRecords / _targetRecords).clamp(0.0, 1.0);
@@ -49,40 +52,72 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.onSurface.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
+
           const SizedBox(height: 8),
-          Text(_objective, style: const TextStyle(color: Colors.grey)),
-          const SizedBox(height: 12),
-          _buildProgressBar(),
-          const SizedBox(height: 20),
-          const Text(
-            "Registros realizados",
-            style: TextStyle(fontWeight: FontWeight.bold),
+
+          Text(
+            _objective,
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          const SizedBox(height: 10),
-          _buildRecordsList(),
+
+          const SizedBox(height: 12),
+
+          _buildProgressBar(context),
+
           const SizedBox(height: 20),
+
+          Text(
+            "Registros realizados",
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          _buildRecordsList(context),
+
+          const SizedBox(height: 20),
+
           if (isOpen)
-            _buildRegisterButton(context, workoutExercise.exerciseType),
+            _buildRegisterButton(
+              context,
+              workoutExercise.exerciseType,
+            ),
         ],
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Expanded(
@@ -94,7 +129,8 @@ class WorkoutExerciseCard extends StatelessWidget {
             },
             child: Text(
               workoutExercise.exerciseName ?? "Ejercicio",
-              style: const TextStyle(
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -112,7 +148,7 @@ class WorkoutExerciseCard extends StatelessWidget {
             vertical: 4,
           ),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondary,
+            color: colorScheme.secondary,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -121,7 +157,7 @@ class WorkoutExerciseCard extends StatelessWidget {
                 : "$_completedRecords/$_targetRecords",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.inversePrimary,
+              color: colorScheme.onSecondary,
               fontSize: 12,
             ),
           ),
@@ -130,22 +166,35 @@ class WorkoutExerciseCard extends StatelessWidget {
         if (isOpen)
           PopupMenuButton<String>(
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.more_vert),
+            icon: Icon(
+              Icons.more_vert,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             onSelected: (value) {
               if (value == "delete") {
                 onDelete();
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: "delete",
                 child: Row(
                   children: [
                     Icon(
                       Icons.delete_outline,
+                      size: 20,
+                      color: colorScheme.error,
                     ),
-                    SizedBox(width: 10),
-                    Text("Eliminar "),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Eliminar",
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -155,18 +204,32 @@ class WorkoutExerciseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
-      child: LinearProgressIndicator(value: _progress, minHeight: 8),
+      child: LinearProgressIndicator(
+        value: _progress,
+        minHeight: 8,
+        backgroundColor: colorScheme.onSurface.withValues(
+          alpha: 0.08,
+        ),
+        color: colorScheme.primary,
+      ),
     );
   }
 
-  Widget _buildRecordsList() {
+  Widget _buildRecordsList(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (workoutExercise.records.isEmpty) {
       return Text(
         "Sin registros en esta sesión",
-        style: TextStyle(color: Colors.grey.shade600),
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 13,
+        ),
       );
     }
 
@@ -197,23 +260,27 @@ class WorkoutExerciseCard extends StatelessWidget {
                 child: Text(
                   "${index + 1}.",
                   style: TextStyle(
-                    color: Colors.grey.shade500,
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 13,
                   ),
                 ),
               ),
+
               Text(
                 primaryText,
-                style: const TextStyle(
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
               ),
+
               const SizedBox(width: 6),
+
               Text(
                 "· $secondaryText",
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 13,
                 ),
               ),
@@ -224,11 +291,16 @@ class WorkoutExerciseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRegisterButton(BuildContext context, String? exerciseType) {
+  Widget _buildRegisterButton(
+    BuildContext context,
+    String? exerciseType,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final bool isCardio = exerciseType == "cardio";
 
     return Material(
-      color: Theme.of(context).colorScheme.secondary,
+      color: colorScheme.primary,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onRegisterSet,
@@ -244,11 +316,13 @@ class WorkoutExerciseCard extends StatelessWidget {
               Icon(
                 isCardio ? Icons.timer_outlined : Icons.add_circle_outline,
                 size: 20,
+                color: colorScheme.onPrimary,
               ),
               const SizedBox(width: 8),
               Text(
                 isCardio ? "Registrar sesión" : "Registrar serie",
-                style: const TextStyle(
+                style: TextStyle(
+                  color: colorScheme.onPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

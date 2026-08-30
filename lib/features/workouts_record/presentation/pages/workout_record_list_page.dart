@@ -9,6 +9,7 @@ import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_
 import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record/workout_record_cubit.dart';
 import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record/workout_record_state.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
+import 'package:gym_app/features/workouts_record/presentation/widgets/record_chip.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/switcher_form.dart';
 
 class WorkoutRecordListPage extends StatefulWidget {
@@ -357,130 +358,19 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
                                       spacing: 8,
                                       runSpacing: 8,
                                       children: records.map((record) {
-                                        return Container(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            14,
-                                            10,
-                                            8,
-                                            10,
+                                        return RecordChip(
+                                          record: record,
+                                          exerciseType: exerciseType,
+                                          onEdit: () => _editWorkoutRecord(
+                                            record,
+                                            exerciseType,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            border: Border.all(
-                                              color: Colors.grey.shade200,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    record.isCardio
-                                                        ? '${(record.durationSeconds ?? 0) ~/ 60} min'
-                                                        : '${formatNumber(record.weight)} ${record.weightUnit ?? 'Kg'}',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    record.isCardio
-                                                        ? '${formatNumber(record.distanceKm)} Km'
-                                                        : '${record.reps ?? 0} reps',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color:
-                                                          Colors.grey.shade500,
-                                                    ),
-                                                  ),
-                                                ],
+                                          onDelete: () =>
+                                              _showDeleteRecordDialog(
+                                                context,
+                                                record.id,
+                                                exerciseType,
                                               ),
-
-                                              const SizedBox(width: 4),
-
-                                              SizedBox(
-                                                width: 32,
-                                                height: 32,
-                                                child: PopupMenuButton<String>(
-                                                  padding: EdgeInsets.zero,
-                                                  icon: Icon(
-                                                    Icons.more_vert,
-                                                    size: 18,
-                                                    color: Colors.grey.shade500,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                  onSelected: (value) {
-                                                    switch (value) {
-                                                      case 'edit':
-                                                        _editWorkoutRecord(
-                                                          record,
-                                                          exerciseType,
-                                                        );
-                                                        break;
-                                                      case 'delete':
-                                                        _showDeleteRecordDialog(
-                                                          context,
-                                                          record.id,
-                                                          exerciseType,
-                                                        );
-                                                        break;
-                                                    }
-                                                  },
-                                                  itemBuilder: (context) => [
-                                                    const PopupMenuItem<String>(
-                                                      value: 'edit',
-                                                      child: Row(
-                                                        children: [
-                                                          Icon(
-                                                            Icons.edit_outlined,
-                                                            size: 20,
-                                                          ),
-                                                          SizedBox(width: 10),
-                                                          Text('Editar'),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const PopupMenuItem<String>(
-                                                      value: 'delete',
-                                                      child: Row(
-                                                        children: [
-                                                          Icon(
-                                                            Icons
-                                                                .delete_outline,
-                                                            size: 20,
-                                                            color: Colors.red,
-                                                          ),
-                                                          SizedBox(width: 10),
-                                                          Text(
-                                                            'Eliminar',
-                                                            style: TextStyle(
-                                                              color: Colors.red,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
                                         );
                                       }).toList(),
                                     ),
