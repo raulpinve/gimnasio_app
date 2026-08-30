@@ -5,48 +5,43 @@ abstract class RoutineListState {}
 // Estado inicial
 class RoutineListInitial extends RoutineListState {}
 
-// Estado para mostrar el loading inicialmente
+// Estado para cargar la lista inicialmente
 class RoutineListLoading extends RoutineListState {}
 
-// Ejercicios cargados
 class RoutinesListLoaded extends RoutineListState {
   final List<Routine> routines;
+  final bool isCreating;
   final bool isDeleting;
   final String? errorMessage;
-
-  // Paginación
-  final int currentPage;
-  final int totalPages;
-
-  final bool isLoadingMore;
+  final Map<String, dynamic>? fieldErrors;
+  final String? newlyCreatedRoutineId;
 
   RoutinesListLoaded({
     required this.routines,
-    required this.currentPage,
-    required this.totalPages,
-    this.isLoadingMore = false,
+    this.isCreating = false,
     this.isDeleting = false,
     this.errorMessage,
+    this.fieldErrors,
+    this.newlyCreatedRoutineId,
   });
-
-  bool get hasMore => currentPage < totalPages;
 
   RoutinesListLoaded copyWith({
     List<Routine>? routines,
-    int? currentPage,
-    int? totalPages,
-    bool? isLoadingMore,
+    bool? isCreating,
     bool? isDeleting,
     String? errorMessage,
+    Map<String, dynamic>? fieldErrors,
+    String? newlyCreatedRoutineId,
     bool clearError = false,
   }) {
     return RoutinesListLoaded(
       routines: routines ?? this.routines,
-      currentPage: currentPage ?? this.currentPage,
-      totalPages: totalPages ?? this.totalPages,
-      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isCreating: isCreating ?? this.isCreating,
       isDeleting: isDeleting ?? this.isDeleting,
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      fieldErrors: clearError ? null : fieldErrors ?? this.fieldErrors,
+      newlyCreatedRoutineId:
+          newlyCreatedRoutineId ?? this.newlyCreatedRoutineId,
     );
   }
 }

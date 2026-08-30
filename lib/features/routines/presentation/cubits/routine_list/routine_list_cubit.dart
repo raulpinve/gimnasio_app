@@ -1,143 +1,49 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/core/errors/api_error_handler.dart';
+
 import 'package:gym_app/features/routines/domain/repos/routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
 
 class RoutineListCubit extends Cubit<RoutineListState> {
   final RoutineRepo routineRepo;
-  RoutineListCubit({required this.routineRepo}) : super(RoutineListInitial());
+
+  RoutineListCubit({
+    required this.routineRepo,
+  }) : super(RoutineListInitial());
 
   // ============================================================
   // CARGAR RUTINAS
   // ============================================================
-  Future<void> loadRoutines({
-    int page = 1,
-  }) async {
+
+  Future<void> loadRoutines() async {
     if (isClosed) return;
 
-    try {
-      // PRIMERA PÁGINA
-      emit(RoutineListLoading());
+    emit(RoutineListLoading());
 
-      final result = await routineRepo.getAllRoutines(page: page);
+    try {
+      final result = await routineRepo.getAllRoutines();
 
       if (isClosed) return;
 
-      // SI ES LA PRIMERA PÁGINA
-      // Reemplazamos la lista completa
-      if (page == 1) {
-        emit(
-          RoutinesListLoaded(
-            routines: result.routines,
-            currentPage: result.currentPage,
-            totalPages: result.totalPages,
-            isLoadingMore: false,
-          ),
-        );
-        return;
-      }
-
-      // SI ES UNA PÁGINA SIGUIENTE
-      // Agregamos las nuevas rutinas
-      if (state is RoutinesListLoaded) {
-        final currentState = state as RoutinesListLoaded;
-
-        emit(
-          currentState.copyWith(
-            routines: [
-              ...currentState.routines,
-              ...result.routines,
-            ],
-            currentPage: result.currentPage,
-            totalPages: result.totalPages,
-            isLoadingMore: false,
-          ),
-        );
-      }
+      emit(
+        RoutinesListLoaded(
+          routines: result.routines,
+        ),
+      );
     } catch (e) {
       if (isClosed) return;
 
-      // Si es una carga inicial, mostramos el error normal
       emit(
         RoutineListError(
           e.toString(),
         ),
       );
-
-      // Si falla "Cargar más", conservamos la lista actual
-      if (state is RoutinesListLoaded) {
-        final currentState = state as RoutinesListLoaded;
-
-        emit(
-          currentState.copyWith(
-            isLoadingMore: false,
-          ),
-        );
-      }
     }
   }
 
-  // Cargar siguiente página
-  Future<void> loadMoreRoutines() async {
-    if (state is! RoutinesListLoaded) {
-      return;
-    }
-
-    final currentState = state as RoutinesListLoaded;
-
-    if (currentState.isLoadingMore) {
-      return;
-    }
-
-    if (!currentState.hasMore) {
-      return;
-    }
-    emit(
-      currentState.copyWith(
-        isLoadingMore: true,
-      ),
-    );
-    try {
-      final nextPage = currentState.currentPage + 1;
-
-      await Future.delayed(
-        const Duration(seconds: 3),
-      );
-
-      final result = await routineRepo.getAllRoutines(
-        page: nextPage,
-      );
-
-      if (state is! RoutinesListLoaded) {
-        return;
-      }
-
-      final updatedState = state as RoutinesListLoaded;
-
-      emit(
-        updatedState.copyWith(
-          routines: [
-            ...updatedState.routines,
-            ...result.routines,
-          ],
-          currentPage: result.currentPage,
-          totalPages: result.totalPages,
-          isLoadingMore: false,
-        ),
-      );
-    } catch (e) {
-      if (isClosed) return;
-
-      if (state is RoutinesListLoaded) {
-        final currentState = state as RoutinesListLoaded;
-
-        emit(
-          currentState.copyWith(
-            isLoadingMore: false,
-          ),
-        );
-      }
-    }
-  }
+  // ============================================================
+  // ELIMINAR RUTINA
+  // ============================================================
 
   Future<bool> deleteRoutine(String routineId) async {
     if (isClosed) return false;
@@ -145,12 +51,13 @@ class RoutineListCubit extends Cubit<RoutineListState> {
     if (state is! RoutinesListLoaded) {
       return false;
     }
+
     final currentState = state as RoutinesListLoaded;
 
     emit(
       currentState.copyWith(
         isDeleting: true,
-        clearError: true,
+        errorMessage: null,
       ),
     );
 
@@ -169,6 +76,7 @@ class RoutineListCubit extends Cubit<RoutineListState> {
           isDeleting: false,
         ),
       );
+
       return true;
     } catch (e) {
       if (isClosed) return false;
@@ -179,7 +87,77 @@ class RoutineListCubit extends Cubit<RoutineListState> {
           errorMessage: 'No se pudo eliminar la rutina',
         ),
       );
+
       return false;
+    }
+  }
+
+  // ============================================================
+  // CREAR RUTINA
+  // ============================================================
+
+  Future<void> createRoutine({
+    required String name,
+  }) async {
+    if (isClosed) return;
+
+    if (state is! RoutinesListLoaded) {
+      return;
+    }
+
+    emit(
+      (state as RoutinesListLoaded).copyWith(
+        isCreating: true,
+        clearError: true,
+      ),
+    );
+
+    try {
+      final routine = await routineRepo.createRoutine(
+        name: name,
+      );
+
+      if (isClosed) return;
+
+      if (state is! RoutinesListLoaded) {
+        return;
+      }
+
+      final currentState = state as RoutinesListLoaded;
+
+      emit(
+        currentState.copyWith(
+          routines: [
+            routine,
+            ...currentState.routines,
+          ],
+          isCreating: false,
+          newlyCreatedRoutineId: routine.id,
+        ),
+      );
+    } on ApiError catch (e) {
+      if (isClosed) return;
+
+      if (state is RoutinesListLoaded) {
+        emit(
+          (state as RoutinesListLoaded).copyWith(
+            isCreating: false,
+            errorMessage: e.message,
+            fieldErrors: e.fieldErrors,
+          ),
+        );
+      }
+    } catch (e) {
+      if (isClosed) return;
+
+      if (state is RoutinesListLoaded) {
+        emit(
+          (state as RoutinesListLoaded).copyWith(
+            isCreating: false,
+            errorMessage: 'Ocurrió un error inesperado',
+          ),
+        );
+      }
     }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/components/my_appbar_button.dart';
@@ -8,8 +7,9 @@ import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/domain/entities/routine.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_cubit.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine_list/routine_list_state.dart';
-import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_list/routine_exercises_list_cubit.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:gym_app/features/routines/presentation/widgets/create_routine_bottom_sheet.dart';
+import 'package:gym_app/features/routines/presentation/widgets/routine_card.dart';
 
 class RoutineListPage extends StatefulWidget {
   const RoutineListPage({super.key});
@@ -25,22 +25,6 @@ class _RoutineListPageState extends State<RoutineListPage> {
     await context.read<RoutineListCubit>().loadRoutines();
   }
 
-  Future<void> _redireccionarCrear() async {
-    final response = await context.push("/routines/create");
-
-    // Stop execution if the user navigated away while the page was open
-    if (!mounted) return;
-
-    if (response == true) {
-      context.read<RoutineListCubit>().loadRoutines();
-      showMessage(
-        context,
-        'Rutina creada correctamente',
-        type: MessageType.success,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +32,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           MyAppbarButton(
-            onPressed: _redireccionarCrear,
+            onPressed: () => showCreateRoutineBottomSheet(context),
             icon: Icon(Icons.add),
           ),
         ],
@@ -96,22 +80,19 @@ class _RoutineListPageState extends State<RoutineListPage> {
                       onRefresh: _onRefresh,
                       child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount:
-                            state.routines.length +
-                            (state.isLoadingMore ? 1 : 0),
+                        itemCount: state.routines.length,
                         itemBuilder: (context, index) {
-                          // LOADING DE PAGINACIÓN
-                          if (index >= state.routines.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-
                           final routine = state.routines[index];
-                          return routineCard(context, routine);
+
+                          final isNew =
+                              routine.id == state.newlyCreatedRoutineId;
+
+                          return RoutineCard(
+                            key: ValueKey(routine.id),
+                            routine: routine,
+                            isHighlighted: isNew,
+                            onDelete: () => _confirmDeleteRoutine(routine),
+                          );
                         },
                       ),
                     );
@@ -161,7 +142,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: _redireccionarCrear,
+                onPressed: () => showCreateRoutineBottomSheet(context),
                 style: TextButton.styleFrom(
                   foregroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(
@@ -183,161 +164,97 @@ class _RoutineListPageState extends State<RoutineListPage> {
     );
   }
 
-  Widget routineCard(
-    BuildContext context,
+  Future<void> _confirmDeleteRoutine(
     Routine routine,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final exercises = routine.exercises ?? [];
+  ) async {
+    final cubit = context.read<RoutineListCubit>();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () async {
-          final response = await context.push<bool>(
-            '/routine-exercises/${routine.id}',
-          );
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        bool isDeleting = false;
+        String? errorMessage;
 
-          if (!context.mounted) return;
-
-          if (response == true) {
-            context.read<RoutineListCubit>().loadRoutines();
-          }
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.fromLTRB(
-            16,
-            16,
-            12,
-            16,
-          ),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Eliminar rutina'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          routine.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          exercises.isEmpty
-                              ? 'Sin ejercicios'
-                              : '${exercises.length} ${exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    '¿Seguro que deseas eliminar "${routine.name}"?',
                   ),
 
-                  const SizedBox(width: 8),
-
-                  SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: PopupMenuButton<String>(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 20,
-                        color: Colors.grey.shade500,
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 13,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'delete':
-                            _confirmDeleteRoutine(
-                              context,
-                              routine,
-                            );
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete_outline,
-                                size: 20,
-                              ),
-                              SizedBox(width: 10),
-                              Text('Eliminar'),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
+                  ],
                 ],
               ),
-
-              if (exercises.isNotEmpty) ...[
-                const SizedBox(height: 16),
-
-                Text(
-                  exercises
-                      .take(3)
-                      .map((exercise) => exercise.name)
-                      .join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                  ),
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancelar'),
                 ),
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          setState(() {
+                            isDeleting = true;
+                            errorMessage = null;
+                          });
 
-                if (exercises.length > 3) ...[
-                  const SizedBox(height: 4),
+                          final deleted = await cubit.deleteRoutine(
+                            routine.id,
+                          );
 
-                  Text(
-                    '+${exercises.length - 3} más',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
+                          if (!dialogContext.mounted) return;
+
+                          if (deleted) {
+                            Navigator.of(dialogContext).pop();
+                            showMessage(
+                              context,
+                              "Rutina eliminada correctamente",
+                              type: MessageType.success,
+                            );
+                          } else {
+                            final state = cubit.state;
+
+                            setState(() {
+                              isDeleting = false;
+                              errorMessage = state is RoutinesListLoaded
+                                  ? state.errorMessage ??
+                                        'No se pudo eliminar la rutina.'
+                                  : 'No se pudo eliminar la rutina.';
+                            });
+                          }
+                        },
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Eliminar'),
+                ),
               ],
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -368,7 +285,6 @@ class _RoutineListPageState extends State<RoutineListPage> {
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Nombre de la rutina
                   Container(
                     width: double.infinity,
                     height: 20,
@@ -377,10 +293,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
-                  // Pills
                   Row(
                     children: [
                       Container(
@@ -391,9 +304,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-
                       const SizedBox(width: 6),
-
                       Container(
                         width: 45,
                         height: 24,
@@ -406,8 +317,6 @@ class _RoutineListPageState extends State<RoutineListPage> {
                   ),
                 ],
               ),
-
-              // Botón de eliminar
               trailing: Container(
                 width: 30,
                 height: 30,
@@ -422,99 +331,4 @@ class _RoutineListPageState extends State<RoutineListPage> {
       },
     );
   }
-}
-
-Future<void> _confirmDeleteRoutine(
-  BuildContext context,
-  Routine routine,
-) async {
-  final cubit = context.read<RoutineListCubit>();
-
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) {
-      bool isDeleting = false;
-      String? errorMessage;
-
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Eliminar rutina'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '¿Seguro que deseas eliminar "${routine.name}"?',
-                ),
-
-                if (errorMessage != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    errorMessage!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: isDeleting
-                    ? null
-                    : () async {
-                        setState(() {
-                          isDeleting = true;
-                          errorMessage = null;
-                        });
-
-                        final deleted = await cubit.deleteRoutine(
-                          routine.id,
-                        );
-
-                        if (!dialogContext.mounted) return;
-
-                        if (deleted) {
-                          Navigator.of(dialogContext).pop();
-                          showMessage(
-                            context,
-                            "Rutina eliminada correctamente",
-                            type: MessageType.success,
-                          );
-                        } else {
-                          final state = cubit.state;
-
-                          setState(() {
-                            isDeleting = false;
-                            errorMessage = state is RoutinesListLoaded
-                                ? state.errorMessage ??
-                                      'No se pudo eliminar la rutina.'
-                                : 'No se pudo eliminar la rutina.';
-                          });
-                        }
-                      },
-                child: isDeleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Eliminar'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
 }
