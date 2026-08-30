@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/auth/presentation/components/my_dropdown.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
@@ -193,19 +194,17 @@ class _WorkoutExerciseAddExercisePageState
     return BlocConsumer<WorkoutExerciseDetailCubit, WorkoutExerciseDetailState>(
       listener: (context, workoutExerciseState) {
         if (state is WorkoutExerciseDetailCreated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Ejercicio agregado"),
-            ),
+          showMessage(
+            context,
+            "Ejercicio agregado",
+            type: MessageType.success,
           );
         }
         if (workoutExerciseState is WorkoutExerciseDetailError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                workoutExerciseState.message,
-              ),
-            ),
+          showMessage(
+            context,
+            workoutExerciseState.message,
+            type: MessageType.error,
           );
         }
       },

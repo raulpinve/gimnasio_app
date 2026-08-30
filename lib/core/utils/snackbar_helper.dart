@@ -45,7 +45,7 @@ void showMessage(
                 child: Icon(
                   Icons.close,
                   size: 18,
-                  color: config.foreground.withOpacity(0.8),
+                  color: config.foreground.withValues(alpha: 0.8),
                 ),
               ),
             ),

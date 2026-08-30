@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
 import 'package:gym_app/features/exercise/domain/entities/exercise.dart';
@@ -62,10 +63,10 @@ class _RoutineExercisesCreatePageState
 
         if (state.errorMessage != null) {
           if (state.fieldErrors == null || state.fieldErrors!.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-              ),
+            showMessage(
+              context,
+              state.errorMessage!,
+              type: MessageType.error,
             );
           }
         }

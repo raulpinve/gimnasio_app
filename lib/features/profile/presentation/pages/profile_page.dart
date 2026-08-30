@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/core/widgets/refreshable_content.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:gym_app/features/profile/presentation/cubits/stats/stat_state.dart';
@@ -236,10 +237,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 final updated = await context.push<bool>('/profile/update');
 
                 if (updated == true && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Perfil actualizado correctamente'),
-                    ),
+                  showMessage(
+                    context,
+                    'Perfil actualizado correctamente',
+                    type: MessageType.success,
                   );
                 }
               },

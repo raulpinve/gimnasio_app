@@ -33,7 +33,11 @@ class _RoutineListPageState extends State<RoutineListPage> {
 
     if (response == true) {
       context.read<RoutineListCubit>().loadRoutines();
-      showMessage(context, 'Rutina creada correctamente');
+      showMessage(
+        context,
+        'Rutina creada correctamente',
+        type: MessageType.success,
+      );
     }
   }
 
@@ -485,6 +489,7 @@ Future<void> _confirmDeleteRoutine(
                           showMessage(
                             context,
                             "Rutina eliminada correctamente",
+                            type: MessageType.success,
                           );
                         } else {
                           final state = cubit.state;

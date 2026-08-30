@@ -116,6 +116,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                             showMessage(
                               context,
                               'Ejercicio eliminado correctamente.',
+                              type: MessageType.success,
                             );
                           } else {
                             final state = cubit.state;
@@ -162,6 +163,11 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                 if (context.mounted) {
                   context.pop(true);
+                  showMessage(
+                    context,
+                    'Entrenamiento eliminado con éxito',
+                    type: MessageType.success,
+                  );
                 }
               }
             },
@@ -199,7 +205,9 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                     TextButton(
                       onPressed: isDeleting
                           ? null
-                          : () => Navigator.of(dialogContext).pop(),
+                          : () {
+                              Navigator.of(dialogContext).pop();
+                            },
                       child: const Text('Cancelar'),
                     ),
                     TextButton(
@@ -230,6 +238,7 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
   Future<void> _confirmFinishWorkout(BuildContext context) async {
     final cubit = context.read<WorkoutDetailCubit>();
+    final pageContext = context;
 
     await showDialog<void>(
       context: context,
@@ -259,6 +268,14 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
                   if (state is WorkoutDetailFinished) {
                     Navigator.of(dialogContext).pop();
+
+                    if (pageContext.mounted) {
+                      showMessage(
+                        pageContext, // 👈 usamos el context de la página, no el del diálogo
+                        'Entrenamiento finalizado con éxito',
+                        type: MessageType.success,
+                      );
+                    }
                   }
                 },
                 child: AlertDialog(
@@ -295,17 +312,13 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                       onPressed: isFinishing
                           ? null
                           : () async {
-                              await cubit.finishWorkout(
-                                widget.workoutId,
-                              );
+                              await cubit.finishWorkout(widget.workoutId);
                             },
                       child: isFinishing
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text('Finalizar'),
                     ),
@@ -329,8 +342,10 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
     if (!context.mounted) return;
 
     if (result == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ejercicio agregado")),
+      showMessage(
+        context,
+        "Ejercicio agregado",
+        type: MessageType.success,
       );
       await exercisesCubit.loadWorkoutExercises(workoutId);
     }
@@ -390,16 +405,16 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
             >(
               listener: (context, state) {
                 if (state is WorkoutExerciseDetailError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                    ),
+                  showMessage(
+                    context,
+                    state.message,
+                    type: MessageType.error,
                   );
                 } else if (state is WorkoutExerciseDetailCreated) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ejercicio agregado con éxito'),
-                    ),
+                  showMessage(
+                    context,
+                    'Ejercicio agregado con éxito',
+                    type: MessageType.success,
                   );
                 }
               },
@@ -475,10 +490,10 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                     listener: (context, state) {
                       if (state is WorkoutExercisesListLoaded &&
                           state.errorMessage != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.errorMessage!),
-                          ),
+                        showMessage(
+                          context,
+                          state.errorMessage!,
+                          type: MessageType.error,
                         );
                       }
                     },

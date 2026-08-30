@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_app/core/enums/workout_type.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/workouts_exercises/domain/entities/workout_exercise.dart';
 import 'package:gym_app/features/workouts_record/domain/entities/workout_record.dart';
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_cubit.dart';
@@ -89,28 +90,23 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
   void _submitWorkoutRecord(
     ExerciseType exerciseType,
     WorkoutExercise workoutExercise,
-  ) {
+  ) async {
     final cubit = context.read<WorkoutRecordCubit>();
+    final wasEditing =
+        editingRecord != null; // guardamos antes de limpiar el form
 
     if (exerciseType == ExerciseType.cardio) {
-      final minutes = int.tryParse(
-        _minutesController.text.trim(),
-      );
-
-      final distance = double.tryParse(
-        _distanceController.text.trim(),
-      );
+      final minutes = int.tryParse(_minutesController.text.trim());
+      final distance = double.tryParse(_distanceController.text.trim());
 
       if (minutes == null ||
           minutes <= 0 ||
           distance == null ||
           distance <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Ingresa minutos y distancia válidos",
-            ),
-          ),
+        showMessage(
+          context,
+          "Ingresa minutos y distancia válidos",
+          type: MessageType.error,
         );
         return;
       }
@@ -121,7 +117,7 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
       };
 
       if (editingRecord != null) {
-        cubit.updateWorkoutRecord(
+        await cubit.updateWorkoutRecord(
           editingRecord!.id,
           ExerciseType.cardio,
           workoutRecordBody,
@@ -129,31 +125,21 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
       } else {
         workoutRecordBody["workoutExerciseId"] =
             workoutExercise.workoutExerciseId;
-
-        cubit.createWorkoutRecord(
-          ExerciseType.cardio,
-          workoutRecordBody,
-        );
+        await cubit.createWorkoutRecord(ExerciseType.cardio, workoutRecordBody);
       }
 
+      _handleSubmitResult(cubit, wasEditing);
       return;
     }
 
-    final weight = double.tryParse(
-      _weigthController.text.trim(),
-    );
-
-    final reps = int.tryParse(
-      _repsController.text.trim(),
-    );
+    final weight = double.tryParse(_weigthController.text.trim());
+    final reps = int.tryParse(_repsController.text.trim());
 
     if (weight == null || weight <= 0 || reps == null || reps <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Ingresa peso y repeticiones válidos",
-          ),
-        ),
+      showMessage(
+        context,
+        "Ingresa peso y repeticiones válidos",
+        type: MessageType.error,
       );
       return;
     }
@@ -165,7 +151,7 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
     };
 
     if (editingRecord != null) {
-      cubit.updateWorkoutRecord(
+      await cubit.updateWorkoutRecord(
         editingRecord!.id,
         ExerciseType.strength,
         workoutRecordBody,
@@ -173,10 +159,31 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
     } else {
       workoutRecordBody["workoutExerciseId"] =
           workoutExercise.workoutExerciseId;
+      await cubit.createWorkoutRecord(ExerciseType.strength, workoutRecordBody);
+    }
 
-      cubit.createWorkoutRecord(
-        ExerciseType.strength,
-        workoutRecordBody,
+    _handleSubmitResult(cubit, wasEditing);
+  }
+
+  void _handleSubmitResult(WorkoutRecordCubit cubit, bool wasEditing) {
+    if (!mounted) return;
+
+    final state = cubit.state;
+    final hadError = state is WorkoutRecordsLoaded && state.actionError != null;
+
+    if (!hadError) {
+      _clearRecordForm();
+      setState(() {
+        editingRecord = null;
+        showForm = false;
+      });
+
+      showMessage(
+        context,
+        wasEditing
+            ? 'Serie actualizada correctamente'
+            : 'Serie registrada correctamente',
+        type: MessageType.success,
       );
     }
   }
@@ -208,8 +215,10 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
             listener: (context, recordState) {
               if (recordState is WorkoutRecordsLoaded &&
                   recordState.actionError != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(recordState.actionError!)),
+                showMessage(
+                  context,
+                  recordState.actionError!,
+                  type: MessageType.error,
                 );
               }
             },
@@ -447,6 +456,7 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
     ExerciseType exerciseType,
   ) {
     final cubit = context.read<WorkoutRecordCubit>();
+    final pageContext = context; // 👈 nuevo
 
     showDialog(
       context: context,
@@ -459,16 +469,12 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
 
             return AlertDialog(
               title: const Text("Eliminar serie"),
-              content: const Text(
-                "¿Quieres eliminar este registro?",
-              ),
+              content: const Text("¿Quieres eliminar este registro?"),
               actions: [
                 TextButton(
                   onPressed: isDeleting
                       ? null
-                      : () {
-                          Navigator.pop(dialogContext);
-                        },
+                      : () => Navigator.pop(dialogContext),
                   child: const Text("Cancelar"),
                 ),
                 TextButton(
@@ -481,22 +487,30 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
                           );
 
                           if (!dialogContext.mounted) return;
-
                           Navigator.pop(dialogContext);
+
+                          final newState = cubit.state;
+                          final hadError =
+                              newState is WorkoutRecordsLoaded &&
+                              newState.actionError != null;
+
+                          if (!hadError && pageContext.mounted) {
+                            showMessage(
+                              pageContext,
+                              'Serie eliminada correctamente',
+                              type: MessageType.success,
+                            );
+                          }
                         },
                   child: isDeleting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
                           "Eliminar",
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
+                          style: TextStyle(color: Colors.red),
                         ),
                 ),
               ],

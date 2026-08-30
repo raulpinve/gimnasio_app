@@ -12,6 +12,7 @@
  */
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/auth/presentation/components/google_sign_in_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_button.dart';
 import 'package:gym_app/features/auth/presentation/components/my_textfield.dart';
@@ -49,8 +50,10 @@ class _LoginPageState extends State<LoginPage> {
     }
     // fields are empty
     else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both email & password")),
+      showMessage(
+        context,
+        "Please enter both email & password",
+        type: MessageType.error,
       );
     }
   }
@@ -101,7 +104,6 @@ class _LoginPageState extends State<LoginPage> {
                           });
 
                           final navigator = Navigator.of(dialogContext);
-                          final messenger = ScaffoldMessenger.of(context);
 
                           final message = await authCubit.forgotPassword(
                             emailController.text.trim(),
@@ -111,10 +113,10 @@ class _LoginPageState extends State<LoginPage> {
 
                           navigator.pop();
 
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(message),
-                            ),
+                          showMessage(
+                            context,
+                            message,
+                            type: MessageType.info,
                           );
 
                           emailController.clear();

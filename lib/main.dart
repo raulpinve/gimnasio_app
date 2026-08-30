@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/network/api_client.dart';
+import 'package:gym_app/core/utils/snackbar_helper.dart';
 import 'package:gym_app/features/auth/data/api_user_repo.dart';
 import 'package:gym_app/features/auth/data/firebase_auth_repo.dart';
 import 'package:gym_app/features/auth/presentation/cubits/auth_cubit.dart';
@@ -47,10 +48,10 @@ class MyApp extends StatelessWidget {
               return BlocListener<AuthCubit, AuthState>(
                 listener: (context, state) {
                   if (state is AuthError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                      ),
+                    showMessage(
+                      context,
+                      state.message,
+                      type: MessageType.error,
                     );
                   }
                 },
