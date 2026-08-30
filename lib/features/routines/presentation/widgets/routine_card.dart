@@ -51,7 +51,8 @@ class _RoutineCardState extends State<RoutineCard>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final exercises = widget.routine.exercises ?? [];
 
     return Material(
@@ -74,123 +75,130 @@ class _RoutineCardState extends State<RoutineCard>
           builder: (context, child) {
             final progress = 1 - _fadeAnimation.value; // 1 -> 0
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: widget.isHighlighted
-                    ? colorScheme.primary.withValues(alpha: 0.06 * progress)
-                    : null,
-                border: widget.isHighlighted
-                    ? Border.all(
-                        color: colorScheme.primary.withValues(
-                          alpha: 0.3 + (0.7 * progress),
-                        ),
-                        width: 1.5,
-                      )
-                    : null,
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Ink(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.onSurface.withValues(alpha: 0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: widget.isHighlighted
+                      ? Border.all(
+                          color: colorScheme.primary.withValues(
+                            alpha: 0.3 + (0.7 * progress),
+                          ),
+                          width: 1.5,
+                        )
+                      : null,
+                ),
+                child: child,
               ),
-              child: child,
             );
           },
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.routine.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          exercises.isEmpty
-                              ? 'Sin ejercicios'
-                              : '${exercises.length} ${exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade500,
+                        Expanded(
+                          child: Text(
+                            widget.routine.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: PopupMenuButton<String>(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 20,
-                        color: Colors.grey.shade500,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'delete':
-                            widget.onDelete();
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete_outline, size: 20),
-                              SizedBox(width: 10),
-                              Text('Eliminar'),
+
+                        const SizedBox(width: 8),
+
+                        SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            icon: Icon(
+                              Icons.more_vert,
+                              size: 20,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'delete':
+                                  widget.onDelete();
+                                  break;
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outline, size: 20),
+                                    SizedBox(width: 10),
+                                    Text('Eliminar'),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
 
-              if (exercises.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(
-                  exercises
-                      .take(3)
-                      .map((exercise) => exercise.name)
-                      .join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                  ),
+                    const SizedBox(height: 4),
+
+                    if (exercises.isEmpty)
+                      Text(
+                        'Sin ejercicios',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    else
+                      Text(
+                        exercises.map((exercise) => exercise.name).join(' · '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+
+                    if (exercises.length > 3) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '+${exercises.length - 3} más',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                if (exercises.length > 3) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    '+${exercises.length - 3} más',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ],
+              ),
             ],
           ),
         ),

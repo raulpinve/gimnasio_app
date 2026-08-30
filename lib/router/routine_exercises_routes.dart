@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:gym_app/features/routines/data/api_routine_repo.dart';
 import 'package:gym_app/features/routines/presentation/cubits/routine/routine_detail_cubit.dart';
 import 'package:gym_app/features/routines_exercises/presentation/cubits/routine_exercises_create/routine_exercises_create_cubit.dart';
@@ -15,26 +16,49 @@ final routineExercisesRoutes = <GoRoute>[
   // Agregar ejercicio a la rutina
   GoRoute(
     path: '/routine-exercises/:routineId/create',
-    builder: (context, state) {
+    pageBuilder: (context, state) {
       // Capturamos el ID de los parámetros de la ruta
       final routineId = state.pathParameters["routineId"] ?? "";
-      return MultiBlocProvider(
-        providers: [
-          // ROUTINE
-          BlocProvider(
-            create: (_) => RoutineDetailCubit(
-              routineRepo: ApiRoutineRepo(),
-            )..loadRoutineDetail(routineId),
-          ),
 
-          // ROUTINE EXERCISES
-          BlocProvider(
-            create: (_) => RoutineExercisesCreateCubit(
-              routineExerciseRepo: ApiRoutineExerciseRepo(),
+      return CustomTransitionPage(
+        key: state.pageKey,
+        opaque: false,
+        barrierColor: Colors.black54,
+        transitionDuration: const Duration(milliseconds: 320),
+        reverseTransitionDuration: const Duration(milliseconds: 280),
+        child: MultiBlocProvider(
+          providers: [
+            // ROUTINE
+            BlocProvider(
+              create: (_) => RoutineDetailCubit(
+                routineRepo: ApiRoutineRepo(),
+              )..loadRoutineDetail(routineId),
             ),
-          ),
-        ],
-        child: RoutineExercisesCreatePage(routineId: routineId),
+
+            // ROUTINE EXERCISES
+            BlocProvider(
+              create: (_) => RoutineExercisesCreateCubit(
+                routineExerciseRepo: ApiRoutineExerciseRepo(),
+              ),
+            ),
+          ],
+          child: RoutineExercisesCreatePage(routineId: routineId),
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          );
+        },
       );
     },
   ),
