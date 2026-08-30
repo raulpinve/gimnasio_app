@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 ThemeData darkMode = ThemeData(
-  brightness: Brightness.dark,
-
-  scaffoldBackgroundColor: const Color(0xFF101010),
-
-  colorScheme: const ColorScheme.dark(
-    primary: Color(0xFF78909C),
-    secondary: Color(0xFF262626),
-    surface: Color(0xFF1A1A1A),
-    inversePrimary: Color(0xFFB0BEC5),
-  ),
-
   textTheme: GoogleFonts.poppinsTextTheme().apply(
-    bodyColor: const Color(0xFFE5E5E5),
-    displayColor: const Color(0xFFFFFFFF),
+    bodyColor: Colors.grey.shade100,
+    displayColor: Colors.grey.shade100,
   ),
+
+  colorScheme: ColorScheme.dark(
+    primary: const Color(0xFF60A5FA),
+    secondary: const Color(0xFF172554),
+    surface: const Color(0xFF1E293B),
+    inversePrimary: const Color(0xFFBFDBFE),
+  ),
+
+  scaffoldBackgroundColor: const Color(0xFF0F172A),
 );

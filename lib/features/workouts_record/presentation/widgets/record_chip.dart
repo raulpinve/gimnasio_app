@@ -12,6 +12,7 @@ class RecordChip extends StatelessWidget {
   });
 
   final dynamic record;
+  
   final ExerciseType exerciseType;
   final VoidCallback onEdit;
   final VoidCallback onDelete;

@@ -8,7 +8,6 @@ import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_
 import 'package:gym_app/features/workouts_exercises/presentation/cubits/workout_exercise_detail/workout_exercise_detail_state.dart';
 import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record/workout_record_cubit.dart';
 import 'package:gym_app/features/workouts_record/presentation/cubits/workout_record/workout_record_state.dart';
-import 'package:gym_app/features/workouts_record/presentation/widgets/format_number.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/record_chip.dart';
 import 'package:gym_app/features/workouts_record/presentation/widgets/switcher_form.dart';
 
