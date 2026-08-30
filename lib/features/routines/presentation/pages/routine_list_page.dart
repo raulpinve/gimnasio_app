@@ -201,9 +201,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
           if (!context.mounted) return;
 
           if (response == true) {
-            context.read<RoutineExercisesListCubit>().loadRoutineExercises(
-              routine.id,
-            );
+            context.read<RoutineListCubit>().loadRoutines();
           }
         },
         borderRadius: BorderRadius.circular(16),

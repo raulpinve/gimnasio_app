@@ -172,116 +172,124 @@ class _RoutineExercisesListPageState extends State<RoutineExercisesListPage> {
         if (state is RoutineDetailLoaded) {
           final routine = state.routine;
 
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(routine.name),
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              actions: [
-                MyAppbarButton(
-                  onPressed: () => _redireccionarCrear(routine),
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ================================
-                  // ========= NOMBRE RUTINA =========
-                  // ================================
-                  // Text(
-                  //   routine.name,
-                  //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
+              if (!didPop && context.canPop()) {
+                context.pop(true);
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(routine.name),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                actions: [
+                  MyAppbarButton(
+                    onPressed: () => _redireccionarCrear(routine),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ================================
+                    // ========= NOMBRE RUTINA =========
+                    // ================================
+                    // Text(
+                    //   routine.name,
+                    //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
 
-                  // const SizedBox(height: 28),
+                    // const SizedBox(height: 28),
 
-                  // ================================
-                  // ========== EJERCICIOS ==========
-                  // ================================
-                  // Text(
-                  //   'Ejercicios',
-                  //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  //     fontWeight: FontWeight.w600,
-                  //   ),
-                  // ),
+                    // ================================
+                    // ========== EJERCICIOS ==========
+                    // ================================
+                    // Text(
+                    //   'Ejercicios',
+                    //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    // ),
 
-                  // const SizedBox(height: 12),
-                  Expanded(
-                    child:
-                        BlocBuilder<
-                          RoutineExercisesListCubit,
-                          RoutineExercisesListState
-                        >(
-                          builder: (context, state) {
-                            // ================================
-                            // ============ LOADING ============
-                            // ================================
+                    // const SizedBox(height: 12),
+                    Expanded(
+                      child:
+                          BlocBuilder<
+                            RoutineExercisesListCubit,
+                            RoutineExercisesListState
+                          >(
+                            builder: (context, state) {
+                              // ================================
+                              // ============ LOADING ============
+                              // ================================
 
-                            if (state is RoutineExercisesListLoading) {
-                              return skeletonLoader(context);
-                            }
+                              if (state is RoutineExercisesListLoading) {
+                                return skeletonLoader(context);
+                              }
 
-                            // ================================
-                            // ============== ERROR ============
-                            // ================================
+                              // ================================
+                              // ============== ERROR ============
+                              // ================================
 
-                            if (state is RoutineExercisesListError) {
-                              return RefreshableContent(
-                                child: Text(state.message),
-                                onRefresh: () => _onRefreshRoutineExercises(
-                                  routine.id,
-                                ),
-                              );
-                            }
-
-                            // ================================
-                            // ============ CARGADOS ===========
-                            // ================================
-
-                            if (state is RoutineExercisesListLoaded) {
-                              if (state.routineExercises.isEmpty) {
-                                return _buildEmptyExercises(
-                                  context,
-                                  routine,
+                              if (state is RoutineExercisesListError) {
+                                return RefreshableContent(
+                                  child: Text(state.message),
+                                  onRefresh: () => _onRefreshRoutineExercises(
+                                    routine.id,
+                                  ),
                                 );
                               }
 
-                              return RefreshIndicator(
-                                onRefresh: () => _onRefreshRoutineExercises(
-                                  routine.id,
-                                ),
-                                child: ListView.separated(
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 2),
-                                  itemCount: state.routineExercises.length,
-                                  itemBuilder: (context, index) {
-                                    final exercise =
-                                        state.routineExercises[index];
+                              // ================================
+                              // ============ CARGADOS ===========
+                              // ================================
 
-                                    return exercisesCards(
-                                      exercise,
-                                      context,
-                                      routine.id,
-                                      _redirigirAEditar,
-                                      _confirmDelete,
-                                    );
-                                  },
-                                ),
-                              );
-                            }
+                              if (state is RoutineExercisesListLoaded) {
+                                if (state.routineExercises.isEmpty) {
+                                  return _buildEmptyExercises(
+                                    context,
+                                    routine,
+                                  );
+                                }
 
-                            return skeletonLoader(context);
-                          },
-                        ),
-                  ),
-                ],
+                                return RefreshIndicator(
+                                  onRefresh: () => _onRefreshRoutineExercises(
+                                    routine.id,
+                                  ),
+                                  child: ListView.separated(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 2),
+                                    itemCount: state.routineExercises.length,
+                                    itemBuilder: (context, index) {
+                                      final exercise =
+                                          state.routineExercises[index];
+
+                                      return exercisesCards(
+                                        exercise,
+                                        context,
+                                        routine.id,
+                                        _redirigirAEditar,
+                                        _confirmDelete,
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+
+                              return skeletonLoader(context);
+                            },
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

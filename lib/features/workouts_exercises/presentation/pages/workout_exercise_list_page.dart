@@ -362,303 +362,313 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
-          onPressed: () {
-            context.pop(true);
-          },
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        actions: [
-          BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
-            builder: (context, state) {
-              final isOpen =
-                  state is WorkoutDetailLoaded &&
-                  state.workout.estado == "abierto";
-
-              if (!isOpen) return const SizedBox.shrink();
-
-              return TextButton(
-                onPressed: () => _confirmFinishWorkout(context),
-                child: const Text(
-                  'Finalizar',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && context.canPop()) {
+          context.pop(true);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: () {
+              context.pop(true);
             },
           ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          actions: [
+            BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
+              builder: (context, state) {
+                final isOpen =
+                    state is WorkoutDetailLoaded &&
+                    state.workout.estado == "abierto";
 
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'eliminar') {
-                _confirmDeleteWorkout(context);
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'eliminar',
-                child: Text('Eliminar entrenamiento'),
+                if (!isOpen) return const SizedBox.shrink();
+
+                return TextButton(
+                  onPressed: () => _confirmFinishWorkout(context),
+                  child: const Text(
+                    'Finalizar',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
+            ),
+
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'eliminar') {
+                  _confirmDeleteWorkout(context);
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'eliminar',
+                  child: Text('Eliminar entrenamiento'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              BlocListener<
+                WorkoutExerciseDetailCubit,
+                WorkoutExerciseDetailState
+              >(
+                listener: (context, state) {
+                  if (state is WorkoutExerciseDetailError) {
+                    showMessage(
+                      context,
+                      state.message,
+                      type: MessageType.error,
+                    );
+                  } else if (state is WorkoutExerciseDetailCreated) {
+                    showMessage(
+                      context,
+                      'Ejercicio agregado con éxito',
+                      type: MessageType.success,
+                    );
+                  }
+                },
+                child: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
+                  builder: (context, state) {
+                    Workout? workout;
+
+                    if (state is WorkoutDetailLoaded) {
+                      workout = state.workout;
+                    } else if (state is WorkoutDetailFinishing) {
+                      workout = state.workout;
+                    } else if (state is WorkoutDetailError) {
+                      workout = state.workout;
+                    }
+
+                    if (workout == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final colorScheme = Theme.of(context).colorScheme;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            workout.name,
+                            style: Theme.of(context).textTheme.headlineSmall!
+                                .copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
+                          ),
+                        ),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            color: workout.estado == "abierto"
+                                ? colorScheme.primary.withValues(alpha: 0.12)
+                                : colorScheme.onSurface.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            workout.estado == "abierto"
+                                ? "En curso"
+                                : "Completado",
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: workout.estado == "abierto"
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              Expanded(
+                child:
+                    BlocConsumer<
+                      WorkoutExercisesListCubit,
+                      WorkoutExercisesListState
+                    >(
+                      listener: (context, state) {
+                        if (state is WorkoutExercisesListLoaded &&
+                            state.errorMessage != null) {
+                          showMessage(
+                            context,
+                            state.errorMessage!,
+                            type: MessageType.error,
+                          );
+                        }
+                      },
+                      builder: (context, state) {
+                        // LOADING INICIAL
+                        if (state is WorkoutExercisesListLoading) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        // ERROR
+                        if (state is WorkoutExercisesListError) {
+                          return RefreshableContent(
+                            onRefresh: _onRefresh,
+                            child: Text(state.message),
+                          );
+                        }
+
+                        // ENTRENAMIENTOS CARGADOS
+                        if (state is WorkoutExercisesListLoaded) {
+                          final workoutDetailState = context
+                              .watch<WorkoutDetailCubit>()
+                              .state;
+
+                          final isOpen = switch (workoutDetailState) {
+                            WorkoutDetailLoaded state =>
+                              state.workout.estado == "abierto",
+                            WorkoutDetailFinishing state =>
+                              state.workout.estado == "abierto",
+                            WorkoutDetailError state =>
+                              state.workout?.estado == "abierto",
+                            _ => false,
+                          };
+                          final workoutId = widget.workoutId;
+
+                          Widget addExerciseButton() {
+                            final colorScheme = Theme.of(context).colorScheme;
+
+                            if (!isOpen) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () =>
+                                      _goToAddExercise(context, workoutId),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                      horizontal: 16,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: colorScheme.onSurface
+                                              .withValues(
+                                                alpha: 0.04,
+                                              ),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add,
+                                          size: 20,
+                                          color: colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Agregar ejercicio',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (state.workoutExercises.isEmpty) {
+                            // Sin ejercicios: mostramos el mensaje y, debajo,
+                            // el botón para agregar el primero.
+                            return RefreshableContent(
+                              onRefresh: _onRefresh,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text("No se encontraron ejercicios"),
+                                  const SizedBox(height: 16),
+                                  addExerciseButton(),
+                                ],
+                              ),
+                            );
+                          }
+
+                          return RefreshIndicator(
+                            onRefresh: _onRefresh,
+                            child: ListView.separated(
+                              // +1: el último item es el botón de agregar,
+                              // así scrollea junto con los ejercicios.
+                              itemCount: state.workoutExercises.length + 1,
+                              separatorBuilder:
+                                  (BuildContext context, int index) {
+                                    return const SizedBox(
+                                      height: 16,
+                                    );
+                                  },
+                              itemBuilder: (context, index) {
+                                if (index == state.workoutExercises.length) {
+                                  return addExerciseButton();
+                                }
+
+                                final workoutExercise =
+                                    state.workoutExercises[index];
+
+                                return WorkoutExerciseCard(
+                                  key: ValueKey(workoutExercise.exerciseId),
+                                  workoutExercise: workoutExercise,
+                                  onRegisterSet: () => redirectAddWorkoutRecord(
+                                    context,
+                                    workoutExercise,
+                                  ),
+                                  isOpen: isOpen,
+                                  onDelete: () => _confirmDeleteExercise(
+                                    context,
+                                    workoutExercise,
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        }
+
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ),
               ),
             ],
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            BlocListener<
-              WorkoutExerciseDetailCubit,
-              WorkoutExerciseDetailState
-            >(
-              listener: (context, state) {
-                if (state is WorkoutExerciseDetailError) {
-                  showMessage(
-                    context,
-                    state.message,
-                    type: MessageType.error,
-                  );
-                } else if (state is WorkoutExerciseDetailCreated) {
-                  showMessage(
-                    context,
-                    'Ejercicio agregado con éxito',
-                    type: MessageType.success,
-                  );
-                }
-              },
-              child: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
-                builder: (context, state) {
-                  Workout? workout;
-
-                  if (state is WorkoutDetailLoaded) {
-                    workout = state.workout;
-                  } else if (state is WorkoutDetailFinishing) {
-                    workout = state.workout;
-                  } else if (state is WorkoutDetailError) {
-                    workout = state.workout;
-                  }
-
-                  if (workout == null) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final colorScheme = Theme.of(context).colorScheme;
-
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          workout.name,
-                          style: Theme.of(context).textTheme.headlineSmall!
-                              .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.onSurface,
-                              ),
-                        ),
-                      ),
-
-                      Container(
-                        decoration: BoxDecoration(
-                          color: workout.estado == "abierto"
-                              ? colorScheme.primary.withValues(alpha: 0.12)
-                              : colorScheme.onSurface.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          workout.estado == "abierto"
-                              ? "En curso"
-                              : "Completado",
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                            color: workout.estado == "abierto"
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            Expanded(
-              child:
-                  BlocConsumer<
-                    WorkoutExercisesListCubit,
-                    WorkoutExercisesListState
-                  >(
-                    listener: (context, state) {
-                      if (state is WorkoutExercisesListLoaded &&
-                          state.errorMessage != null) {
-                        showMessage(
-                          context,
-                          state.errorMessage!,
-                          type: MessageType.error,
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      // LOADING INICIAL
-                      if (state is WorkoutExercisesListLoading) {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-
-                      // ERROR
-                      if (state is WorkoutExercisesListError) {
-                        return RefreshableContent(
-                          onRefresh: _onRefresh,
-                          child: Text(state.message),
-                        );
-                      }
-
-                      // ENTRENAMIENTOS CARGADOS
-                      if (state is WorkoutExercisesListLoaded) {
-                        final workoutDetailState = context
-                            .watch<WorkoutDetailCubit>()
-                            .state;
-
-                        final isOpen = switch (workoutDetailState) {
-                          WorkoutDetailLoaded state =>
-                            state.workout.estado == "abierto",
-                          WorkoutDetailFinishing state =>
-                            state.workout.estado == "abierto",
-                          WorkoutDetailError state =>
-                            state.workout?.estado == "abierto",
-                          _ => false,
-                        };
-                        final workoutId = widget.workoutId;
-
-                        Widget addExerciseButton() {
-                          final colorScheme = Theme.of(context).colorScheme;
-
-                          if (!isOpen) {
-                            return const SizedBox.shrink();
-                          }
-
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () =>
-                                    _goToAddExercise(context, workoutId),
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                    horizontal: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colorScheme.onSurface.withValues(
-                                          alpha: 0.04,
-                                        ),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add,
-                                        size: 20,
-                                        color: colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Agregar ejercicio',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: colorScheme.primary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (state.workoutExercises.isEmpty) {
-                          // Sin ejercicios: mostramos el mensaje y, debajo,
-                          // el botón para agregar el primero.
-                          return RefreshableContent(
-                            onRefresh: _onRefresh,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text("No se encontraron ejercicios"),
-                                const SizedBox(height: 16),
-                                addExerciseButton(),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return RefreshIndicator(
-                          onRefresh: _onRefresh,
-                          child: ListView.separated(
-                            // +1: el último item es el botón de agregar,
-                            // así scrollea junto con los ejercicios.
-                            itemCount: state.workoutExercises.length + 1,
-                            separatorBuilder:
-                                (BuildContext context, int index) {
-                                  return const SizedBox(
-                                    height: 16,
-                                  );
-                                },
-                            itemBuilder: (context, index) {
-                              if (index == state.workoutExercises.length) {
-                                return addExerciseButton();
-                              }
-
-                              final workoutExercise =
-                                  state.workoutExercises[index];
-
-                              return WorkoutExerciseCard(
-                                key: ValueKey(workoutExercise.exerciseId),
-                                workoutExercise: workoutExercise,
-                                onRegisterSet: () => redirectAddWorkoutRecord(
-                                  context,
-                                  workoutExercise,
-                                ),
-                                isOpen: isOpen,
-                                onDelete: () => _confirmDeleteExercise(
-                                  context,
-                                  workoutExercise,
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      }
-
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    },
-                  ),
-            ),
-          ],
         ),
       ),
     );

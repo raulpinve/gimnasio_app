@@ -91,97 +91,107 @@ class _WorkoutExerciseAddExercisePageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.pop(); // Ahora sí regresa correctamente atrás sin bucles
-          },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && context.canPop()) {
+          context.pop(true);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              context.pop(); // Ahora sí regresa correctamente atrás sin bucles
+            },
+          ),
         ),
-      ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Agregar ejercicio",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Agregar ejercicio",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
-            ),
-            SizedBox(
-              height: 24,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: MyTextfield(
-                    controller: _searchController,
-                    hintText: "Buscar ejercicio...",
-                    obscureText: false,
-                    onChanged: (value) {
-                      context.read<ExerciseListCubit>().searchExercises(value);
-                    },
+              SizedBox(
+                height: 24,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: MyTextfield(
+                      controller: _searchController,
+                      hintText: "Buscar ejercicio...",
+                      obscureText: false,
+                      onChanged: (value) {
+                        context.read<ExerciseListCubit>().searchExercises(
+                          value,
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
 
-                Expanded(
-                  child: dropdown(),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: dropdown(),
+                  ),
+                ],
+              ),
 
-            SizedBox(
-              height: 12,
-            ),
+              SizedBox(
+                height: 12,
+              ),
 
-            // LISTA
-            Expanded(
-              child: BlocBuilder<ExerciseListCubit, ExerciseListState>(
-                builder: (context, state) {
-                  // CARGA INICIAL
-                  if (state is ExerciseLoading) {
-                    return skeletonLoader(context);
-                  }
+              // LISTA
+              Expanded(
+                child: BlocBuilder<ExerciseListCubit, ExerciseListState>(
+                  builder: (context, state) {
+                    // CARGA INICIAL
+                    if (state is ExerciseLoading) {
+                      return skeletonLoader(context);
+                    }
 
-                  // ERROR
-                  if (state is ExerciseError) {
-                    return Center(
-                      child: Text(state.message),
-                    );
-                  }
-
-                  // EJERCICIOS CARGADOS
-                  if (state is ExercisesLoaded) {
-                    if (state.exercises.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No se encontraron ejercicios',
-                        ),
+                    // ERROR
+                    if (state is ExerciseError) {
+                      return Center(
+                        child: Text(state.message),
                       );
                     }
 
-                    return _buildExerciseList(
-                      context,
-                      state,
-                    );
-                  }
+                    // EJERCICIOS CARGADOS
+                    if (state is ExercisesLoaded) {
+                      if (state.exercises.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No se encontraron ejercicios',
+                          ),
+                        );
+                      }
 
-                  // ESTADO INICIAL
-                  return const SizedBox();
-                },
+                      return _buildExerciseList(
+                        context,
+                        state,
+                      );
+                    }
+
+                    // ESTADO INICIAL
+                    return const SizedBox();
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

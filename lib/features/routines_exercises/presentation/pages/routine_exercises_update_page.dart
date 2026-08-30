@@ -129,147 +129,161 @@ class _RoutineExercisesUpdatePageState
           );
         }
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            elevation: 0,
-            title: const Text('Editar ejercicio'),
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              8,
-              16,
-              24,
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop && context.canPop()) {
+              context.pop();
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+              title: const Text('Editar ejercicio'),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _sectionHeader(context, step: 1, title: 'Ejercicio'),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                24,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionHeader(context, step: 1, title: 'Ejercicio'),
 
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                if (_selectedExercise != null) _buildSelectedExercise(context),
+                  if (_selectedExercise != null)
+                    _buildSelectedExercise(context),
 
-                const SizedBox(height: 28),
+                  const SizedBox(height: 28),
 
-                _sectionHeader(context, step: 2, title: 'Define el objetivo'),
+                  _sectionHeader(context, step: 2, title: 'Define el objetivo'),
 
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      if (_selectedExercise?.type == 'strength') ...[
-                        MyTextfield(
-                          controller: _targetSetsController,
-                          hintText: 'Series',
-                          obscureText: false,
-                          keyboardType: TextInputType.number,
-                          errorText: targetSetError,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        MyTextfield(
-                          controller: _targetRepsController,
-                          hintText: 'Repeticiones',
-                          obscureText: false,
-                          keyboardType: TextInputType.number,
-                          errorText: targetRepsError,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
-
-                      if (_selectedExercise?.type == 'cardio') ...[
-                        MyTextfield(
-                          controller: _targetDurationSecondsController,
-                          hintText: 'Duración (segundos)',
-                          obscureText: false,
-                          keyboardType: TextInputType.number,
-                          errorText: targetDurationSecondsError,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        MyTextfield(
-                          controller: _targetDistanceKmController,
-                          hintText: 'Distancia (km)',
-                          obscureText: false,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
+                    ),
+                    child: Column(
+                      children: [
+                        if (_selectedExercise?.type == 'strength') ...[
+                          MyTextfield(
+                            controller: _targetSetsController,
+                            hintText: 'Series',
+                            obscureText: false,
+                            keyboardType: TextInputType.number,
+                            errorText: targetSetError,
                           ),
-                          errorText: targetDistanceKmError,
-                        ),
+
+                          const SizedBox(height: 16),
+
+                          MyTextfield(
+                            controller: _targetRepsController,
+                            hintText: 'Repeticiones',
+                            obscureText: false,
+                            keyboardType: TextInputType.number,
+                            errorText: targetRepsError,
+                          ),
+                        ],
+
+                        if (_selectedExercise?.type == 'cardio') ...[
+                          MyTextfield(
+                            controller: _targetDurationSecondsController,
+                            hintText: 'Duración (segundos)',
+                            obscureText: false,
+                            keyboardType: TextInputType.number,
+                            errorText: targetDurationSecondsError,
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          MyTextfield(
+                            controller: _targetDistanceKmController,
+                            hintText: 'Distancia (km)',
+                            obscureText: false,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            errorText: targetDistanceKmError,
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 32),
+                  const SizedBox(height: 32),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: MyButton(
-                    onTap: isUpdating
-                        ? null
-                        : () {
-                            context
-                                .read<RoutineExercisesUpdateCubit>()
-                                .updateRoutineExercise({
-                                  'targetSets':
-                                      _targetSetsController.text.trim().isEmpty
-                                      ? null
-                                      : int.parse(
-                                          _targetSetsController.text.trim(),
-                                        ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: MyButton(
+                      onTap: isUpdating
+                          ? null
+                          : () {
+                              context
+                                  .read<RoutineExercisesUpdateCubit>()
+                                  .updateRoutineExercise({
+                                    'targetSets':
+                                        _targetSetsController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.parse(
+                                            _targetSetsController.text.trim(),
+                                          ),
 
-                                  'targetReps':
-                                      _targetRepsController.text.trim().isEmpty
-                                      ? null
-                                      : int.parse(
-                                          _targetRepsController.text.trim(),
-                                        ),
+                                    'targetReps':
+                                        _targetRepsController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.parse(
+                                            _targetRepsController.text.trim(),
+                                          ),
 
-                                  'targetDurationSeconds':
-                                      _targetDurationSecondsController.text
-                                          .trim()
-                                          .isEmpty
-                                      ? null
-                                      : int.parse(
-                                          _targetDurationSecondsController.text
-                                              .trim(),
-                                        ),
+                                    'targetDurationSeconds':
+                                        _targetDurationSecondsController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : int.parse(
+                                            _targetDurationSecondsController
+                                                .text
+                                                .trim(),
+                                          ),
 
-                                  'targetDistanceKm':
-                                      _targetDistanceKmController.text
-                                          .trim()
-                                          .isEmpty
-                                      ? null
-                                      : double.parse(
-                                          _targetDistanceKmController.text
-                                              .trim(),
-                                        ),
-                                });
-                          },
-                    type: MyButtonType.primary,
-                    text: 'Guardar cambios',
-                    isLoading: isUpdating,
+                                    'targetDistanceKm':
+                                        _targetDistanceKmController.text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : double.parse(
+                                            _targetDistanceKmController.text
+                                                .trim(),
+                                          ),
+                                  });
+                            },
+                      type: MyButtonType.primary,
+                      text: 'Guardar cambios',
+                      isLoading: isUpdating,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
