@@ -150,64 +150,75 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
 
   Future<void> _confirmDeleteWorkout(BuildContext context) async {
     final cubit = context.read<WorkoutDetailCubit>();
+    final pageContext = context;
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
+        bool isDeleting = false;
+        String? errorMessage;
+
         return BlocProvider.value(
           value: cubit,
-          child: BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
-            listener: (context, state) {
-              if (state is WorkoutDetailDeleted) {
-                Navigator.of(dialogContext).pop();
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
+                listener: (context, state) {
+                  if (state is WorkoutDetailDeleting) {
+                    setState(() {
+                      isDeleting = true;
+                      errorMessage = null;
+                    });
+                  }
 
-                if (context.mounted) {
-                  context.pop(true);
-                  showMessage(
-                    context,
-                    'Entrenamiento eliminado con éxito',
-                    type: MessageType.success,
-                  );
-                }
-              }
-            },
-            child: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
-              builder: (context, state) {
-                final isDeleting = state is WorkoutDetailDeleting;
+                  if (state is WorkoutDetailError) {
+                    setState(() {
+                      isDeleting = false;
+                      errorMessage = state.message;
+                    });
+                  }
 
-                return AlertDialog(
+                  if (state is WorkoutDetailDeleted) {
+                    Navigator.of(dialogContext).pop();
+
+                    if (pageContext.mounted) {
+                      pageContext.pop(true);
+                      showMessage(
+                        pageContext,
+                        'Entrenamiento eliminado con éxito',
+                        type: MessageType.success,
+                      );
+                    }
+                  }
+                },
+                child: AlertDialog(
                   title: const Text('Eliminar entrenamiento'),
-                  content: state is WorkoutDetailError
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              '¿Seguro que deseas eliminar este entrenamiento? '
-                              'Se perderán todos los ejercicios y registros asociados.',
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              state.message,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Text(
-                          '¿Seguro que deseas eliminar este entrenamiento? '
-                          'Se perderán todos los ejercicios y registros asociados.',
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '¿Seguro que deseas eliminar este entrenamiento? '
+                        'Se perderán todos los ejercicios y registros asociados.',
+                      ),
+                      if (errorMessage != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
+                      ],
+                    ],
+                  ),
                   actions: [
                     TextButton(
                       onPressed: isDeleting
                           ? null
-                          : () {
-                              Navigator.of(dialogContext).pop();
-                            },
+                          : () => Navigator.of(dialogContext).pop(),
                       child: const Text('Cancelar'),
                     ),
                     TextButton(
@@ -220,16 +231,14 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text('Eliminar'),
                     ),
                   ],
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         );
       },

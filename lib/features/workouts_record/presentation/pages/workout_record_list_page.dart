@@ -456,7 +456,7 @@ class _WorkoutRecordListPageState extends State<WorkoutRecordListPage> {
     ExerciseType exerciseType,
   ) {
     final cubit = context.read<WorkoutRecordCubit>();
-    final pageContext = context; // 👈 nuevo
+    final pageContext = context;
 
     showDialog(
       context: context,
