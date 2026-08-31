@@ -82,13 +82,24 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const SizedBox(height: 70),
 
-                  Text(
-                    "GymFit",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.inversePrimary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.local_fire_department,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        size: 26,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "GymFit",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 25),
@@ -140,13 +151,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 25),
 
+                  // "¿Ya tienes cuenta?" con el mismo tratamiento que Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "¿Ya tienes una cuenta?",
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       GestureDetector(
@@ -155,13 +169,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           " Inicia sesión",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.tertiary, // antes: primary
                           ),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 25),
                 ],
               ),

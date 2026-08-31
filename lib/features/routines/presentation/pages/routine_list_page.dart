@@ -30,6 +30,7 @@ class _RoutineListPageState extends State<RoutineListPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Text("Mis rutinas"),
         actions: [
           MyAppbarButton(
             onPressed: () => showCreateRoutineBottomSheet(context),
@@ -45,14 +46,8 @@ class _RoutineListPageState extends State<RoutineListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Mis rutinas",
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.bold),
-            ),
             SizedBox(
-              height: 24,
+              height: 18,
             ),
             Expanded(
               child: BlocBuilder<RoutineListCubit, RoutineListState>(

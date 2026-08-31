@@ -1,15 +1,3 @@
-/*
-  LOGIN PAGE UI
-
-  On this page, a user can login with their: 
-  - email
-  - pw
-
-  ----------------------------------------------------------------------------------------
-  Once the user successfully logs in, they will be directed to homepage
-
-  if(user doesn't have an account, they can go to register page to create one)
- */
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_app/core/utils/snackbar_helper.dart';
@@ -158,13 +146,24 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 70),
                   // name of the app
-                  Text(
-                    "GymFit",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.inversePrimary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.local_fire_department,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        size: 26,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "GymFit",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 25),
 
@@ -225,16 +224,30 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Expanded(
                         child: Divider(
-                          color: Theme.of(context).colorScheme.tertiary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.15),
+                          thickness: 1,
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 25.0),
-                        child: Text("O continúa con"),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "O continúa con",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
                       ),
                       Expanded(
                         child: Divider(
-                          color: Theme.of(context).colorScheme.tertiary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.15),
+                          thickness: 1,
                         ),
                       ),
                     ],
@@ -262,7 +275,9 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         "¿No tienes una cuenta?",
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       GestureDetector(
@@ -271,7 +286,9 @@ class _LoginPageState extends State<LoginPage> {
                           " Crea una ahora",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.tertiary, // antes: primary
                           ),
                         ),
                       ),

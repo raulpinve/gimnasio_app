@@ -75,21 +75,42 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Center(
               child: Container(
-                width: 200,
-                height: 200,
+                width: 176,
+                height: 176,
+                padding: const EdgeInsets.all(6), // espacio para el anillo
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.tertiary.withValues(alpha: 0.4),
+                    width: 2.5,
+                  ),
                 ),
-                child: Center(
-                  child: Text(
-                    firstName != null && firstName.isNotEmpty
-                        ? firstName[0].toUpperCase()
-                        : '',
-                    style: TextStyle(
-                      fontSize: 70,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).colorScheme.primary,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.75),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      firstName != null && firstName.isNotEmpty
+                          ? firstName[0].toUpperCase()
+                          : '',
+                      style: const TextStyle(
+                        fontSize: 64,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

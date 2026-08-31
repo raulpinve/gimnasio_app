@@ -5,7 +5,7 @@ class RefreshableContent extends StatelessWidget {
     super.key,
     required this.child,
     required this.onRefresh,
-    this.height,
+    this.height = 100,
   });
 
   final Widget child;

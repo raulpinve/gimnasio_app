@@ -81,118 +81,149 @@ class _MainPageState extends State<MainPage> {
               top: 10,
             ),
             child: Container(
+              height: 74,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.07),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _NavItem(
+                    icon: Icons.checklist_rtl_rounded,
+                    activeIcon: Icons.checklist_rounded,
+                    label: 'Rutinas',
+                    isSelected: currentIndex == 0,
+                    onTap: () => setState(() => currentIndex = 0),
+                  ),
+                  _CenterNavItem(
+                    isSelected: currentIndex == 1,
+                    onTap: () => setState(() => currentIndex = 1),
+                  ),
+                  _NavItem(
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Perfil',
+                    isSelected: currentIndex == 2,
+                    onTap: () => setState(() => currentIndex = 2),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: SizedBox(
-                  height: 80,
-                  child: BottomNavigationBar(
-                    elevation: 0,
-                    currentIndex: currentIndex,
-                    selectedItemColor: Theme.of(context).colorScheme.primary,
-                    unselectedItemColor: Colors.grey.shade400,
-                    backgroundColor: Colors.transparent,
-                    type: BottomNavigationBarType.fixed,
-                    showSelectedLabels: true,
-                    showUnselectedLabels: false,
-                    selectedFontSize: 11,
-                    unselectedFontSize: 11,
-                    selectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    onTap: (index) {
-                      setState(() {
-                        currentIndex = index;
-                      });
-                    },
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: const SizedBox(
-                          height: 40,
-                          child: Icon(
-                            Icons.checklist_rtl_rounded,
-                            size: 25,
-                          ),
-                        ),
-                        activeIcon: const SizedBox(
-                          height: 40,
-                          child: Icon(
-                            Icons.checklist_rounded,
-                            size: 25,
-                          ),
-                        ),
-                        label: 'Rutinas',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: SizedBox(
-                          height: 40,
-                          child: Center(
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.local_fire_department_outlined,
-                                color: Colors.white,
-                                size: 26,
-                              ),
-                            ),
-                          ),
-                        ),
-                        activeIcon: SizedBox(
-                          height: 40,
-                          child: Center(
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.local_fire_department,
-                                color: Colors.white,
-                                size: 27,
-                              ),
-                            ),
-                          ),
-                        ),
-                        label: 'Entrenar',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: const SizedBox(
-                          height: 40,
-                          child: Icon(
-                            Icons.person_outline,
-                            size: 25,
-                          ),
-                        ),
-                        activeIcon: const SizedBox(
-                          height: 40,
-                          child: Icon(
-                            Icons.person,
-                            size: 25,
-                          ),
-                        ),
-                        label: 'Perfil',
-                      ),
-                    ],
-                  ),
-                ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              width: 44,
+              height: 30,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? colorScheme.primary.withValues(alpha: 0.16)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
               ),
+              alignment: Alignment.center,
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                size: 22,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.45),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CenterNavItem extends StatefulWidget {
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CenterNavItem({required this.isSelected, required this.onTap});
+
+  @override
+  State<_CenterNavItem> createState() => _CenterNavItemState();
+}
+
+class _CenterNavItemState extends State<_CenterNavItem> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      behavior: HitTestBehavior.opaque,
+      child: Transform.translate(
+        offset: const Offset(0, -10),
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 150),
+          scale: _pressed ? 0.9 : 1.0,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: colorScheme.tertiary,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              widget.isSelected
+                  ? Icons.local_fire_department
+                  : Icons.local_fire_department_outlined,
+              color: Colors.white,
+              size: 26,
             ),
           ),
         ),

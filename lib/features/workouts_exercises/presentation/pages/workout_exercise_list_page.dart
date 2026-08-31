@@ -371,12 +371,48 @@ class _WorkoutExerciseListPageState extends State<WorkoutExercisePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: BackButton(
-            onPressed: () {
-              context.pop(true);
+          leading: BackButton(onPressed: () => context.pop(true)),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
+            builder: (context, state) {
+              Workout? workout = switch (state) {
+                WorkoutDetailLoaded s => s.workout,
+                WorkoutDetailFinishing s => s.workout,
+                WorkoutDetailError s => s.workout,
+                _ => null,
+              };
+              if (workout == null) return const SizedBox.shrink();
+
+              final colorScheme = Theme.of(context).colorScheme;
+              final isOpen = workout.estado == "abierto";
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    workout.name,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    isOpen ? "En curso" : "Completado",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      fontStyle: FontStyle.italic,
+                      color: isOpen
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              );
             },
           ),
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           actions: [
             BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
               builder: (context, state) {
