@@ -176,12 +176,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             vertical: 16,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             border: Border.all(
-                              color: Colors.grey.shade300,
+                              color: Theme.of(context).colorScheme.outline,
                               width: 1,
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,15 +190,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                 "ENTRENAMIENTOS",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                                 ),
                               ),
+                              const SizedBox(height: 2),
                               Text(
                                 '${stats.totalWorkouts}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -215,29 +220,34 @@ class _ProfilePageState extends State<ProfilePage> {
                             vertical: 16,
                           ),
                           decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
                             border: Border.all(
-                              color: Colors.grey.shade300,
+                              color: Theme.of(context).colorScheme.outline,
                               width: 1,
                             ),
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "STREAK",
+                                "RACHA",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                                 ),
                               ),
+                              const SizedBox(height: 2),
                               Text(
                                 '${stats.currentStreak} ${_getStreakEmoji(stats.currentStreak)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -256,7 +266,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ElevatedButton.icon(
               onPressed: () async {
                 final updated = await context.push<bool>('/profile/update');
-
                 if (updated == true && context.mounted) {
                   showMessage(
                     context,
